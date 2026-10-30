@@ -16,6 +16,14 @@ Read this before touching `lib/sync/`, the room (`components/room/`) or the API 
 - `lessons.last_active_at` is set by the token route when the teacher joins, and by each save.
   - If it's more than 3 hours old, `app/lesson/[id]/page.tsx` starts with a clean board.
 
+## Classroom files
+- Each student lesson has a classroom at `/dashboard/[id]`: Start lesson, the student link, and the teacher's files.
+- Files sit in the private Storage bucket `resources` at `<teacher_id>/<lesson_id>/<random name>`, with one row each in the `resources` table (original name, kind `image`/`pdf`/`audio`, size). Migrations `0004_resources.sql` and `0005_resource_images.sql`.
+- The bucket allows PDF, `audio/*` and JPG/PNG/WebP/GIF pictures, up to 20 MB each. One upload button takes all of them (the type is also read from the extension, as some browsers send none or "image/jpg"); the classroom lists them under Pictures, PDFs and Audio. RLS on the table and on `storage.objects`: a teacher only sees, adds and deletes their own, and only adds to their own student lessons.
+- `components/classroom/FileUpload.tsx` uploads from the browser straight to Storage (server actions cap request bodies), then inserts the row. If the row fails, it deletes the upload again.
+- Deleting a file or a student (`removeResource`, `removeLesson`) removes the stored files first: the rows cascade with the lesson, the files don't.
+- The classroom's "open" links are signed URLs valid for an hour. Students get no Storage access; L2a will hand them short signed URLs from the server.
+
 ## Shared state
 One Yjs `Y.Doc` per join, created in `LessonContent` (`components/room/LessonRoom.tsx`). It holds:
 - the text pad: Tiptap's default XML fragment

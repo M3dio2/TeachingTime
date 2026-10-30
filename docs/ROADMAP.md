@@ -56,8 +56,8 @@ Accepted for now: a tampered student client can still put content on the board w
 ## C1: Classroom
 Each student in the list becomes a classroom: the teacher keeps that student's files there and starts lessons from it. Only the teacher uploads; students never log in.
 - [ ] The student card opens `/dashboard/[id]`: name, invite link, **Start lesson**, the files
-- [ ] Private Storage bucket `resources`, files at `<teacher_id>/<lesson_id>/<file>`; table `resources` (lesson, teacher, kind `pdf`/`audio`, name, path, size). RLS on both: the teacher's own only. PDF and audio only, about 20 MB per file (free tier: 1 GB total). Migration `0004_resources.sql`
-- [ ] Upload, list and delete files; removing a student deletes their files
+- [ ] Private Storage bucket `resources`, files at `<teacher_id>/<lesson_id>/<file>`; table `resources` (lesson, teacher, kind `image`/`pdf`/`audio`, name, path, size). RLS on both: the teacher's own only. Pictures, PDF and audio only, about 20 MB per file (free tier: 1 GB total). Migrations `0004_resources.sql`, `0005_resource_images.sql`
+- [ ] Upload, list and delete files with one upload button, listed under Pictures (small previews), PDFs and Audio; removing a student deletes their files
 
 ## L1: Tabbed call layout
 - [ ] Desktop: cameras stacked on the left | tabs in the middle | resource drawer on the right (teacher only, student lessons only, folds to an icon strip). Phone: tabs and small cameras, no drawer
@@ -104,7 +104,7 @@ Rule: a wait that takes you into or out of a lesson shows the full loading scree
 
 ## D5: Still to decide
 - [ ] Dark ink instead of brown for the main buttons
-- [ ] Arrow doodle pointing to "Add a student" on an empty dashboard
+- [ ] Arrow doodle pointing to "Add a classroom" on an empty dashboard
 
 # Later
 

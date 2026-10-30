@@ -126,7 +126,7 @@ async function Lessons() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h1 className="text-xl">Your students</h1>
+        <h1 className="text-xl">Your classrooms</h1>
         <ul className="flex flex-col gap-3">
           {students.map((student) => (
             <StudentCard key={student.id} student={student} waiting={occupied.has(student.id)} />
@@ -134,14 +134,14 @@ async function Lessons() {
         </ul>
         {students.length === 0 && (
           <p className="text-ink-muted">
-            Add a student to give them their own room and a link that stays the same every week.
+            Add a classroom for each student: a place for their files and a link that stays the same every week.
           </p>
         )}
         <form action={addStudent} className="flex items-end gap-2">
           <Field
-            label="Add a student"
+            label="Add a classroom"
             name="title"
-            placeholder="Name, e.g. Anna"
+            placeholder="Student's name, e.g. Anna"
             required
             className="min-w-0 flex-1"
           />
@@ -189,14 +189,14 @@ function NameForm({ name }: { name: string }) {
   );
 }
 
-// The whole card opens the room; the buttons sit above the card link.
+// The whole card opens the classroom; the buttons sit above the card link.
 function StudentCard({ student, waiting }: { student: Lesson; waiting: boolean }) {
   return (
     // Hover: the card lifts onto a yellow marker shadow (docs/DESIGN.md).
     <li className="relative flex flex-wrap items-center gap-3 rounded-panel border border-line bg-surface p-4 transition hover:border-ink hover:shadow-[3px_3px_0_var(--color-marker)] motion-safe:hover:-translate-y-0.5">
       <Link
-        href={`/lesson/${student.id}`}
-        aria-label={`Open ${student.title}'s room`}
+        href={`/dashboard/${student.id}`}
+        aria-label={`Open ${student.title}'s classroom`}
         className="absolute inset-0 rounded-panel focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       />
       <div className="flex-1">
@@ -226,6 +226,12 @@ function StudentCard({ student, waiting }: { student: Lesson; waiting: boolean }
         </p>
       </div>
       <div className="relative flex items-center gap-1">
+        {/* A waiting student shouldn't wait for the classroom to load. */}
+        {waiting && (
+          <Link href={`/lesson/${student.id}`} className={buttonClass("primary", "sm")}>
+            Start lesson
+          </Link>
+        )}
         <CopyLinkButton slug={student.invite_slug} />
         <form action={removeLesson}>
           <input type="hidden" name="id" value={student.id} />
