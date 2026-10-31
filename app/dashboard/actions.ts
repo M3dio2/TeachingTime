@@ -50,14 +50,34 @@ export async function startQuickCall() {
 // Removes a student or ends a quick call, and closes its room so nobody is left in it.
 // RLS limits this to the teacher's own rows.
 export async function removeLesson(formData: FormData) {
+  const id = String(formData.get("id"));
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("lessons")
-    .delete()
-    .eq("id", String(formData.get("id")))
-    .select("id");
+
+  // The student's files first: their rows go with the lesson (cascade), the stored files don't.
+  const { data: files } = await supabase.from("resources").select("path").eq("lesson_id", id);
+  if (files?.length) {
+    await supabase.storage.from("resources").remove(files.map((f) => f.path));
+  }
+
+  const { data } = await supabase.from("lessons").delete().eq("id", id).select("id");
   if (data?.length) await closeRoom(data[0].id);
   revalidatePath("/dashboard");
+}
+
+// Deletes one file from a classroom: the stored file, then its row.
+export async function removeResource(formData: FormData) {
+  const supabase = await createClient();
+  const { data: file } = await supabase
+    .from("resources")
+    .select("id, lesson_id, path")
+    .eq("id", String(formData.get("id")))
+    .maybeSingle();
+  if (!file) return;
+
+  const { error } = await supabase.storage.from("resources").remove([file.path]);
+  if (error) throw new Error(error.message);
+  await supabase.from("resources").delete().eq("id", file.id);
+  revalidatePath(`/dashboard/${file.lesson_id}`);
 }
 
 // The teacher clicked Leave in a quick call: the call is over for everyone.
