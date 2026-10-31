@@ -8,8 +8,10 @@ import { createClient } from "@/lib/supabase/client";
 
 export type ResourceKind = "image" | "pdf" | "audio";
 
-// Same limit and types as the "resources" bucket (supabase/migrations/0004, 0005).
-const MAX_BYTES = 20 * 1024 * 1024;
+// Same limits and types as the "resources" bucket (supabase/migrations/0004–0006).
+const MB = 1024 * 1024;
+const MAX_BYTES = 10 * MB; // per file
+const TEACHER_BYTES = 200 * MB; // per teacher, all classrooms together
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 // Browsers sometimes send no type, or a non-standard one such as "image/jpg",
@@ -49,7 +51,15 @@ function kindOf(type: string): ResourceKind {
 // Uploads straight from the browser to Supabase Storage (server actions cap request bodies),
 // then adds the file's row. RLS checks both against the teacher's own students.
 // Each file is sorted into Pictures, PDFs or Audio by its type.
-export default function FileUpload({ teacherId, lessonId }: { teacherId: string; lessonId: string }) {
+export default function FileUpload({
+  teacherId,
+  lessonId,
+  usedBytes,
+}: {
+  teacherId: string;
+  lessonId: string;
+  usedBytes: number;
+}) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState("");
@@ -59,6 +69,7 @@ export default function FileUpload({ teacherId, lessonId }: { teacherId: string;
     setError("");
     const supabase = createClient();
     const failed: string[] = [];
+    let used = usedBytes;
 
     for (const file of files) {
       const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "";
@@ -68,7 +79,11 @@ export default function FileUpload({ teacherId, lessonId }: { teacherId: string;
         continue;
       }
       if (file.size > MAX_BYTES) {
-        failed.push(`${file.name} is bigger than 20 MB.`);
+        failed.push(`${file.name} is bigger than 10 MB.`);
+        continue;
+      }
+      if (used + file.size > TEACHER_BYTES) {
+        failed.push(`${file.name} doesn't fit: your files can take up 200 MB. Delete some first.`);
         continue;
       }
 
@@ -81,7 +96,9 @@ export default function FileUpload({ teacherId, lessonId }: { teacherId: string;
         failed.push(
           /mime|type/i.test(stored.error.message)
             ? `${file.name}: this kind of file isn't accepted yet.`
-            : `${file.name} could not be uploaded. Please try again.`,
+            : /row-level security/i.test(stored.error.message)
+              ? `${file.name} doesn't fit: your files can take up 200 MB. Delete some first.`
+              : `${file.name} could not be uploaded. Please try again.`,
         );
         continue;
       }
@@ -92,7 +109,9 @@ export default function FileUpload({ teacherId, lessonId }: { teacherId: string;
         console.error("Saving the file failed", file.name, row.error);
         await supabase.storage.from("resources").remove([path]);
         failed.push(`${file.name} could not be uploaded. Please try again.`);
+        continue;
       }
+      used += file.size;
     }
 
     setBusy("");
@@ -108,9 +127,12 @@ export default function FileUpload({ teacherId, lessonId }: { teacherId: string;
           Upload files
         </Button>
         <p className="text-sm text-ink-muted" aria-live="polite">
-          {busy || "Pictures, PDFs or audio, up to 20 MB each."}
+          {busy || "Pictures, PDFs or audio, up to 10 MB each."}
         </p>
       </div>
+      <p className="text-sm text-ink-muted">
+        {Math.ceil(usedBytes / MB)} MB of your 200 MB used, all classrooms together.
+      </p>
       <input
         ref={input}
         type="file"

@@ -56,7 +56,7 @@ Accepted for now: a tampered student client can still put content on the board w
 ## C1: Classroom
 Each student in the list becomes a classroom: the teacher keeps that student's files there and starts lessons from it. Only the teacher uploads; students never log in.
 - [x] The student card opens `/dashboard/[id]`: name, invite link, **Start lesson**, the files
-- [x] Private Storage bucket `resources`, files at `<teacher_id>/<lesson_id>/<file>`; table `resources` (lesson, teacher, kind `image`/`pdf`/`audio`, name, path, size). RLS on both: the teacher's own only. Pictures, PDF and audio only, about 20 MB per file (free tier: 1 GB total). Migrations `0004_resources.sql`, `0005_resource_images.sql`
+- [x] Private Storage bucket `resources`, files at `<teacher_id>/<lesson_id>/<file>`; table `resources` (lesson, teacher, kind `image`/`pdf`/`audio`, name, path, size). RLS on both: the teacher's own only. Pictures, PDF and audio only, 10 MB per file and 200 MB per teacher (free tier: 1 GB total, shared). Migrations `0004_resources.sql`, `0005_resource_images.sql`, `0006_resource_limits.sql`
 - [x] Upload, list and delete files with one upload button, listed under Pictures (small previews), PDFs and Audio; removing a student deletes their files
 
 ## L1: Tabbed call layout
