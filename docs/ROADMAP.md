@@ -59,6 +59,12 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 - [x] Private Storage bucket `resources`, files at `<teacher_id>/<lesson_id>/<file>`; table `resources` (lesson, teacher, kind `image`/`pdf`/`audio`, name, path, size). RLS on both: the teacher's own only. Pictures, PDF and audio only, 10 MB per file and 200 MB per teacher (free tier: 1 GB total, shared). Migrations `0004_resources.sql`, `0005_resource_images.sql`, `0006_resource_limits.sql`
 - [x] Upload, list and delete files with one upload button, listed under Pictures (small previews), PDFs and Audio; removing a student deletes their files
 
+### C1b: Storage limits (branch `c1b-storage-limits`, not merged yet)
+- [x] 10 MB per file, 200 MB per teacher across all classrooms; "MB of your 200 MB used" line in the classroom
+- [x] User ran `0006_resource_limits.sql` in Supabase (2026-10-31; the file is re-runnable)
+- [ ] Browser test: a 10–20 MB file is refused, a normal upload works, the "used" line rises and falls with upload and delete. Optionally lower the 200 MB limit to 1 MB for a moment to test the total check, then put it back
+- [ ] `npm run build` + `npm run lint`, merge to `main`, push. Then start L1
+
 ## L1: Tabbed call layout
 - [ ] Desktop: cameras stacked on the left | tabs in the middle | resource drawer on the right (teacher only, student lessons only, folds to an icon strip). Phone: tabs and small cameras, no drawer
 - [ ] Tabs like a browser: **Screen** (while someone shares), **Text**, **Draw**, and one per opened PDF (L2a)
