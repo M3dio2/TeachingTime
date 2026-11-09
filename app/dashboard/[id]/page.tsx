@@ -51,7 +51,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: auth }, { data: student }, { data: files }] = await Promise.all([
+  const [{ data: auth }, { data: student }, { data: files }, { data: usedBytes }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("lessons")
@@ -64,6 +64,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
       .select("id, kind, name, path, size, created_at")
       .eq("lesson_id", id)
       .order("created_at", { ascending: false }),
+    supabase.rpc("resources_used_bytes"),
   ]);
   if (!student || !auth.user) notFound();
 
@@ -112,7 +113,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           <h2 id="files" className="text-xl font-semibold">
             Files
           </h2>
-          <FileUpload teacherId={auth.user.id} lessonId={student.id} />
+          <FileUpload teacherId={auth.user.id} lessonId={student.id} usedBytes={Number(usedBytes ?? 0)} />
         </div>
 
         {sections.map(({ kind, title, Icon, empty }) => {

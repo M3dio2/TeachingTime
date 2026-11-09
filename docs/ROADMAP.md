@@ -56,8 +56,15 @@ Accepted for now: a tampered student client can still put content on the board w
 ## C1: Classroom
 Each student in the list becomes a classroom: the teacher keeps that student's files there and starts lessons from it. Only the teacher uploads; students never log in.
 - [x] The student card opens `/dashboard/[id]`: name, invite link, **Start lesson**, the files
-- [x] Private Storage bucket `resources`, files at `<teacher_id>/<lesson_id>/<file>`; table `resources` (lesson, teacher, kind `image`/`pdf`/`audio`, name, path, size). RLS on both: the teacher's own only. Pictures, PDF and audio only, about 20 MB per file (free tier: 1 GB total). Migrations `0004_resources.sql`, `0005_resource_images.sql`
+- [x] Private Storage bucket `resources`, files at `<teacher_id>/<lesson_id>/<file>`; table `resources` (lesson, teacher, kind `image`/`pdf`/`audio`, name, path, size). RLS on both: the teacher's own only. Pictures, PDF and audio only, 10 MB per file and 200 MB per teacher (free tier: 1 GB total, shared). Migrations `0004_resources.sql`, `0005_resource_images.sql`, `0006_resource_limits.sql`
 - [x] Upload, list and delete files with one upload button, listed under Pictures (small previews), PDFs and Audio; removing a student deletes their files
+
+### C1b: Storage limits
+- [x] 10 MB per file, 200 MB per teacher across all classrooms; "MB of your 200 MB used" line in the classroom
+- [x] User ran `0006_resource_limits.sql` in Supabase (2026-10-31; the file is re-runnable)
+- [x] Playwright set up (`e2e/`, `npm run test:e2e`, process in `AGENTS.md`); the browser test below is `e2e/c1b-storage-limits.spec.ts`. Needs the test teacher account in `.env.local` (user)
+- [x] Browser test (`e2e/c1b-storage-limits.spec.ts`, passes): a 15 MB file is refused, a 2.5 MB upload works, the "used" line rises and falls with upload and delete. Not tested: the 200 MB total (client check and the Storage policy)
+- [x] `npm run build` + `npm run lint`, merged to `main`
 
 ## L1: Tabbed call layout
 - [ ] Desktop: cameras stacked on the left | tabs in the middle | resource drawer on the right (teacher only, student lessons only, folds to an icon strip). Phone: tabs and small cameras, no drawer
@@ -91,6 +98,7 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 - [ ] Later: own domain (see "Before going commercial")
 
 ## Friends test
+- [ ] Before inviting anyone: separate dev Supabase + dev LiveKit projects (run migrations there first), Vercel Preview env vars point at dev, Production keys only in Vercel. The agent's `.env.local` gets dev keys only; agents open PRs instead of merging
 - [ ] Agree the date; invite friends; collect their feedback here
 
 # Open design work
