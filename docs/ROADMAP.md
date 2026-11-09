@@ -97,6 +97,7 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 - [ ] Later: own domain (see "Before going commercial")
 
 ## Friends test
+- [ ] Before inviting anyone: separate dev Supabase + dev LiveKit projects (run migrations there first), Vercel Preview env vars point at dev, Production keys only in Vercel. The agent's `.env.local` gets dev keys only; agents open PRs instead of merging
 - [ ] Agree the date; invite friends; collect their feedback here
 
 # Open design work
