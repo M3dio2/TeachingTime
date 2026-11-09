@@ -62,6 +62,7 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 ### C1b: Storage limits (branch `c1b-storage-limits`, not merged yet)
 - [x] 10 MB per file, 200 MB per teacher across all classrooms; "MB of your 200 MB used" line in the classroom
 - [x] User ran `0006_resource_limits.sql` in Supabase (2026-10-31; the file is re-runnable)
+- [x] Playwright set up (`e2e/`, `npm run test:e2e`, process in `AGENTS.md`); the browser test below is `e2e/c1b-storage-limits.spec.ts`. Needs the test teacher account in `.env.local` (user)
 - [ ] Browser test: a 10–20 MB file is refused, a normal upload works, the "used" line rises and falls with upload and delete. Optionally lower the 200 MB limit to 1 MB for a moment to test the total check, then put it back
 - [ ] `npm run build` + `npm run lint`, merge to `main`, push. Then start L1
 

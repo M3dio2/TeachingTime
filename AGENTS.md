@@ -54,11 +54,21 @@ S1–S3, P1 and C1 done (speed, sign-up, security, passwords, classroom). **Firs
 - CSS changes not showing in dev: stop the server, delete `.next/dev`, restart, hard-reload.
 
 ## Workflow
+The agent develops on its own and tests itself; the user decides function and design.
 - One milestone per session. Start by reading `docs/ROADMAP.md`.
-- After building: `npm run build` and `npm run lint` pass → the user tests with two browser windows (normal + incognito as student) → commit on a feature branch, merge to `main` (Vercel deploys from `main`) → tick the roadmap and update "Current milestone".
-- Commit and push only when the user asks. Never commit straight to `main`; branch first.
+- **Plan:** write a short spec for the milestone into the roadmap (what changes, open questions). Ask the user only real choices: behaviour, wording, design direction; decide the rest and note it.
+- **UX/UI changes:** ask the user first, with an **HTML mock-up** (claude.ai artifact or a file in `docs/mockups/`) before building. After building, send screenshots (desktop and phone) before merging.
+- **Build** on a feature branch. Never commit straight to `main`.
+- **Test:** `npm run build`, `npm run lint`, `npm run test:e2e` (Playwright, below) all pass. Add or extend a test in `e2e/` for each milestone. List what still needs a real device (real camera, phone, live site) for the user.
+- **Merge:** when the tests pass, the agent may commit, merge to `main` (Vercel deploys from `main`) and push without asking, except UI changes, which wait for the user's OK on the screenshots. Then tick the roadmap and update "Current milestone".
+
+## Browser tests (Playwright)
+- `npm run test:e2e` runs `e2e/*.spec.ts` against the running dev server, Chromium with a fake camera and mic. Teacher and student are two browser contexts in one test.
+- They log in as the **test teacher account** (`E2E_TEACHER_EMAIL` / `E2E_TEACHER_PASSWORD` in `.env.local`, pasted by the user) and use only its classroom and lesson titled **"Test"**. Never a real teacher's account or lesson.
+- Until the friends test this runs against production Supabase and LiveKit (user's decision); after it, against the dev projects.
+- First time on a machine: `npx playwright install chromium`. In the agent container the default browser folder isn't writable: set `PLAYWRIGHT_BROWSERS_PATH=/opt/data/.cache/ms-playwright`.
 - On the VPS the user tests through an SSH tunnel (`ssh -L 3000:localhost:3000 …`) and opens http://localhost:3000 on their own computer. Camera and mic only work on `localhost` or `https`, never on `http://<server-ip>`.
 - Branch switches can make a running `npm run dev` serve 404s. Restart it after committing.
-- **Playwright** may only join the lesson titled **"Test"**, and only after asking the user. Real lessons may have a teacher live in them.
+- **Playwright** may only join the lesson titled **"Test"** of the test teacher account (no need to ask). Real lessons may have a teacher live in them.
 - Keep it simple: small app, no premature abstractions.
 - Write anything the next session must know (open tests, half-done work) into `docs/ROADMAP.md`, not into an agent's private memory: the user switches between agents and machines.
