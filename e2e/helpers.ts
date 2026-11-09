@@ -27,4 +27,5 @@ export async function openTestClassroom(page: Page) {
   }
   await card.click();
   await page.waitForURL(/\/dashboard\/[0-9a-f-]+$/);
+  await expect(page.getByRole("heading", { name: "Files" })).toBeVisible({ timeout: 30_000 });
 }

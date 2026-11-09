@@ -3,6 +3,9 @@ import { logIn, openTestClassroom } from "./helpers";
 
 const MB = 1024 * 1024;
 
+// The upload error (not Next's hidden route announcer, which is role="alert" too).
+const uploadError = (page: Page) => page.locator('p[role="alert"]');
+
 // A valid (empty) PDF, padded to the wanted size with a comment.
 function pdf(bytes: number) {
   const head = "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n2 0 obj<</Type/Pages/Kids[]/Count 0>>endobj\ntrailer<</Root 1 0 R>>\n%%EOF\n%";
@@ -37,7 +40,7 @@ test("C1b: file and teacher storage limits", async ({ page }) => {
 
   // Over 10 MB: refused in the browser, nothing added.
   await upload(page, "e2e-too-big.pdf", 15 * MB);
-  await expect(page.getByRole("alert")).toHaveText("e2e-too-big.pdf is bigger than 10 MB.");
+  await expect(uploadError(page)).toHaveText("e2e-too-big.pdf is bigger than 10 MB.");
   await expect(page.getByText("e2e-too-big.pdf", { exact: true })).toHaveCount(0);
 
   // A normal upload works and the used line rises (2.5 MB: at least 2 MB more, rounded up).
@@ -46,7 +49,7 @@ test("C1b: file and teacher storage limits", async ({ page }) => {
   const row = page.getByRole("listitem").filter({ hasText: name });
   await expect(row).toBeVisible({ timeout: 30_000 });
   await expect(row).toContainText("2.5 MB");
-  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(uploadError(page)).toHaveCount(0);
   await expect.poll(() => usedMB(page)).toBeGreaterThanOrEqual(before + 2);
 
   // Delete: the file goes and the used line falls back.
