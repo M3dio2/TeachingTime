@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tab content</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Caveat:wght@500&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="position: absolute; inset: 0; overflow: auto; background: #FFFFFF; color: #3B2A1E; font-family: Geist, system-ui, sans-serif; font-size: 16px">
+
+<sc-if value="{{ isText }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; flex-direction: column; min-height: 100%">
+<div style="display: flex; align-items: center; gap: 2px; padding: 6px 12px; border-bottom: 1px solid #E6D9C8">
+<button class="ghost" aria-label="Bold" title="Bold" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; font-size: 15px; font-weight: 700">B</button>
+<button class="ghost" aria-label="Italic" title="Italic" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; font-size: 15px; font-style: italic; font-family: Georgia, serif">I</button>
+<button class="ghost" aria-label="Heading" title="Heading" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; font-size: 15px; font-weight: 600">H</button>
+<button class="ghost" aria-label="List" title="List" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h.01"></path><path d="M3 18h.01"></path><path d="M3 6h.01"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M8 6h13"></path></svg></button>
+<div style="flex: 1"></div>
+<span style="padding: 3px 10px; border-radius: 6px; background: #F3EBE0; color: {{ padChipColor }}; font-size: 13px; font-weight: 500; white-space: nowrap">{{ padChip }}</span>
+</div>
+<div style="flex: 1; padding: 28px clamp(16px, 6%, 48px)">
+<div style="max-width: 680px; font-size: 18px; line-height: 1.6">
+<h2 style="margin: 0 0 4px; font-size: 26px; line-height: 1.25; font-weight: 600">At the spa reception</h2>
+<p style="margin: 0 0 24px; color: #76604F; font-size: 16px">Tuesday's lesson</p>
+<h3 style="margin: 0 0 8px; font-size: 19px; font-weight: 600">New words</h3>
+<ul style="margin: 0 0 24px; padding-left: 24px">
+<li>appointment · <span style="color: #76604F">cita</span></li>
+<li>treatment · <span style="color: #76604F">tratamiento</span></li>
+<li>available · <span style="color: #76604F">disponible</span></li>
+<li>towel · <span style="color: #76604F">toalla</span></li>
+</ul>
+<h3 style="margin: 0 0 8px; font-size: 19px; font-weight: 600">Practice</h3>
+<ol style="margin: 0; padding-left: 24px">
+<li>I'd like to book a massage, please.</li>
+<li>Is 3 pm available?</li>
+<li>Your treatment starts at 3 pm.</li>
+</ol>
+<sc-if value="{{ showCursor }}" hint-placeholder-val="{{ false }}">
+<p style="margin: 16px 0 0">Can I have a towel, please?<span style="display: inline-block; width: 2px; height: 22px; margin-left: 2px; vertical-align: -4px; background: #8B5E3C"></span><span style="margin-left: 4px; padding: 1px 6px; border-radius: 4px; background: #FBEDB5; color: #6B4E0E; font-size: 12px; vertical-align: 2px">Anna</span></p>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDraw }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; background: #FFFFFF">
+<div style="position: absolute; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 2px; padding: 4px; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 10px; box-shadow: 0 4px 16px rgba(59, 42, 30, 0.08)">
+<button class="ghost" aria-label="Select" title="Select" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12.586 12.586 19 19"></path><path d="M3.688 3.037a.497.497 0 0 0-.651.651l6.5 15.999a.501.501 0 0 0 .947-.062l1.569-6.083a2 2 0 0 1 1.448-1.479l6.124-1.579a.5.5 0 0 0 .063-.947z"></path></svg></button>
+<button aria-label="Pen" title="Pen" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: #FBEDB5; color: #6B4E0E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></button>
+<button class="ghost" aria-label="Rectangle" title="Rectangle" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg></button>
+<button class="ghost" aria-label="Text" title="Text" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg></button>
+<button class="ghost" aria-label="Eraser" title="Eraser" disabled="{{ toolsDisabled }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"></path><path d="M22 21H7"></path><path d="m5 11 9 9"></path></svg></button>
+</div>
+<svg role="img" aria-label="Whiteboard sketch: a striped towel, the word towel circled in yellow, and two towels" width="600" height="340" viewBox="0 0 600 340" style="position: absolute; left: 50%; top: 54%; transform: translate(-50%, -50%); max-width: 92%; height: auto">
+<path d="M48 70 L250 66 L254 196 L52 200 Z" fill="none" stroke="#3B2A1E" stroke-width="2.5" stroke-linejoin="round"></path>
+<path d="M52 104 L252 100" fill="none" stroke="#3B2A1E" stroke-width="2"></path>
+<path d="M52 164 L253 160" fill="none" stroke="#3B2A1E" stroke-width="2"></path>
+<text x="330" y="140" font-family="Caveat, cursive" font-size="54" fill="#3B2A1E">towel</text>
+<ellipse cx="388" cy="124" rx="92" ry="42" fill="none" stroke="#F4D35E" stroke-width="6" transform="rotate(-4 388 124)"></ellipse>
+<path d="M300 130 C 285 132, 275 134, 262 134" fill="none" stroke="#3B2A1E" stroke-width="2.5" stroke-linecap="round"></path>
+<path d="M272 126 L261 134 L272 142" fill="none" stroke="#3B2A1E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+<text x="330" y="250" font-family="Caveat, cursive" font-size="40" fill="#76604F">one towel, two towels</text>
+</svg>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPdfMenu }}" hint-placeholder-val="{{ false }}">
+<div style="min-height: 100%; box-sizing: border-box; background: #F3EBE0; padding: 16px clamp(12px, 3%, 24px) 32px; display: flex; flex-direction: column; align-items: center; gap: 12px">
+<div style="width: 100%; max-width: 620px; display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: #76604F"><span>Page 1 of 3</span><span>{{ pageNote }}</span></div>
+<div style="width: 100%; max-width: 620px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 4px; padding: clamp(24px, 7%, 48px) clamp(20px, 8%, 56px); display: flex; flex-direction: column">
+<div style="font-size: 30px; font-weight: 600; letter-spacing: -0.01em">Spa menu</div>
+<div style="font-size: 15px; color: #76604F; margin: 4px 0 24px">Massages and treatments</div>
+<div style="display: flex; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid #E6D9C8"><span style="flex: 1; font-size: 17px">Swedish massage</span><span style="font-size: 15px; color: #76604F">50 min</span><span style="font-size: 15px; width: 72px; text-align: right">[PRICE]</span></div>
+<div style="display: flex; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid #E6D9C8"><span style="flex: 1; font-size: 17px">Hot stone massage</span><span style="font-size: 15px; color: #76604F">80 min</span><span style="font-size: 15px; width: 72px; text-align: right">[PRICE]</span></div>
+<div style="display: flex; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid #E6D9C8"><span style="flex: 1; font-size: 17px">Facial</span><span style="font-size: 15px; color: #76604F">50 min</span><span style="font-size: 15px; width: 72px; text-align: right">[PRICE]</span></div>
+<div style="display: flex; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid #E6D9C8"><span style="flex: 1; font-size: 17px">Manicure</span><span style="font-size: 15px; color: #76604F">45 min</span><span style="font-size: 15px; width: 72px; text-align: right">[PRICE]</span></div>
+<div style="display: flex; align-items: baseline; gap: 12px; padding: 12px 0; border-top: 1px solid #E6D9C8; border-bottom: 1px solid #E6D9C8"><span style="flex: 1; font-size: 17px">Foot massage</span><span style="font-size: 15px; color: #76604F">30 min</span><span style="font-size: 15px; width: 72px; text-align: right">[PRICE]</span></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPdfDialogue }}" hint-placeholder-val="{{ false }}">
+<div style="min-height: 100%; box-sizing: border-box; background: #F3EBE0; padding: 16px clamp(12px, 3%, 24px) 32px; display: flex; flex-direction: column; align-items: center; gap: 12px">
+<div style="width: 100%; max-width: 620px; display: flex; justify-content: space-between; gap: 8px; font-size: 13px; color: #76604F"><span>Page 1 of 2</span><span>{{ pageNote }}</span></div>
+<div style="width: 100%; max-width: 620px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 4px; padding: clamp(24px, 7%, 48px) clamp(20px, 8%, 56px); display: flex; flex-direction: column; gap: 14px; font-size: 17px; line-height: 1.5">
+<div style="font-size: 30px; font-weight: 600; letter-spacing: -0.01em; margin-bottom: 10px">Booking dialogue</div>
+<div><span style="font-weight: 600; color: #76604F">Receptionist:</span> Good afternoon. How can I help you?</div>
+<div><span style="font-weight: 600; color: #76604F">Guest:</span> I'd like to book a massage, please.</div>
+<div><span style="font-weight: 600; color: #76604F">Receptionist:</span> Of course. Is 3 pm OK?</div>
+<div><span style="font-weight: 600; color: #76604F">Guest:</span> Yes, that's perfect.</div>
+<div><span style="font-weight: 600; color: #76604F">Receptionist:</span> Here is your towel. Enjoy your treatment!</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isScreen }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; box-sizing: border-box; padding: 24px; background: #2E2620; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px">
+<div style="width: 100%; max-width: 760px; aspect-ratio: 16 / 10; background: #FFFFFF; border-radius: 8px; overflow: hidden; display: flex; flex-direction: column">
+<div style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; background: #F3EBE0">
+<span style="width: 10px; height: 10px; border-radius: 50%; background: #E6D9C8"></span><span style="width: 10px; height: 10px; border-radius: 50%; background: #E6D9C8"></span><span style="width: 10px; height: 10px; border-radius: 50%; background: #E6D9C8"></span>
+<span style="margin-left: 12px; flex: 1; max-width: 320px; height: 20px; border-radius: 6px; background: #FFFFFF; font-size: 12px; color: #76604F; display: flex; align-items: center; padding: 0 10px">Booking page</span>
+</div>
+<div style="flex: 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 16px">
+<div style="font-size: 22px; font-weight: 600">Book a treatment</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px">
+<div style="height: 80px; border-radius: 8px; background: #F3EBE0; padding: 12px; box-sizing: border-box; font-size: 15px; font-weight: 500">Massage</div>
+<div style="height: 80px; border-radius: 8px; background: #F3EBE0; padding: 12px; box-sizing: border-box; font-size: 15px; font-weight: 500">Facial</div>
+<div style="height: 80px; border-radius: 8px; background: #F3EBE0; padding: 12px; box-sizing: border-box; font-size: 15px; font-weight: 500">Manicure</div>
+</div>
+<div style="height: 12px; width: 70%; border-radius: 6px; background: #F3EBE0"></div>
+<div style="height: 12px; width: 50%; border-radius: 6px; background: #F3EBE0"></div>
+<div style="align-self: flex-start; padding: 8px 16px; border-radius: 6px; background: #8B5E3C; color: #FFFFFF; font-size: 14px">Choose a time</div>
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 12px; color: #F3EBE0; font-size: 14px">
+<span>{{ screenNote }}</span>
+<sc-if value="{{ teacher }}" hint-placeholder-val="{{ true }}"><button onClick="{{ stop }}" style="height: 32px; padding: 0 12px; border: 1px solid rgba(243, 235, 224, 0.45); border-radius: 6px; background: transparent; color: #FFFFFF; font-size: 14px">Stop sharing</button></sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isPicture }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; box-sizing: border-box; padding: 20px; background: #F3EBE0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px">
+<div style="width: min(640px, 100%); aspect-ratio: 4 / 3; max-height: calc(100% - 36px); box-sizing: border-box; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: #76604F">
+<svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"></path></svg>
+<span style="font-size: 15px; font-weight: 500; color: #3B2A1E">{{ picName }}</span>
+<span style="font-size: 12px">Picture placeholder</span>
+</div>
+<div style="font-size: 13px; color: #76604F">{{ picNote }}</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"kind":{"editor":"enum","options":["text","draw","screen","pdf-menu","pdf-dialogue","picture"],"default":"text"},"picName":{"editor":null,"tsType":"string"},"picNote":{"editor":null,"tsType":"string"},"onStop":{"editor":null,"tsType":"() => void"},"student":{"editor":"boolean","default":false},"showCursor":{"editor":"boolean","default":false},"padChip":{"editor":null,"tsType":"string"},"padChipColor":{"editor":null,"tsType":"string"},"pageNote":{"editor":null,"tsType":"string"},"screenNote":{"editor":null,"tsType":"string"},"$preview":{"width":880,"height":600}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props || {};
+    const kind = p.kind ?? 'text';
+    const student = !!p.student;
+    return {
+      isText: kind === 'text',
+      isDraw: kind === 'draw',
+      isScreen: kind === 'screen',
+      isPdfMenu: kind === 'pdf-menu',
+      isPdfDialogue: kind === 'pdf-dialogue',
+      isPicture: kind === 'picture',
+      picName: p.picName ?? 'towels.jpg',
+      picNote: p.picNote ?? 'Anna sees this picture',
+      stop: () => { if (typeof p.onStop === 'function') p.onStop(); },
+      teacher: !student,
+      showCursor: !!p.showCursor,
+      toolsDisabled: student,
+      padChip: p.padChip ?? 'Only you can write',
+      padChipColor: p.padChipColor ?? '#76604F',
+      pageNote: p.pageNote ?? 'Anna sees page 1',
+      screenNote: p.screenNote ?? "You're sharing your screen"
+    };
+  }
+}
+</script>
+</body>
+</html>

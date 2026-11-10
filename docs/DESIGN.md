@@ -2,6 +2,8 @@
 
 Read this before any UI work. When a change doesn't fit these rules, discuss it first instead of adding a one-off.
 
+The November 2026 redesign is the target: mock-ups in `docs/design/screens/`, details per screen in `docs/design/HANDOFF.md`. Parts marked *(L1)*, *(L2a)*, *(A1)* or *(S5)* aren't built yet (see `docs/ROADMAP.md`).
+
 ## Principles
 1. **Content first.**
    - The shared screen and the notes *are* the lesson, so they get the space.
@@ -13,15 +15,16 @@ Read this before any UI work. When a change doesn't fit these rules, discuss it 
      - danger: destructive actions or errors
      - ok: allowed or success
 3. **The teacher leads, the student follows easily.**
-   - Teacher-only controls sit in two fixed places, each next to what it affects:
-     - board header: (!) nudge and Clear (trash can)
-     - control bar, left of mic and camera: Mute student and "Student can edit" (pencil)
+   - The student sees what the teacher shows: the same open tabs, the same active tab, side by side or not, and Just talk. The student never configures anything to follow the lesson. *(L1; until then the (!) nudge switches the student's board.)*
+   - Teacher-only controls sit in two places, each next to what it affects:
+     - tab bar: + (open a tab), × on tabs, the layout switch, Just talk, and Clear in the board's own toolbar *(L1)*
+     - control bar, left of mic and camera: Mute student, "Student can edit" (pencil), share screen
+   - On phones the extra controls move into a ⋯ sheet *(L1)*.
    - Each one has a tooltip and an `aria-label`.
-   - The student never has to configure anything to follow the lesson.
-4. **Everyone owns their layout.**
-   - Panel sizes are personal and remembered in the browser.
-   - Nothing resizes or switches someone else's screen, except the teacher's explicit **(!)** nudge.
-   - Changes in L1 (`docs/ROADMAP.md`): the student's view will follow the teacher's tab, and the nudge goes away.
+   - Nothing changes the lesson by surprise: a new tab never silently replaces an open one (screen sharing is the one exception, see `HANDOFF.md`).
+4. **Everyone owns their sizes.**
+   - Panel sizes (camera column, files panel, the split between two tabs) are personal and remembered in the browser.
+   - The teacher decides *what* is shown, never *how big* it is on the student's screen.
 5. **Basic and consistent.**
    - One font, one radius scale, one spacing scale.
    - Reuse `components/ui/*` before adding new styles. If something is missing there, add it there.
@@ -70,9 +73,10 @@ These are defined in `app/globals.css` (`@theme`) and used as Tailwind classes, 
 A yellow marker used the way a teacher marks a text: one stroke at the right moment, drawn by hand.
 - **One marker gesture per screen:** an underline, a circle or a tick. Never two at once, and never a yellow background.
 - **Draw once, then rest.** A stroke draws itself when something new appears, then stays still. Only the loading line loops.
-- **Yellow means "look here":** the name, a waiting student, the active board tab, a (!) nudge. Buttons and errors keep their own colours.
+- **Yellow means "look here":** the name, a waiting student, the active tab, the arrow on an empty dashboard, small labels such as "On screen", "Playing" and "Following Laura" (`marker-soft`). Buttons and errors keep their own colours.
 - **Short motion:** under 1 s, easing out. With "reduce motion" switched on, strokes appear already drawn.
-- **During a call** only the tab underline and the (!) circle move. Nothing animates while people talk.
+- **During a call** only the active tab's underline moves. Nothing animates while people talk.
+- Which stroke each screen uses: `docs/design/HANDOFF.md`, "Marker strokes".
 - Use `components/ui/Marker.tsx` (shapes: `underline`, `circle`, `tick`, `wave`) rather than drawing new strokes.
 
 ## Components (`components/ui/`)
@@ -93,38 +97,56 @@ A yellow marker used the way a teacher marks a text: one stroke at the right mom
   - `JoinToast`: "Anna joined" at the top when someone arrives; camera tiles fade in.
   - `RoomMessage` with `tick`: "See you next time!" when the call has ended.
 - **Banner** (`components/room/StatusBanner.tsx`): info on `surface-2`, warning in amber tones, error in danger tones. Can be dismissed when the user can act on it.
+- **New in the redesign** (add them to `components/ui/` when first needed):
+  - **Tabs** *(L1)*: browser-style tabs in a `surface-2` bar. The open tab is `surface` and merges into the content; the active one gets the marker underline.
+  - **Segmented control:** two or more options in a `surface-2` track, the chosen one on `surface`. Used for phone tabs and the classroom's file filters.
+  - **Handle** *(L1)*: a resize `<button>` with an 8 px hit area and a thin `line` mark, `accent` on hover and focus, and arrow-key steps.
+  - **Sheet** *(L1)*: a phone bottom sheet with a `bg-video/45` backdrop, a `surface` panel with `rounded-t-2xl`, a grab bar and a close button.
+  - **Switch:** a `role="switch"` toggle, `ok` when on. Used for "Student can write and draw" on phones.
+  - **Label chip:** a small `rounded` label in `marker-soft`/`marker-ink` ("On screen", "Waiting") or `surface-2`/`ink-muted` ("In a tab", "View only").
 
-## Lesson layout
-Desktop (md and up), while someone shares their screen:
+## Lesson layout *(L1)*
+Desktop, 1280 px and wider (teacher):
 ```
-┌──────────────────────┬────────────────┐
-│  Screen stage        │ [Text][Draw] ⓘ │  ← board header: tabs left,
-│                      │                │    teacher controls right
-│                      │  notes / draw  │
-├──────────────────────┴────────────────┤  ← drag handles (line colour,
-│  [teacher cam] [student cam]           │    accent on hover)
-└───────────────────────────────────────┘
-  [Mute student] [✎] │ mic · camera · share screen · leave     ← ✎ and Mute student: teacher only
+┌────────┬┬──────────────────────────────────────┬┬──────────┐
+│ Anna   ││ ▶ Dialogue 2 ─────●──────── 0:42 ✕   ││ Anna's   │ ← audio bar (A1)
+│ camera ││ [Spa menu.pdf ✕][Text ✕]  pill ⧉ Talk││ files    │ ← tab bar: open tabs,
+├────────┤│ ┌───────────────┐┃┌───────────────┐   ││ PDFs     │   + (one tab only),
+│ You    ││ │ tab 1         │┃│ tab 2 (active)│   ││ Pictures │   layout switch
+└────────┘│ └───────────────┘┃└───────────────┘   ││ Audio    │
+          ││                                      ││          │
+          └┴──────────────────────────────────────┴┴──────────┘
+  ↑ handles: cameras · split between tabs · files
+  [T] Lesson with Anna      [Mute Anna] [✎ Anna can edit] │ mic · camera · share · leave
 ```
-When nobody shares, the stage shows the other person's camera large with a small self-view in
-the corner, and the camera strip is gone. Alone in the room, your own camera fills the stage:
-```
-┌──────────────────────┬────────────────┐
-│  Other person's      │ [Text][Draw] ⓘ │
-│  camera              │                │
-│              ┌─────┐ │  notes / draw  │
-│              │ me  │ │                │
-│              └─────┘ │                │
-└──────────────────────┴────────────────┘
-```
-- All dividers can be dragged. Sizes are saved per browser (the camera strip height only applies while sharing).
-- The board's size never depends on the camera tiles.
-- Phone (below 768 px):
-  - The screen share fills the stage, with the other person's camera overlapping it in a corner. Without a share, their camera fills the stage.
-  - There's no self-view (except while alone in the room, when your own camera fills the stage), the board is hidden for now, and there's no Share screen button.
+- **Tabs:** one or two open (Screen, Text, Draw, PDFs, pictures), side by side or one at a time. The student follows. All rules are in `docs/design/HANDOFF.md`.
+- **Sizes by window width:**
+  - 1280 px and wider: camera column 240 px, files panel 272 px.
+  - 1024–1279 px: camera column 200 px, files folded to icons.
+  - 768–1023 px: no camera column; small camera tiles float over the stage's corner.
+  - Each tab needs 320 px. When there isn't room for two, the stage switches to one at a time by itself.
+- **Handles:** all dividers can be dragged (cameras 160–360 px, files 220–400 px). Sizes are saved per browser.
+- **Just talk:** the two cameras fill the room.
+- **The student** has no files panel and no teacher controls.
+- **Phone (below 768 px):**
+  - camera tiles in a row, the audio bar, the tabs as a segmented control, then the active tab
+  - **teacher:** a bottom bar with mic, camera, Files (sheet), ⋯ (sheet with Mute, "Student can write and draw", Just talk) and Leave
+  - **student:** mic, camera and Leave
+  - no screen sharing and no side by side
+
+Until L1 is built, today's layout applies: the stage on the left (the shared screen, or the other person's camera large with a small self-view), the board on the right with [Text][Draw] and the (!) nudge and Clear, and a camera strip under both while sharing. On phones, the share or the other person's camera fills the stage, with no board, no self-view and no Share button.
+
+## Other pages *(S5)*
+- **Sign-in pages:** one layout. The form on the left, a short explanation of TeachingTime on a `surface-2` panel on the right; on phones, the form only.
+- **Dashboard:** classroom cards in a grid; a waiting student's card stands out (`ink` border, yellow offset shadow, circled "Waiting"); "Start a quick call" is the main button; the name in lessons sits in the top bar.
+- **Classroom:** the student and their link on the left, files on the right (drop area, filters, storage bar). Remove sits away from Start lesson.
+- **Join:** a camera and microphone check, one name field, one big button.
+- Details: `docs/design/HANDOFF.md`.
 
 ## Do / don't
 - **Do** use the tokens. **Don't** write hex colours or `neutral-*`, `blue-*` and similar in components.
-- **Do** keep teacher controls in their two places (board header, control bar). **Don't** scatter toggles across the screen.
+- **Do** keep teacher controls in their two places (tab bar, control bar). **Don't** scatter toggles across the screen.
+- **Do** let the teacher choose what a new tab replaces (drop on "Replace …", or close a tab first). **Don't** replace an open tab silently.
+- **Do** copy layout and copy from `docs/design/screens/`. **Don't** copy their raw colours, mock names or placeholder content.
 - **Do** say what to do next in messages. **Don't** show raw error text.
 - **Don't** add Tailwind size or colour classes on LiveKit `.lk-*` elements. Their CSS is unlayered and wins. Use LiveKit's CSS variables or inline `style` instead.

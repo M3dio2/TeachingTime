@@ -1,0 +1,629 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lesson room</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Caveat:wght@500&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#8B5E3C}a:hover{color:#6F4A2E}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:default}
+button:focus-visible{outline:2px solid #8B5E3C;outline-offset:2px}
+.row:hover{background:#FAF6F0}
+.ghost:hover{background:#F3EBE0}
+.handle:hover span,.handle:focus-visible span{background:#8B5E3C !important}
+</style>
+</helmet>
+<div style="height: 100vh; min-height: 640px; box-sizing: border-box; padding: 8px; display: flex; flex-direction: column; gap: 8px; background: #FAF6F0; color: #3B2A1E; font-family: Geist, system-ui, sans-serif; font-size: 16px">
+
+<sc-if value="{{ notJustTalk }}" hint-placeholder-val="{{ true }}">
+<div ref="{{ rowRef }}" style="flex: 1; min-height: 0; display: flex">
+
+<sc-if value="{{ showRail }}" hint-placeholder-val="{{ true }}">
+<div class="rail" style="flex: 0 0 {{ railW }}; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="position: relative; aspect-ratio: 4 / 3; background: #2E2620; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center">
+<div style="width: 68px; height: 68px; border-radius: 50%; background: #76604F; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 600">{{ otherInitial }}</div>
+<div style="position: absolute; left: 8px; bottom: 8px; display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; background: rgba(46, 38, 32, 0.85); color: #FFFFFF; font-size: 13px">
+<sc-if value="{{ otherMuted }}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="2" x2="22" y1="2" y2="22"></line><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"></path><path d="M5 10v2a7 7 0 0 0 12 5"></path><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"></path><path d="M9 9v3a3 3 0 0 0 5.12 2.12"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg></sc-if>
+<span>{{ other }}</span>
+</div>
+</div>
+<div style="position: relative; aspect-ratio: 4 / 3; background: #2E2620; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center">
+<div style="width: 68px; height: 68px; border-radius: 50%; background: #76604F; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 26px; font-weight: 600">{{ selfInitial }}</div>
+<div style="position: absolute; left: 8px; bottom: 8px; padding: 3px 8px; border-radius: 6px; background: rgba(46, 38, 32, 0.85); color: #FFFFFF; font-size: 13px">You</div>
+</div>
+</div>
+<button class="handle" aria-label="Resize the camera column" title="Drag to resize. Arrow keys work too." onPointerDown="{{ resizeRail }}" onKeyDown="{{ keyRail }}" style="flex: 0 0 8px; align-self: stretch; padding: 0; border: 0; background: transparent; cursor: col-resize; touch-action: none; display: flex; align-items: center; justify-content: center"><span style="width: 2px; height: 32px; border-radius: 1px; background: #E6D9C8"></span></button>
+</sc-if>
+
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 10px; overflow: hidden">
+
+<sc-if value="{{ hasAudio }}" hint-placeholder-val="{{ true }}">
+<div style="display: flex; align-items: center; gap: 12px; height: 44px; flex: 0 0 44px; padding: 0 12px; border-bottom: 1px solid #E6D9C8; background: #FFFFFF">
+<sc-if value="{{ teacher }}" hint-placeholder-val="{{ true }}">
+<button aria-label="{{ audioToggleLabel }}" title="{{ audioToggleLabel }}" onClick="{{ toggleAudio }}" style="width: 28px; height: 28px; flex: 0 0 28px; padding: 0; border: 0; border-radius: 50%; background: #8B5E3C; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center">
+<sc-if value="{{ audioPaused }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></sc-if>
+<sc-if value="{{ audioPlaying }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></sc-if>
+</button>
+</sc-if>
+<sc-if value="{{ student }}" hint-placeholder-val="{{ false }}"><span style="color: #76604F; display: inline-flex"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></span></sc-if>
+<span style="font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 300px">{{ audioName }}</span>
+<div style="position: relative; flex: 1; height: 4px; border-radius: 2px; background: #E6D9C8">
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: {{ audioPct }}; border-radius: 2px; background: #8B5E3C"></div>
+<div style="position: absolute; top: 50%; left: {{ audioPct }}; width: 12px; height: 12px; margin: -6px 0 0 -6px; box-sizing: border-box; border-radius: 50%; background: #F4D35E; border: 2px solid #3B2A1E"></div>
+</div>
+<span style="font-size: 13px; color: #76604F; font-variant-numeric: tabular-nums; white-space: nowrap">{{ audioTime }}</span>
+<sc-if value="{{ teacher }}" hint-placeholder-val="{{ true }}">
+<button class="ghost" aria-label="Stop the audio" title="Stop the audio" onClick="{{ stopAudio }}" style="width: 28px; height: 28px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #76604F; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+</sc-if>
+</div>
+</sc-if>
+
+<div style="display: flex; align-items: flex-end; gap: 8px; padding: 6px 8px 0; background: #F3EBE0; border-bottom: 1px solid #E6D9C8; flex: 0 0 auto">
+<div role="tablist" aria-label="Open tabs" style="display: flex; align-items: flex-end; gap: 2px; min-width: 0; overflow-x: auto">
+<sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+<div style="position: relative; display: flex; align-items: center; flex: 0 1 auto; min-width: 0; max-width: 240px; margin-bottom: -1px; border: 1px solid {{ t.border }}; border-bottom-color: {{ t.bottom }}; border-radius: 6px 6px 0 0; background: {{ t.bg }}">
+<button role="tab" aria-selected="{{ t.selected }}" disabled="{{ lockTabs }}" onClick="{{ t.pick }}" style="display: flex; align-items: center; gap: 8px; min-width: 0; height: 36px; padding: 0 12px; border: 0; background: transparent; color: {{ t.color }}; font-size: 14px; font-weight: {{ t.weight }}; white-space: nowrap">
+<sc-if value="{{ t.isScreen }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"></rect><line x1="8" x2="16" y1="21" y2="21"></line><line x1="12" x2="12" y1="17" y2="21"></line></svg></sc-if>
+<sc-if value="{{ t.isText }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg></sc-if>
+<sc-if value="{{ t.isDraw }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></sc-if>
+<sc-if value="{{ t.isPdf }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></sc-if>
+<sc-if value="{{ t.isPic }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"></path></svg></sc-if>
+<span style="overflow: hidden; text-overflow: ellipsis">{{ t.label }}</span>
+</button>
+<sc-if value="{{ t.canClose }}" hint-placeholder-val="{{ true }}">
+<button class="ghost" aria-label="{{ t.closeLabel }}" title="{{ t.closeLabel }}" onClick="{{ t.close }}" style="width: 24px; height: 24px; margin-right: 6px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #76604F; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 24px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg></button>
+</sc-if>
+<sc-if value="{{ t.marked }}" hint-placeholder-val="{{ false }}"><svg aria-hidden="true" width="100" height="8" viewBox="0 0 100 8" preserveAspectRatio="none" style="position: absolute; left: 10px; bottom: 1px; width: calc(100% - 20px); height: 8px; pointer-events: none"><path d="M2 5 C 22 2, 48 7, 70 4 S 92 3, 98 5" fill="none" stroke="#F4D35E" stroke-width="4" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></svg></sc-if>
+</div>
+</sc-for>
+</div>
+
+<sc-if value="{{ canAdd }}" hint-placeholder-val="{{ true }}">
+<div style="position: relative; flex: 0 0 auto; align-self: center; margin-bottom: 6px">
+<button class="ghost" aria-label="Open a tab" aria-expanded="{{ menuOpen }}" title="Open a tab" onClick="{{ toggleMenu }}" style="width: 30px; height: 30px; padding: 0; border: 0; border-radius: 6px; background: {{ plusBg }}; color: #3B2A1E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></button>
+<sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+<div role="menu" aria-label="Open a tab" style="position: absolute; top: 36px; left: 0; z-index: 30; width: 290px; box-sizing: border-box; padding: 6px; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 10px; box-shadow: 0 8px 24px rgba(59, 42, 30, 0.14); display: flex; flex-direction: column; gap: 2px">
+<div style="padding: 6px 10px 4px; font-size: 12px; font-weight: 600; color: #76604F">{{ menuTitle }}</div>
+<sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="2">
+<button role="menuitem" class="row" onClick="{{ m.open }}" style="display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; text-align: left; font-size: 14px; font-weight: 500; color: #3B2A1E">
+<sc-if value="{{ m.isScreen }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="20" height="14" x="2" y="3" rx="2"></rect><line x1="8" x2="16" y1="21" y2="21"></line><line x1="12" x2="12" y1="17" y2="21"></line></svg></sc-if>
+<sc-if value="{{ m.isText }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V4h16v3"></path><path d="M9 20h6"></path><path d="M12 4v16"></path></svg></sc-if>
+<sc-if value="{{ m.isDraw }}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path></svg></sc-if>
+<span style="flex: 1">{{ m.label }}</span>
+<span style="font-size: 12px; font-weight: 400; color: #76604F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px">{{ m.hint }}</span>
+</button>
+</sc-for>
+<sc-if value="{{ menuEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding: 8px 10px; font-size: 13px; color: #76604F">Text and Draw are already open.</div></sc-if>
+<div style="margin-top: 4px; padding: 8px 10px 6px; border-top: 1px solid #E6D9C8; font-size: 12px; line-height: 1.45; color: #76604F">PDFs and pictures open from Anna's files: click one, or drag it onto the stage.</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<div style="flex: 1; min-width: 0"></div>
+
+<div style="display: flex; align-items: center; gap: 8px; padding: 0 4px 6px; flex: 0 0 auto">
+<span style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; background: #FBEDB5; color: #6B4E0E; font-size: 13px; font-weight: 500; white-space: nowrap"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>{{ followNote }}</span>
+<sc-if value="{{ showLayoutToggle }}" hint-placeholder-val="{{ true }}">
+<div style="display: inline-flex; padding: 2px; gap: 2px; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF">
+<button aria-pressed="{{ isSplit }}" aria-label="Side by side" title="{{ splitTitle }}" disabled="{{ cantSplit }}" onClick="{{ setSplit }}" style="width: 30px; height: 26px; padding: 0; border: 0; border-radius: 4px; background: {{ splitBtnBg }}; color: {{ splitBtnColor }}; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M12 3v18"></path></svg></button>
+<button aria-pressed="{{ isSingle }}" aria-label="One at a time" title="One at a time" onClick="{{ setSingle }}" style="width: 30px; height: 26px; padding: 0; border: 0; border-radius: 4px; background: {{ singleBtnBg }}; color: {{ singleBtnColor }}; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect></svg></button>
+</div>
+</sc-if>
+<sc-if value="{{ teacher }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ toggleJustTalk }}" title="Fold the tabs away for both of you" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; font-size: 14px; font-weight: 500; white-space: nowrap"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>Just talk</button>
+</sc-if>
+</div>
+</div>
+
+<div ref="{{ paneAreaRef }}" style="position: relative; flex: 1; min-height: 0; display: flex; padding: {{ paneAreaPad }}; background: {{ paneAreaBg }}">
+
+<sc-if value="{{ showPip }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; top: 12px; right: 12px; z-index: 15; width: 148px; display: flex; flex-direction: column; gap: 6px; pointer-events: none">
+<div style="position: relative; aspect-ratio: 4 / 3; background: #2E2620; border: 2px solid #FFFFFF; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(59, 42, 30, 0.18)">
+<span style="width: 40px; height: 40px; border-radius: 50%; background: #76604F; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 600">{{ otherInitial }}</span>
+<span style="position: absolute; left: 6px; bottom: 6px; padding: 1px 6px; border-radius: 4px; background: rgba(46, 38, 32, 0.85); color: #FFFFFF; font-size: 12px">{{ other }}</span>
+</div>
+<div style="position: relative; width: 70%; align-self: flex-end; aspect-ratio: 4 / 3; background: #2E2620; border: 2px solid #FFFFFF; border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 16px rgba(59, 42, 30, 0.18)">
+<span style="width: 28px; height: 28px; border-radius: 50%; background: #76604F; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">{{ selfInitial }}</span>
+<span style="position: absolute; left: 4px; bottom: 4px; padding: 0 5px; border-radius: 4px; background: rgba(46, 38, 32, 0.85); color: #FFFFFF; font-size: 11px">You</span>
+</div>
+</div>
+</sc-if>
+
+<div style="flex: {{ p1Flex }}; min-width: 0; position: relative; border: {{ p1Border }}; border-radius: {{ paneRadius }}; overflow: hidden; background: #FFFFFF">
+<dc-import name="TabContent" kind="{{ p1Kind }}" pic-name="{{ p1Pic }}" student="{{ student }}" show-cursor="{{ showCursor }}" pad-chip="{{ padChip }}" pad-chip-color="{{ padChipColor }}" page-note="{{ pageNote }}" screen-note="{{ screenNote }}" pic-note="{{ picNote }}" on-stop="{{ toggleShare }}" hint-size="100%,100%"></dc-import>
+</div>
+
+<sc-if value="{{ isSplit }}" hint-placeholder-val="{{ true }}">
+<button class="handle" aria-label="Resize the two tabs" title="Drag to resize. Arrow keys work too." onPointerDown="{{ resizeSplit }}" onKeyDown="{{ keySplit }}" style="flex: 0 0 12px; align-self: stretch; padding: 0; border: 0; background: transparent; cursor: col-resize; touch-action: none; display: flex; align-items: center; justify-content: center"><span style="width: 4px; height: 40px; border-radius: 2px; background: #E6D9C8"></span></button>
+<div style="flex: {{ p2Flex }}; min-width: 0; position: relative; border: {{ p2Border }}; border-radius: 8px; overflow: hidden; background: #FFFFFF">
+<dc-import name="TabContent" kind="{{ p2Kind }}" pic-name="{{ p2Pic }}" student="{{ student }}" show-cursor="{{ showCursor }}" pad-chip="{{ padChip }}" pad-chip-color="{{ padChipColor }}" page-note="{{ pageNote }}" screen-note="{{ screenNote }}" pic-note="{{ picNote }}" on-stop="{{ toggleShare }}" hint-size="100%,100%"></dc-import>
+</div>
+</sc-if>
+
+<sc-if value="{{ showDrop }}" hint-placeholder-val="{{ false }}">
+<div style="position: absolute; inset: 0; z-index: 20; box-sizing: border-box; display: flex; gap: 8px; padding: 8px; background: rgba(250, 246, 240, 0.88)">
+<sc-for list="{{ dropZones }}" as="z" hint-placeholder-count="2">
+<div onDragOver="{{ z.over }}" onDrop="{{ z.drop }}" style="flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; box-sizing: border-box; border: 2px dashed {{ z.border }}; border-radius: 10px; background: {{ z.bg }}; text-align: center">
+<span style="width: 48px; height: 48px; border-radius: 50%; background: #F3EBE0; color: #8B5E3C; display: inline-flex; align-items: center; justify-content: center">
+<sc-if value="{{ z.isBeside }}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M12 3v18"></path><path d="M15.5 12h3"></path><path d="M17 10.5v3"></path></svg></sc-if>
+<sc-if value="{{ z.isReplace }}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M16 16h5v5"></path></svg></sc-if>
+</span>
+<span style="font-size: 16px; font-weight: 600; color: #3B2A1E">{{ z.title }}</span>
+<span style="font-size: 13px; color: #76604F">{{ z.sub }}</span>
+<sc-if value="{{ z.hot }}" hint-placeholder-val="{{ false }}">
+<span style="display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 6px; background: #FFFFFF; border: 1px solid #E6D9C8; box-shadow: 0 6px 16px rgba(59, 42, 30, 0.14); font-size: 13px; font-weight: 500; transform: rotate(-2deg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B5E3C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"></path></svg>{{ dragName }}<span style="padding: 1px 6px; border-radius: 4px; background: #FBEDB5; color: #6B4E0E; font-size: 12px">Drop to open</span></span>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+</div>
+</div>
+
+<sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ true }}">
+<button class="handle" aria-label="Resize Anna's files" title="Drag to resize. Arrow keys work too." onPointerDown="{{ resizeDrawer }}" onKeyDown="{{ keyDrawer }}" style="flex: 0 0 8px; align-self: stretch; padding: 0; border: 0; background: transparent; cursor: col-resize; touch-action: none; display: flex; align-items: center; justify-content: center"><span style="width: 2px; height: 32px; border-radius: 1px; background: #E6D9C8"></span></button>
+<aside class="drawer" aria-label="Anna's files" style="flex: 0 0 {{ drawerW }}; min-width: 0; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 10px; overflow: hidden">
+<div style="display: flex; align-items: center; justify-content: space-between; height: 43px; flex: 0 0 43px; padding: 0 8px 0 16px; background: #F3EBE0; border-bottom: 1px solid #E6D9C8">
+<span style="font-size: 15px; font-weight: 600">Anna's files</span>
+<button class="ghost" aria-label="Fold the files" title="Fold the files" onClick="{{ toggleFold }}" style="width: 32px; height: 32px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #76604F; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M15 3v18"></path><path d="m8 9 3 3-3 3"></path></svg></button>
+</div>
+<div style="flex: 1; min-height: 0; overflow: auto; padding: 12px 8px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-size: 13px; font-weight: 600; color: #76604F; padding: 0 8px 4px">PDFs</div>
+<sc-for list="{{ pdfFiles }}" as="f" hint-placeholder-count="2">
+<button class="row" draggable="true" onDragStart="{{ f.dragStart }}" onDragEnd="{{ dragEnd }}" onClick="{{ f.open }}" title="Click to open, or drag onto the stage" style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px; border: 0; border-radius: 6px; background: transparent; text-align: left; cursor: grab">
+<span style="width: 32px; height: 32px; flex: 0 0 32px; border-radius: 6px; background: #F3EBE0; color: #8B5E3C; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></span>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ f.name }}</span><span style="font-size: 12px; color: #76604F">{{ f.meta }}</span></span>
+<sc-if value="{{ f.hasStatus }}" hint-placeholder-val="{{ false }}"><span style="padding: 1px 6px; border-radius: 4px; background: {{ f.statusBg }}; font-size: 12px; font-weight: 500; color: {{ f.statusColor }}; white-space: nowrap">{{ f.status }}</span></sc-if>
+</button>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; padding: 0 8px">
+<div style="font-size: 13px; font-weight: 600; color: #76604F; padding-bottom: 2px">Pictures</div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ picFiles }}" as="f" hint-placeholder-count="3">
+<button draggable="true" onDragStart="{{ f.dragStart }}" onDragEnd="{{ dragEnd }}" onClick="{{ f.open }}" aria-label="{{ f.label }}" title="Click to open, or drag onto the stage" style="min-width: 0; padding: 0; border: 0; background: transparent; text-align: left; cursor: grab">
+<span style="position: relative; display: flex; aspect-ratio: 1; border-radius: 6px; background: #F3EBE0; color: #76604F; align-items: center; justify-content: center; outline: {{ f.outline }}; outline-offset: -2px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"></path></svg>
+<sc-if value="{{ f.onScreen }}" hint-placeholder-val="{{ false }}"><span style="position: absolute; left: 4px; bottom: 4px; padding: 0 4px; border-radius: 3px; background: #FBEDB5; color: #6B4E0E; font-size: 10px; font-weight: 600">On screen</span></sc-if>
+</span>
+<span style="display: block; font-size: 12px; color: #76604F; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ f.name }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<div style="font-size: 13px; font-weight: 600; color: #76604F; padding: 0 8px 4px">Audio</div>
+<sc-for list="{{ audioFiles }}" as="f" hint-placeholder-count="2">
+<div style="display: flex; align-items: center; gap: 10px; padding: 8px">
+<button aria-label="{{ f.label }}" title="{{ f.label }}" onClick="{{ f.toggle }}" style="width: 32px; height: 32px; flex: 0 0 32px; padding: 0; border: 0; border-radius: 50%; background: {{ f.btnBg }}; color: {{ f.btnColor }}; display: inline-flex; align-items: center; justify-content: center">
+<sc-if value="{{ f.notPlaying }}" hint-placeholder-val="{{ true }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"></polygon></svg></sc-if>
+<sc-if value="{{ f.playing }}" hint-placeholder-val="{{ false }}"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="14" y="4" width="4" height="16" rx="1"></rect><rect x="6" y="4" width="4" height="16" rx="1"></rect></svg></sc-if>
+</button>
+<span style="flex: 1; min-width: 0; display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ f.name }}</span><span style="font-size: 12px; color: #76604F">{{ f.len }}</span></span>
+<sc-if value="{{ f.playing }}" hint-placeholder-val="{{ false }}"><span style="padding: 1px 6px; border-radius: 4px; background: #FBEDB5; color: #6B4E0E; font-size: 12px; font-weight: 500">Playing</span></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+<div aria-live="polite" style="display: flex; gap: 8px; align-items: flex-start; padding: 10px 16px; border-top: 1px solid #E6D9C8; background: {{ hintBg }}; font-size: 13px; line-height: 1.4; color: {{ hintColor }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: 0 0 16px; margin-top: 1px"><circle cx="9" cy="12" r="1"></circle><circle cx="9" cy="5" r="1"></circle><circle cx="9" cy="19" r="1"></circle><circle cx="15" cy="12" r="1"></circle><circle cx="15" cy="5" r="1"></circle><circle cx="15" cy="19" r="1"></circle></svg><span>{{ drawerHint }}</span></div>
+</aside>
+</sc-if>
+
+<sc-if value="{{ drawerFolded }}" hint-placeholder-val="{{ false }}">
+<aside class="drawer" aria-label="Anna's files, folded" style="flex: 0 0 48px; margin-left: 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 6px 0; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 10px">
+<button class="ghost" aria-label="Show Anna's files" title="Show Anna's files" onClick="{{ toggleFold }}" style="width: 36px; height: 36px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #76604F; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M15 3v18"></path><path d="m10 15-3-3 3-3"></path></svg></button>
+<div style="width: 24px; height: 1px; background: #E6D9C8; margin: 4px 0"></div>
+<button class="ghost" aria-label="PDFs" title="PDFs" onClick="{{ toggleFold }}" style="width: 36px; height: 36px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #8B5E3C; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M16 13H8"></path><path d="M16 17H8"></path></svg></button>
+<button class="ghost" aria-label="Pictures" title="Pictures" onClick="{{ toggleFold }}" style="width: 36px; height: 36px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #8B5E3C; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"></rect><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"></path></svg></button>
+<button class="ghost" aria-label="Audio" title="Audio" onClick="{{ toggleFold }}" style="width: 36px; height: 36px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #8B5E3C; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></button>
+</aside>
+</sc-if>
+
+</div>
+</sc-if>
+
+<sc-if value="{{ justTalk }}" hint-placeholder-val="{{ false }}">
+<div style="flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 40px">
+<span style="padding: 3px 10px; border-radius: 6px; background: #FBEDB5; color: #6B4E0E; font-size: 14px; font-weight: 500">{{ justTalkNote }}</span>
+<sc-if value="{{ teacher }}" hint-placeholder-val="{{ true }}"><button onClick="{{ toggleJustTalk }}" style="height: 36px; padding: 0 14px; border: 0; border-radius: 6px; background: #8B5E3C; color: #FFFFFF; font-size: 14px; font-weight: 500">{{ showTabsLabel }}</button></sc-if>
+</div>
+<div style="flex: 1; min-height: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<div style="position: relative; background: #2E2620; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center">
+<div style="width: 128px; height: 128px; border-radius: 50%; background: #76604F; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 600">{{ otherInitial }}</div>
+<div style="position: absolute; left: 12px; bottom: 12px; padding: 4px 10px; border-radius: 6px; background: rgba(46, 38, 32, 0.85); color: #FFFFFF; font-size: 14px">{{ other }}</div>
+</div>
+<div style="position: relative; background: #2E2620; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center">
+<div style="width: 128px; height: 128px; border-radius: 50%; background: #76604F; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 600">{{ selfInitial }}</div>
+<div style="position: absolute; left: 12px; bottom: 12px; padding: 4px 10px; border-radius: 6px; background: rgba(46, 38, 32, 0.85); color: #FFFFFF; font-size: 14px">You</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<div style="display: flex; align-items: center; gap: 8px; height: 56px; flex: 0 0 56px; padding: 0 8px">
+<div style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px">
+<svg width="24" height="24" viewBox="0 0 32 32" aria-hidden="true" style="flex: 0 0 24px"><rect width="32" height="32" rx="7" fill="#3B2A1E"></rect><rect x="8" y="8" width="16" height="4.5" rx="1.5" fill="#F4D35E"></rect><rect x="13.75" y="8" width="4.5" height="17" rx="1.5" fill="#F4D35E"></rect></svg>
+<span style="font-size: 14px; color: #76604F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ lessonTitle }}</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center">
+<sc-if value="{{ teacher }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ toggleMute }}" title="Turn Anna's microphone off or on" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; font-size: 14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="2" x2="22" y1="2" y2="22"></line><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"></path><path d="M5 10v2a7 7 0 0 0 12 5"></path><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"></path><path d="M9 9v3a3 3 0 0 0 5.12 2.12"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg><span>{{ muteLabel }}</span></button>
+<button aria-pressed="{{ canEdit }}" onClick="{{ toggleCanEdit }}" title="Let Anna write and draw" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 14px; border: 1px solid {{ editBorder }}; border-radius: 6px; background: {{ editBg }}; color: {{ editColor }}; font-size: 14px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg><span>{{ editLabel }}</span></button>
+<div style="width: 1px; height: 24px; background: #E6D9C8; margin: 0 4px"></div>
+</sc-if>
+<button aria-label="Turn off your microphone" title="Microphone" style="width: 40px; height: 40px; padding: 0; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg></button>
+<button aria-label="Turn off your camera" title="Camera" style="width: 40px; height: 40px; padding: 0; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg></button>
+<sc-if value="{{ teacher }}" hint-placeholder-val="{{ true }}">
+<button aria-pressed="{{ sharing }}" aria-label="{{ shareLabel }}" title="{{ shareLabel }}" onClick="{{ toggleShare }}" style="width: 40px; height: 40px; padding: 0; border: 1px solid {{ shareBorder }}; border-radius: 6px; background: {{ shareBg }}; color: {{ shareColor }}; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 10 3-3 3 3"></path><path d="M12 13V7"></path><rect x="2" y="3" width="20" height="14" rx="2"></rect><path d="M12 17v4"></path><path d="M8 21h8"></path></svg></button>
+</sc-if>
+<button style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border: 0; border-radius: 6px; background: #B4442F; color: #FFFFFF; font-size: 14px; font-weight: 500"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" x2="9" y1="12" y2="12"></line></svg><span>Leave</span></button>
+</div>
+<div style="flex: 1"></div>
+</div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"studentView":{"editor":"boolean","default":false,"section":"View"},"sharing":{"editor":"boolean","default":false,"section":"View"},"oneTab":{"editor":"boolean","default":false,"section":"View"},"drawerFolded":{"editor":"boolean","default":false,"section":"View"},"justTalk":{"editor":"boolean","default":false,"section":"View"},"dragPreview":{"editor":"boolean","default":false,"section":"View"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this._onResize = () => {
+      const w = window.innerWidth;
+      if (w !== (this.state || {}).w) this.setState({ w: w });
+    };
+    window.addEventListener('resize', this._onResize);
+    this._onResize();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+  }
+  renderVals() {
+    const p = this.props || {};
+    const s = this.state || {};
+    const student = !!p.studentView;
+    const sharing = s.sharing ?? !!p.sharing;
+    const initTabs = p.oneTab ? (p.sharing ? ['screen'] : ['text']) : (p.sharing ? ['screen', 'text'] : ['pdf-menu', 'text']);
+    const tabs = s.tabs ?? initTabs;
+    const active = Math.max(0, Math.min(s.active ?? (tabs.length - 1), tabs.length - 1));
+    const layout = s.layout ?? 'split';
+    const w = s.w ?? ((typeof window !== 'undefined' && window.innerWidth) || 1440);
+    const showRail = w >= 960;
+    const railPx = s.railW ?? (w >= 1280 ? 240 : 200);
+    const folded = s.folded ?? (!!p.drawerFolded || w < 1280);
+    const drawerPx = s.drawerW ?? 272;
+    const drawerSpace = student ? 0 : (folded ? 56 : drawerPx + 8);
+    const stageW = w - 16 - (showRail ? railPx + 8 : 0) - drawerSpace;
+    const canSplit = stageW >= 2 * 320 + 28;
+    const isSplit = tabs.length === 2 && layout === 'split' && canSplit;
+    const ratio = s.ratio ?? 0.5;
+    const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+    const drag = (e, onMove) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      e.preventDefault();
+      const move = (ev) => onMove(ev.clientX);
+      const up = () => { window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); };
+      window.addEventListener('pointermove', move);
+      window.addEventListener('pointerup', up);
+    };
+    const arrow = (e, apply) => {
+      const d = e.key === 'ArrowRight' ? 1 : (e.key === 'ArrowLeft' ? -1 : 0);
+      if (!d) return;
+      e.preventDefault();
+      apply(d);
+    };
+    if (!this._rowRef) this._rowRef = (el) => { this._row = el; };
+    if (!this._paneRef) this._paneRef = (el) => { this._pane = el; };
+    const justTalk = s.justTalk ?? !!p.justTalk;
+    const canEdit = !!s.canEdit;
+    const muted = !!s.muted;
+    const menuOpen = !!s.menuOpen;
+    const preview = !!p.dragPreview && !s.dragging;
+    const dragging = s.dragging || (preview ? 'pic-towels' : null);
+    const over = s.dragging ? s.over : (preview ? 1 : null);
+
+    const LABEL = {
+      screen: 'Screen', text: 'Text', draw: 'Draw',
+      'pdf-menu': 'Spa menu.pdf', 'pdf-dialogue': 'Booking dialogue.pdf',
+      'pic-towels': 'towels.jpg', 'pic-reception': 'reception.jpg', 'pic-room': 'massage-room.jpg'
+    };
+    const META = { 'pdf-menu': '3 pages', 'pdf-dialogue': '2 pages' };
+    const labelOf = (id) => LABEL[id] || id;
+    const kindOf = (id) => (id && id.indexOf('pic-') === 0) ? 'picture' : id;
+    const activeLabel = labelOf(tabs[active]);
+    const clear = { menuOpen: false, dragging: null, over: null, justTalk: false };
+
+    const full = tabs.length >= 2;
+    const openTab = (id, where) => {
+      const t = tabs.slice();
+      const at = t.indexOf(id);
+      if (at !== -1) { this.setState(Object.assign({}, clear, { active: at })); return; }
+      if (where === 'auto' && full) {
+        this.setState({ fullHint: true, menuOpen: false });
+        clearTimeout(this._hintTimer);
+        this._hintTimer = setTimeout(() => this.setState({ fullHint: false }), 4000);
+        return;
+      }
+      let w = where === 'auto' ? (t.length < 2 ? 'beside' : active) : where;
+      if (w === 'beside' || w >= t.length) {
+        if (t.length < 2) {
+          t.push(id);
+          this.setState(Object.assign({}, clear, { tabs: t, active: t.length - 1, layout: 'split' }));
+          return;
+        }
+        w = active;
+      }
+      t[w] = id;
+      this.setState(Object.assign({}, clear, { tabs: t, active: w }));
+    };
+
+    const closeTab = (i) => {
+      const t = tabs.filter((x, j) => j !== i);
+      this.setState({ tabs: t, active: 0, menuOpen: false });
+    };
+
+    const toggleShare = () => {
+      if (sharing) {
+        const back = s.screenReplaced;
+        let t = (back && tabs.indexOf(back) === -1)
+          ? tabs.map((x) => (x === 'screen' ? back : x))
+          : tabs.filter((x) => x !== 'screen');
+        if (!t.length) t = ['text'];
+        this.setState({ sharing: false, screenReplaced: null, tabs: t, active: Math.min(active, t.length - 1) });
+        return;
+      }
+      const t = tabs.slice();
+      let act = t.indexOf('screen');
+      let replaced = null;
+      if (act === -1) {
+        if (t.length < 2) { t.unshift('screen'); act = 0; }
+        else { replaced = t[active]; t[active] = 'screen'; act = active; }
+      }
+      this.setState({ sharing: true, screenReplaced: replaced, tabs: t, active: act, layout: 'split', justTalk: false, menuOpen: false });
+    };
+
+    const tabVals = tabs.map((id, i) => {
+      const marked = i === active;
+      const shown = isSplit || marked;
+      const k = kindOf(id);
+      return {
+        label: labelOf(id),
+        selected: marked,
+        marked: marked,
+        isScreen: k === 'screen', isText: k === 'text', isDraw: k === 'draw',
+        isPdf: k.indexOf('pdf-') === 0, isPic: k === 'picture',
+        bg: shown ? '#FFFFFF' : 'transparent',
+        border: shown ? '#E6D9C8' : 'transparent',
+        bottom: shown ? '#FFFFFF' : 'transparent',
+        color: shown ? '#3B2A1E' : '#76604F',
+        weight: marked ? '600' : '500',
+        pick: () => this.setState({ active: i, menuOpen: false }),
+        canClose: !student && tabs.length > 1,
+        closeLabel: 'Close ' + labelOf(id),
+        close: () => closeTab(i)
+      };
+    });
+
+    const menuHint = 'Opens beside ' + activeLabel;
+    const cands = (sharing ? ['screen'] : []).concat(['text', 'draw']).filter((id) => tabs.indexOf(id) === -1);
+    const menuItems = cands.map((id) => ({
+      label: labelOf(id),
+      isScreen: id === 'screen', isText: id === 'text', isDraw: id === 'draw',
+      hint: menuHint,
+      open: () => openTab(id, 'auto')
+    }));
+
+    const onScreen = (tid) => isSplit ? tabs.indexOf(tid) !== -1 : tabs[active] === tid;
+    const startDrag = (tid) => (e) => {
+      try { e.dataTransfer.setData('text/plain', tid); e.dataTransfer.effectAllowed = 'copy'; } catch (err) {}
+      setTimeout(() => this.setState({ dragging: tid, over: null, menuOpen: false }), 0);
+    };
+    const pdfFiles = ['pdf-menu', 'pdf-dialogue'].map((tid) => {
+      const on = onScreen(tid);
+      const inTab = !on && tabs.indexOf(tid) !== -1;
+      return {
+        name: labelOf(tid),
+        meta: META[tid],
+        hasStatus: on || inTab,
+        status: on ? 'On screen' : 'In a tab',
+        statusBg: on ? '#FBEDB5' : '#F3EBE0',
+        statusColor: on ? '#6B4E0E' : '#76604F',
+        open: () => openTab(tid, 'auto'),
+        dragStart: startDrag(tid)
+      };
+    });
+    const picFiles = ['pic-towels', 'pic-reception', 'pic-room'].map((tid) => {
+      const on = onScreen(tid);
+      const isDragged = dragging === tid;
+      return {
+        name: labelOf(tid),
+        label: 'Open ' + labelOf(tid),
+        onScreen: on,
+        outline: isDragged ? '2px dashed #8B5E3C' : 'none',
+        open: () => openTab(tid, 'auto'),
+        dragStart: startDrag(tid)
+      };
+    });
+
+    const zoneDefs = tabs.length < 2
+      ? [
+          { where: 0, title: 'Replace ' + labelOf(tabs[0]), sub: 'Show it instead', beside: false },
+          { where: 'beside', title: 'Open beside ' + labelOf(tabs[0]), sub: 'Show both side by side', beside: true }
+        ]
+      : [
+          { where: 0, title: 'Replace ' + labelOf(tabs[0]), sub: 'Two tabs is the most', beside: false },
+          { where: 1, title: 'Replace ' + labelOf(tabs[1]), sub: 'Two tabs is the most', beside: false }
+
+        ];
+    const dropZones = zoneDefs.map((z, i) => {
+      const hot = over === i;
+      return {
+        title: z.title,
+        sub: z.sub,
+        isBeside: z.beside,
+        isReplace: !z.beside,
+        hot: hot,
+        border: hot ? '#8B5E3C' : '#76604F',
+        bg: hot ? '#FFFFFF' : 'rgba(255, 255, 255, 0.55)',
+        over: (e) => { e.preventDefault(); if (this.state && this.state.over !== i) this.setState({ over: i }); },
+        drop: (e) => {
+          e.preventDefault();
+          const id = (this.state && this.state.dragging) || null;
+          if (id) openTab(id, z.where); else this.setState({ dragging: null, over: null });
+        }
+      };
+    });
+
+    const AUDIO = {
+      dialogue2: { name: 'Dialogue 2 – Booking a massage.mp3', len: '2:10', at: '0:42', pct: 32 },
+      numbers: { name: 'Numbers 1–100.mp3', len: '3:45', at: '1:05', pct: 29 }
+    };
+    const audioId = s.audio === undefined ? 'dialogue2' : s.audio;
+    const a = audioId ? AUDIO[audioId] : null;
+    const paused = !!s.paused;
+    const audioFiles = Object.keys(AUDIO).map((id) => {
+      const playing = audioId === id && !paused;
+      return {
+        name: AUDIO[id].name,
+        len: AUDIO[id].len,
+        playing: playing,
+        notPlaying: !playing,
+        btnBg: playing ? '#8B5E3C' : '#F3EBE0',
+        btnColor: playing ? '#FFFFFF' : '#8B5E3C',
+        label: (playing ? 'Pause ' : 'Play ') + AUDIO[id].name,
+        toggle: () => this.setState(audioId === id ? { paused: !paused } : { audio: id, paused: false })
+      };
+    });
+
+    const p1Id = isSplit ? tabs[0] : tabs[active];
+    const p2Id = isSplit ? tabs[1] : tabs[0];
+    const focusBorder = '2px solid #8B5E3C';
+    const plainBorder = '2px solid #E6D9C8';
+    const other = student ? 'Laura' : 'Anna';
+    return {
+      rowRef: this._rowRef,
+      paneAreaRef: this._paneRef,
+      showRail: showRail,
+      showPip: !showRail,
+      railW: railPx + 'px',
+      drawerW: drawerPx + 'px',
+      p1Flex: isSplit ? ratio + ' 1 0' : '1 1 0',
+      p2Flex: (1 - ratio) + ' 1 0',
+      cantSplit: !canSplit,
+      splitTitle: canSplit ? 'Side by side' : 'Side by side needs a wider window',
+      resizeRail: (e) => {
+        const row = this._row; if (!row) return;
+        const left = row.getBoundingClientRect().left;
+        drag(e, (x) => this.setState({ railW: Math.round(clamp(x - left, 160, 360)) }));
+      },
+      resizeDrawer: (e) => {
+        const row = this._row; if (!row) return;
+        const right = row.getBoundingClientRect().right;
+        drag(e, (x) => this.setState({ drawerW: Math.round(clamp(right - x, 220, 400)) }));
+      },
+      resizeSplit: (e) => {
+        const el = this._pane; if (!el) return;
+        const r = el.getBoundingClientRect();
+        const min = Math.min(0.5, 320 / r.width);
+        drag(e, (x) => this.setState({ ratio: clamp((x - r.left) / r.width, min, 1 - min) }));
+      },
+      keyRail: (e) => arrow(e, (d) => this.setState({ railW: clamp(railPx + d * 16, 160, 360) })),
+      keyDrawer: (e) => arrow(e, (d) => this.setState({ drawerW: clamp(drawerPx - d * 16, 220, 400) })),
+      keySplit: (e) => arrow(e, (d) => this.setState({ ratio: clamp(ratio + d * 0.05, 0.25, 0.75) })),
+      student: student,
+      teacher: !student,
+      lockTabs: student,
+      tabs: tabVals,
+      canAdd: !student && !full,
+      menuOpen: menuOpen && !full,
+      toggleMenu: () => this.setState({ menuOpen: !menuOpen }),
+      plusBg: menuOpen ? '#FFFFFF' : 'transparent',
+      menuTitle: 'Open a tab',
+      drawerHint: s.fullHint ? 'Two tabs are open. Close one first, or drag the file onto a tab to replace it.' : (full ? 'Two tabs are open. Drag a file onto one to replace it.' : 'Click a PDF or picture to open it, or drag it onto the stage.'),
+      hintBg: s.fullHint ? '#F3EBE0' : 'transparent',
+      hintColor: s.fullHint ? '#3B2A1E' : '#76604F',
+      menuItems: menuItems,
+      menuEmpty: menuItems.length === 0,
+      showLayoutToggle: !student && tabs.length === 2,
+      isSplit: isSplit,
+      isSingle: !isSplit,
+      setSplit: () => this.setState({ layout: 'split' }),
+      setSingle: () => this.setState({ layout: 'single' }),
+      splitBtnBg: isSplit ? '#F3EBE0' : 'transparent',
+      splitBtnColor: isSplit ? '#8B5E3C' : '#76604F',
+      singleBtnBg: isSplit ? 'transparent' : '#F3EBE0',
+      singleBtnColor: isSplit ? '#76604F' : '#8B5E3C',
+      paneAreaPad: isSplit ? '8px' : '0',
+      paneAreaBg: isSplit ? '#FAF6F0' : '#FFFFFF',
+      paneRadius: isSplit ? '8px' : '0',
+      p1Kind: kindOf(p1Id),
+      p1Pic: labelOf(p1Id),
+      p2Kind: kindOf(p2Id),
+      p2Pic: labelOf(p2Id),
+      p1Border: isSplit ? (active === 0 ? focusBorder : plainBorder) : '0',
+      p2Border: active === 1 ? focusBorder : plainBorder,
+      showDrop: !student && !!dragging,
+      dropZones: dropZones,
+      dragName: dragging ? labelOf(dragging) : '',
+      dragEnd: () => setTimeout(() => this.setState({ dragging: null, over: null }), 0),
+      pdfFiles: pdfFiles,
+      picFiles: picFiles,
+      audioFiles: audioFiles,
+      sharing: sharing,
+      toggleShare: toggleShare,
+      shareLabel: sharing ? 'Stop sharing your screen' : 'Share your screen',
+      shareBg: sharing ? '#8B5E3C' : '#FFFFFF',
+      shareColor: sharing ? '#FFFFFF' : '#3B2A1E',
+      shareBorder: sharing ? '#8B5E3C' : '#E6D9C8',
+      justTalk: justTalk,
+      notJustTalk: !justTalk,
+      drawerOpen: !student && !folded,
+      drawerFolded: !student && folded,
+      toggleFold: () => this.setState({ folded: !folded }),
+      toggleJustTalk: () => this.setState({ justTalk: !justTalk, menuOpen: false }),
+      justTalkNote: student ? 'Laura folded the tabs. Just talking for now.' : 'Just talking. The tabs are folded for both of you.',
+      showTabsLabel: tabs.length === 1 ? 'Show the tab' : 'Show the 2 tabs',
+      other: other,
+      otherInitial: other.charAt(0),
+      selfInitial: student ? 'A' : 'L',
+      otherMuted: !student && muted,
+      followNote: student ? 'Following Laura' : 'Anna sees what you see',
+      canEdit: canEdit,
+      toggleCanEdit: () => this.setState({ canEdit: !canEdit }),
+      editLabel: canEdit ? 'Anna can edit' : 'Anna views only',
+      editBg: canEdit ? '#52703F' : '#FFFFFF',
+      editColor: canEdit ? '#FFFFFF' : '#3B2A1E',
+      editBorder: canEdit ? '#52703F' : '#E6D9C8',
+      muteLabel: muted ? 'Unmute Anna' : 'Mute Anna',
+      toggleMute: () => this.setState({ muted: !muted }),
+      padChip: student ? 'View only' : (canEdit ? 'Anna can write here' : 'Only you can write'),
+      padChipColor: (!student && canEdit) ? '#52703F' : '#76604F',
+      showCursor: canEdit && !student,
+      lessonTitle: 'Lesson with ' + other,
+      pageNote: student ? 'Laura chooses the page' : 'Anna sees page 1',
+      screenNote: student ? "Laura's screen" : "You're sharing your screen",
+      picNote: student ? 'Laura is showing this picture' : 'Anna sees this picture',
+      hasAudio: !!a,
+      audioName: a ? a.name : '',
+      audioTime: a ? a.at + ' / ' + a.len : '',
+      audioPct: a ? a.pct + '%' : '0%',
+      audioPaused: paused,
+      audioPlaying: !paused,
+      audioToggleLabel: paused ? 'Play the audio' : 'Pause the audio',
+      toggleAudio: () => this.setState({ paused: !paused }),
+      stopAudio: () => this.setState({ audio: null, paused: false })
+    };
+  }
+}
+</script>
+</body>
+</html>
