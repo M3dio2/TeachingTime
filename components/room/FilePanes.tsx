@@ -2,8 +2,12 @@
 
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { useEffect, useRef, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { MAX_BYTES, uploadResource } from "@/lib/files/uploadResource";
+import { allInk, clearInk, inkedPdf, type InkItem, type PickedTool, savedName, useInk } from "@/lib/room/pdfInk";
 import { type LoadedFile, useLoadedFile } from "@/lib/room/fileCache";
 import type { FileTab } from "@/lib/room/tabs";
+import { InkLayer, InkToolbar } from "./PdfInk";
 import { cap, type RoomModel } from "./roomModel";
 
 function Message({ children }: { children: string }) {
@@ -71,6 +75,7 @@ function openPdf(id: string, file: LoadedFile) {
 }
 
 const GAP = 12; // px between pages
+const TOOLBAR = 42 + GAP; // the writing toolbar above the header row
 const PAD = 16; // px around the pages
 const MAX_W = 900;
 
@@ -87,6 +92,39 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
   const teacher = model.role === "teacher";
   // Student: the teacher's position. Teacher: none (she leads).
   const followed = teacher ? undefined : model.sync.positionOf(id);
+  // L2b: writing on the pages. Scroll is the default, so the PDF scrolls as before.
+  const [tool, setTool] = useState<PickedTool>("scroll");
+  const ink = useInk(model.doc, id);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState<string | null>(null);
+
+  async function saveAsNew() {
+    if (!file?.bytes || !model.lessonId) return;
+    setSaving(true);
+    setSaved(null);
+    try {
+      const bytes = await inkedPdf(file.bytes, allInk(model.doc, id));
+      const name = savedName(model.names[id] ?? file.name);
+      if (bytes.byteLength > MAX_BYTES) throw new Error(`${name} is bigger than 10 MB.`);
+      const { data } = await createClient().auth.getUser();
+      if (!data.user) throw new Error("Log in again to save.");
+      const blob = Object.assign(new Blob([bytes as BlobPart], { type: "application/pdf" }), { name });
+      const done = await uploadResource({
+        teacherId: data.user.id,
+        lessonId: model.lessonId,
+        file: blob,
+        contentType: "application/pdf",
+        ext: "pdf",
+      });
+      if ("error" in done) throw new Error(done.error);
+      model.addFile?.({ id: done.id, kind: "pdf", name });
+      setSaved(`Saved as “${name}” in ${model.filesTitle}`);
+    } catch (e) {
+      setSaved(e instanceof Error ? e.message : "The PDF could not be saved. Please try again.");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   useEffect(() => {
     if (!file?.bytes) return;
@@ -114,7 +152,7 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
   heights.reduce((top, h, i) => {
     tops[i] = top;
     return top + h + GAP;
-  }, PAD + 28); // the header row above the first page
+  }, PAD + TOOLBAR + 28); // the toolbar and the header row above the first page
 
   const positionAt = (scrollTop: number) => {
     let i = 0;
@@ -160,7 +198,7 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
     <div
       ref={scroller}
       data-testid="pdf-scroller"
-      className="h-full overflow-y-auto bg-surface-2"
+      className="@container relative h-full overflow-y-auto bg-surface-2"
       onScroll={(e) => {
         const pos = positionAt(e.currentTarget.scrollTop);
         setPage(Math.floor(pos) + 1);
@@ -168,6 +206,14 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
       }}
     >
       <div className="mx-auto flex flex-col items-center" style={{ padding: PAD, gap: GAP, maxWidth: MAX_W + 2 * PAD }}>
+        <InkToolbar
+          tool={tool}
+          onTool={setTool}
+          canEdit={model.canEdit}
+          onClear={teacher ? () => clearInk(model.doc, id) : undefined}
+          onSave={teacher && model.files ? saveAsNew : undefined}
+          saving={saving}
+        />
         <div className="flex h-4 w-full justify-between gap-2 text-[13px] text-ink-muted">
           <span>
             Page {page} of {pages}
@@ -175,12 +221,34 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
           <span>{note}</span>
         </div>
         {heights.map((h, i) => (
-          <PdfPage key={i} doc={pdf.doc} index={i} width={pageW} height={h} root={scroller} />
+          <PdfPage key={i} doc={pdf.doc} index={i} width={pageW} height={h} root={scroller}>
+            <InkLayer
+              doc={model.doc}
+              file={id}
+              page={i}
+              items={ink.get(i) ?? NO_INK}
+              tool={tool}
+              canEdit={model.canEdit}
+              width={pageW}
+              height={h}
+            />
+          </PdfPage>
         ))}
       </div>
+      {saved && (
+        <p
+          role="status"
+          onAnimationEnd={() => setSaved(null)}
+          className="sticky bottom-3 mx-auto w-fit max-w-[90%] animate-[fade-away_6s_forwards] rounded-panel bg-ink px-3.5 py-2 text-sm text-white"
+        >
+          {saved}
+        </p>
+      )}
     </div>
   );
 }
+
+const NO_INK: [string, InkItem][] = [];
 
 function PdfPage({
   doc,
@@ -188,7 +256,9 @@ function PdfPage({
   width,
   height,
   root,
+  children,
 }: {
+  children?: React.ReactNode;
   doc: PDFDocumentProxy;
   index: number;
   width: number;
@@ -235,10 +305,11 @@ function PdfPage({
     <div
       ref={box}
       data-page={index + 1}
-      className="shrink-0 overflow-hidden rounded border border-line bg-surface"
+      className="relative shrink-0 overflow-hidden rounded border border-line bg-surface"
       style={{ width, height }}
     >
       {near && <canvas ref={canvas} aria-label={`Page ${index + 1}`} style={{ width: "100%", height: "100%" }} />}
+      {children}
     </div>
   );
 }

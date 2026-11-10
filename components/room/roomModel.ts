@@ -31,6 +31,7 @@ export type RoomModel = {
   actions?: TabActions;
   otherName: string; // the other person: "Anna" for the teacher, "Laura" for the student
   files?: RoomFile[]; // teacher in a student lesson only
+  addFile?: (file: RoomFile) => void; // teacher: a file saved during the lesson (L2b)
   filesTitle: string; // "Anna's files"
   onMute?: OnMute;
   lessonId?: string;

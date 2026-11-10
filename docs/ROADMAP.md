@@ -148,8 +148,16 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 - [x] Played as an extra LiveKit audio track (Web Audio), so the student hears it while the teacher's mic is muted
 
 ## L2b: Write and draw on PDFs
-- [ ] Per-page layer: pen, highlighter, text box, eraser. Strokes are vectors in the lesson Y.Doc, synced like the board; the student draws only when "student can edit" is on
-- [ ] Teacher: **Save as new PDF** (`pdf-lib` in the browser draws the strokes and text onto the original) → "Name (date).pdf" in the classroom. The original stays as it was
+**Built and merged; not fully tested yet:** no design existed, so it follows `docs/mockups/pdf-drawing.html` (decided solo). Needs a real-device check: Apple Pencil and finger on an iPad, phone, and the saved PDF opened in Preview / Acrobat.
+- [x] Per-page layer: pen, highlighter, text box, eraser. Strokes are vectors in the lesson Y.Doc, synced like the board; the student draws only when "student can edit" is on
+- [x] Teacher: **Save as new PDF** (`pdf-lib` in the browser draws the strokes and text onto the original) → "Name (date).pdf" in the classroom. The original stays as it was
+
+### L2b plan (branch `l2b-pdf-drawing`; no design in `docs/design/`, so the mock-up is `docs/mockups/pdf-drawing.html`)
+- **Toolbar:** floating at the top of the PDF tab, like the Draw tab's: Scroll (the default, so the PDF scrolls as before), Pen, Highlighter, Text, Eraser; the teacher also gets Clear (this PDF's writing, for both) and **Save as new PDF**. The active tool is `marker-soft` like the whiteboard's. Without "student can edit" the student's tools are disabled.
+- **Data:** one flat `Y.Map` `pdfInk` in the lesson Y.Doc, keyed by item id: `{ file, page, tool: "pen" | "highlighter" | "text", pts: [x, y, …] | text, at: [x, y] }`. Coordinates are fractions of the page width (both axes), so every screen size lines up. Flat keys can't clash when both draw at once; the eraser deletes keys. Saved with the board like the rest of the doc, so a classroom's writing is still there next week.
+- **Drawing:** pointer events on an SVG layer over each page. With a tool picked the layer takes the touches (`touch-action: none`); with Scroll it lets them through. A stroke is sent when the pen lifts (not point by point). Pen: `ink`, thin. Highlighter: `marker`, wide, see-through. Text: click, type, Enter. Eraser: drag over an item.
+- **Save as new PDF** (teacher, student lessons): `pdf-lib` loads the original bytes and draws each item (`drawSvgPath`, `drawText`), then uploads "Name (10 Nov 2026).pdf" to the classroom like an upload (same 10 MB / 200 MB limits) and adds it to the files panel. The original stays as it was.
+- **Tests:** `e2e/l2b-pdf-drawing.spec.ts`: the teacher draws a pen stroke and a text on page 1, the student sees both; with "student can edit" off the student's tools are disabled; the eraser removes a stroke; Save as new PDF adds a file to the panel whose PDF has the drawings (checked with pdf-lib: content stream grew, same page count). Real devices: Apple Pencil / finger on iPad, phone.
 
 ## S5: UX/UI polish
 - [x] Build the redesign of the other pages (`docs/design/HANDOFF.md`, "Other pages"), each on its own branch if it's big:

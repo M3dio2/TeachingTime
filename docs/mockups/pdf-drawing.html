@@ -1,0 +1,45 @@
+<!doctype html>
+<!-- L2b mock-up: writing on a PDF tab. Raw colours are fine here (mock-ups only); the build uses tokens. -->
+<html lang="en"><head><meta charset="utf-8"><title>L2b: write and draw on PDFs</title>
+<style>
+body{margin:0;font:15px/1.4 Geist,system-ui,sans-serif;background:#FAF6F0;color:#3B2A1E;display:flex;flex-direction:column;gap:28px;padding:28px}
+h2{margin:0 0 8px;font:800 18px "Bricolage Grotesque",Geist,sans-serif}
+.pane{position:relative;width:760px;height:520px;background:#F3EBE0;border:1px solid #E6D9C8;border-radius:10px;overflow:hidden}
+.bar{position:absolute;top:12px;left:50%;transform:translateX(-50%);display:flex;gap:2px;align-items:center;padding:4px;background:#fff;border:1px solid #E6D9C8;border-radius:10px;box-shadow:0 4px 16px rgba(59,42,30,.08);z-index:2}
+.bar button{width:32px;height:32px;border:0;border-radius:6px;background:transparent;color:#3B2A1E;font-size:13px}
+.bar button.on{background:#FBEDB5;color:#6B4E0E}
+.bar .sep{width:1px;height:20px;background:#E6D9C8;margin:0 4px}
+.bar .save{width:auto;padding:0 10px;font-weight:600}
+.bar .danger{color:#B4442F}
+.head{position:absolute;top:60px;left:40px;right:40px;display:flex;justify-content:space-between;font-size:13px;color:#76604F}
+.page{position:absolute;top:84px;left:40px;width:680px;height:420px;background:#fff;border:1px solid #E6D9C8;border-radius:4px}
+.toast{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);background:#3B2A1E;color:#fff;padding:8px 14px;border-radius:8px;font-size:14px}
+.note{color:#76604F;max-width:760px}
+</style></head><body>
+<section><h2>Teacher: Pen picked, Save as new PDF on the right</h2>
+<div class="pane">
+ <div class="bar" role="toolbar" aria-label="Write on the PDF">
+  <button title="Scroll">✋</button><button class="on" title="Pen">✎</button><button title="Highlighter">▬</button><button title="Text">T</button><button title="Eraser">⌫</button>
+  <span class="sep"></span><button class="danger" title="Clear the writing on this PDF for both of you">🗑</button>
+  <span class="sep"></span><button class="save">⬇ Save as new PDF</button>
+ </div>
+ <div class="head"><span>Page 1 of 3</span><span>Anna sees page 1</span></div>
+ <div class="page">
+  <svg viewBox="0 0 680 420" width="680" height="420">
+   <text x="40" y="60" font-size="26" font-weight="700" fill="#3B2A1E">Spa menu</text>
+   <text x="40" y="110" font-size="17" fill="#3B2A1E">Hot stone massage ........ 60 min</text>
+   <text x="40" y="145" font-size="17" fill="#3B2A1E">Facial treatment ........... 45 min</text>
+   <path d="M36 138 L330 138" stroke="#F4D35E" stroke-width="16" stroke-linecap="round" opacity=".5"/>
+   <path d="M330 100 C 360 90, 380 100, 372 122 C 365 140, 340 128, 352 112" stroke="#3B2A1E" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+   <text x="390" y="116" font-size="16" fill="#3B2A1E">= 1 hour</text>
+  </svg>
+ </div>
+ <div class="toast">Saved as “Spa menu (10 Nov 2026).pdf” in Anna's files</div>
+</div></section>
+<section><h2>Student without “can edit”: tools greyed out, the page follows the teacher</h2>
+<div class="pane" style="height:200px">
+ <div class="bar" style="opacity:.55"><button title="Scroll">✋</button><button title="Pen">✎</button><button title="Highlighter">▬</button><button title="Text">T</button><button title="Eraser">⌫</button></div>
+ <div class="head"><span>Page 1 of 3</span><span>Laura chooses the page</span></div>
+</div></section>
+<p class="note">Scroll is the default tool, so the PDF scrolls as before. With a tool picked, a finger or pencil draws instead of scrolling. Writing is saved with the lesson; “Save as new PDF” makes a copy with the writing in the classroom, and the original stays as it was.</p>
+</body></html>

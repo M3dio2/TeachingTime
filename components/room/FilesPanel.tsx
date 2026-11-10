@@ -210,7 +210,7 @@ export function FileList({
                   if (kind === "audio") return <AudioRow key={f.id} file={f} model={model} />;
                   const status = fileStatus(model, tabOf(f)!);
                   return (
-                    <li key={f.id}>
+                    <li key={f.id} data-file-id={f.id}>
                       <button
                         {...fileProps(f)}
                         className="flex w-full cursor-grab items-center gap-2.5 rounded-md p-2 text-left hover:bg-paper focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"

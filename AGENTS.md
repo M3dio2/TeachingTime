@@ -15,7 +15,7 @@ Instructions for every agent (Claude Code via `CLAUDE.md`, Hermes etc. directly)
 1-on-1 video lessons, one English teacher and one student: Google Meet plus screen share with both cameras visible, a shared text pad and whiteboard that sync instantly, and a teacher switch for whether the student may edit them.
 
 ## Current milestone
-S1–S3, P1, C1, C1b, L1, L2a, A1, D5d and the S5 page redesign done (all still need their real-device test, see the roadmap). Next: **L2b (write and draw on PDFs)**, the rest of S5 (walkthrough, real phone test), S6, friends test (date to agree). Update this line when a milestone is done.
+S1–S3, P1, C1, C1b, L1, L2a, L2b, A1, D5d and the S5 page redesign done (all still need their real-device test, see the roadmap). Next: the rest of S5 (walkthrough with the user, real phone test), S6, friends test (date to agree). Update this line when a milestone is done.
 
 ## Read first
 - `docs/ROADMAP.md` every session; one milestone per session.
@@ -68,6 +68,7 @@ The agent develops on its own and tests itself; the user decides function and de
 - Branch switches can make `npm run dev` serve 404s: restart it after committing.
 
 ## Browser tests (Playwright)
+- Name lookups are substring matches: use `exact: true` for headings like "Your classrooms" (the loading screen says "Loading your classrooms").
 - `npm run test:e2e` runs `e2e/*.spec.ts` against the running dev server: Chromium with a fake camera and mic, teacher and student as two browser contexts in one test.
 - They log in as the **test teacher account** (`E2E_TEACHER_EMAIL` / `E2E_TEACHER_PASSWORD` in `.env.local`, pasted by the user) and use only its classroom and lesson titled **"Test"** (no need to ask). Never a real teacher's account or lesson: real lessons may have a teacher live in them.
 - Until the friends test this runs against production Supabase and LiveKit (user's decision); after it, against the dev projects.
