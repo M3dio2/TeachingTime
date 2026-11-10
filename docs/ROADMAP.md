@@ -78,6 +78,43 @@ Design and rules: `docs/design/HANDOFF.md` ("Lesson room"), screens `Main`, `Roo
 - [x] Rewrite `docs/DESIGN.md` principles 3–4 and the layout part (done with the redesign, Nov 2026)
 - [ ] Update `docs/ARCHITECTURE.md` (teacher settings hook, nudge removed)
 
+### L1 plan (branch `l1-tabbed-call`)
+**Synced state.** `lib/sync/useStudentCanEdit.ts` becomes `lib/sync/useTeacherSettings.ts` (keeps `isTeacher`): one hook, one `setAttributes` call with every key whenever one changes. The teacher writes, the student only reads (from the participant whose token says `teacher`). Attributes are strings:
+- `studentCanEdit`: `"true"` / `"false"` (existing key, unchanged)
+- `tabs`: JSON array of 1–2 tab ids, e.g. `["screen","text"]`. Ids: `screen`, `text`, `draw` (L2a adds `pdf:<resourceId>`, `image:<resourceId>`)
+- `active`: `"0"` / `"1"`
+- `layout`: `"split"` / `"single"` (the teacher's choice; a phone teacher publishes `single`, since that's what she sees)
+- `justTalk`: `"true"` / `"false"`
+
+The student validates what it reads (known ids only, no duplicates, at most two, `active` in range; otherwise `["text"]`). Every join starts with `["text"]`, split, not Just talk, editing off. When the teacher drops out, the student keeps the last tabs (no jump on a reconnect) but editing goes off, as today.
+
+**Tab rules** in a pure module, `lib/room/tabs.ts` (open, close, pick, layout, screen started / stopped), ported from `Main.dc.html`. Only the teacher's client runs them. It watches the room's screen-share track: when one appears, Screen opens to the left of a single tab, or takes the active tab's place and remembers that tab; when sharing stops, Screen closes and the remembered tab comes back. Starting to share ends Just talk. Closing Screen while still sharing puts Screen back in the + menu. Only the teacher shares (Share isn't in the student's bar in the mock-ups or in `DESIGN.md`): **change**, the student loses the Share button.
+
+**Files (new or rewritten):**
+- `lib/room/tabs.ts`, `lib/sync/useTeacherSettings.ts`, `lib/useStoredSize.ts` (localStorage sizes)
+- `components/room/`: `LessonRoom.tsx` (doc, sync, picks desktop or phone), `DesktopRoom.tsx` (camera column | stage | files, breakpoints, handles), `Stage.tsx` (tab bar, + menu, ×, layout switch, pill, Just talk, panes), `TabPane.tsx` (Screen / Text / Draw), `FilesPanel.tsx` (list + folded strip), `JustTalk.tsx`, `CameraTiles.tsx` (column, floating, phone row, Just talk), `PhoneLayout.tsx` (teacher and student), `RoomControls.tsx` (title on the left; Mute Anna, "Anna can edit", mic, camera, share, Leave)
+- `components/ui/`: `Handle.tsx`, `Sheet.tsx`, `Switch.tsx`, `Chip.tsx`, `Segmented.tsx` (all from `DESIGN.md`)
+- `components/board/TextPad.tsx`, `Whiteboard.tsx`: Clear in their own toolbars (Excalidraw's `renderTopRightUI`), the "Only you can write" / "Anna can write here" / "View only" chip
+- `lib/sync/clearLesson.ts`: split into `clearText` and `clearBoard`
+- `app/lesson/[id]/page.tsx`: also loads the lesson title and its files (id, kind, name, size; student lessons only)
+- Removed: `lib/sync/useNudge.ts`, `components/ui/TabBar.tsx`, the `react-resizable-panels` dependency (the new handles are plain buttons with pixel limits)
+
+**Panes.** Each pane is keyed by its tab id, so a tab moving sides doesn't reload. The text pad stays mounted while its tab is open; the whiteboard mounts only while visible (Excalidraw can't measure a hidden canvas, as today). Side-by-side needs a measured stage width of 2 × 320 + 28 px (ResizeObserver, not window maths), on the teacher's and the student's screen separately.
+
+**Sizes.** Breakpoints from `HANDOFF.md`: ≥1280 column 240 / files 272 open; 1024–1279 column 200 / files folded; 768–1023 floating cameras (148 px), files folded; <768 phone. (`Main.dc.html` hides the column below 960; `HANDOFF.md` says 1024, which wins.) Stored per browser: column width, files width, split ratio, and files folded once the user toggles it (until then the breakpoint decides).
+
+**Files panel in L1** lists PDFs, pictures (small previews) and audio by name, and folds to the icon strip. Rows aren't clickable or draggable yet, and the footer hint is left out until L2a, so nothing promises an action that doesn't exist. Quick calls have no panel and no phone Files button.
+
+**Phone.** Teacher: camera row (16:9), segmented tabs (+ opens Text or Draw, whichever is closed; × on both while two are open), the active tab, bar with mic, camera, Files, ⋯, Leave (48 px). Files sheet = the list; ⋯ sheet = Mute, "Anna can write and draw" switch, Just talk, "Screen sharing and side by side need a computer." Student: camera row, "Laura shows two tabs" + "Following Laura", a two-way switch she may tap (starts on the teacher's active tab, jumps when the teacher switches or changes the tabs), the active tab, mic, camera, Leave.
+
+**Decided (user, 10 Nov):** Clear moves into the Text and Draw toolbars; a phone student may tap between the teacher's two tabs.
+
+**Tests.**
+- `e2e/l1-tab-rules.spec.ts` (no browser): the rules in `lib/room/tabs.ts`: never more than two, + only with one, the last tab can't close, Screen in and out with and without a remembered tab, closing Screen while sharing.
+- `e2e/l1-tabbed-call.spec.ts`: teacher (test account, lesson "Test") and student contexts. Teacher opens Draw → the student sees two tabs and Draw active; teacher picks Text → the student follows; one at a time → the student's layout follows; the + is gone with two tabs and a third can't be opened; closing a tab follows; Just talk folds and "Show the tabs" restores for both. Screen share with Chromium's fake capture (`--auto-select-desktop-capture-source`) if it works headless; otherwise the share rules stay covered by the rules spec and go on the real-device list. Resizing: a handle moved with the arrow keys keeps its width after a reload; at 1100 px the files are folded; at 900 px the cameras float; a narrow stage switches to one at a time by itself.
+- Phone (390 × 844): teacher opens a second tab with +; the student switches tabs and jumps back when the teacher switches.
+- Then `npm run build`, `npm run lint`, `npm run test:e2e`; screenshots of teacher and student on desktop (1440, 1100, 900) and phone.
+
 ## L2a: PDF and picture tabs
 - [ ] Teacher clicks a PDF or picture in the files panel, or drags it onto the stage (drop areas "Replace …" / "Open beside …") → it opens as a tab for both (`pdfjs-dist` for PDFs, pages load as you scroll). With two tabs open, clicking only shows a hint; dragging onto "Replace …" works
 - [ ] Student access without a login: `/api/resource-url` takes the invite slug and a file id, checks that the file belongs to that lesson, and returns a signed URL valid for a few minutes
