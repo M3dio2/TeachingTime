@@ -2,9 +2,10 @@ import { Video } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
-import { AutoRefresh, ConfirmSubmit, LocalDate } from "@/components/dashboard/DashboardBits";
+import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } from "@/components/dashboard/DashboardBits";
 import { CardMenu, NameChip } from "@/components/dashboard/DashboardMenus";
-import Button, { buttonClass } from "@/components/ui/Button";
+import { buttonClass } from "@/components/ui/Button";
+import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
 import Field from "@/components/ui/Field";
 import Marker from "@/components/ui/Marker";
 import Wordmark from "@/components/ui/Wordmark";
@@ -21,7 +22,7 @@ const QUICK_CALL_GRACE_MS = 2 * 60 * 1000;
 // cards and an "Add a classroom" card.
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<p className="p-8 text-ink-muted">Loading…</p>}>
+    <Suspense fallback={<DashboardLoading />}>
       <Dashboard />
     </Suspense>
   );
@@ -81,15 +82,16 @@ async function Dashboard() {
   return (
     <div className="flex min-h-dvh flex-1 flex-col">
       <AutoRefresh />
+      <DoneLeaving />
       <header className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-4 px-[clamp(16px,4vw,32px)] py-5">
         {/* First visit: the arrow doodle is the page's marker stroke, so no underline here. */}
         <Wordmark underline={firstVisit ? "none" : "draw"} />
         <div className="flex items-center gap-2">
           <NameChip name={teacherName} />
           <form action={signOut}>
-            <Button variant="ghost" size="sm" className="h-9 text-ink!">
+            <SubmitButton variant="ghost" size="sm" className="h-9 text-ink!" pending="Logging out…">
               Log out
-            </Button>
+            </SubmitButton>
           </form>
         </div>
       </header>
@@ -119,7 +121,10 @@ async function Dashboard() {
               </Link>
               <form action={removeLesson}>
                 <input type="hidden" name="id" value={call.id} />
-                <ConfirmSubmit message="End this quick call? The student link will stop working.">
+                <ConfirmSubmit
+                  message="End this quick call? The student link will stop working."
+                  pending={<span className="text-danger">Ending…</span>}
+                >
                   <span className="text-danger">End call</span>
                 </ConfirmSubmit>
               </form>
@@ -135,10 +140,11 @@ async function Dashboard() {
             </p>
           </div>
           <form action={startQuickCall} className="flex w-full flex-col items-stretch gap-1.5 md:w-auto md:items-end">
-            <Button className="h-12 px-[18px] font-semibold md:h-11">
+            <LessonStartScreen />
+            <SubmitButton className="h-12 px-[18px] font-semibold md:h-11" pending="Starting…">
               <Video size={16} aria-hidden />
               {quickCalls.length ? "Start a new quick call" : "Start a quick call"}
-            </Button>
+            </SubmitButton>
             <span className="text-[13px] text-ink-muted">
               {quickCalls.length
                 ? "Ends the call above and starts a fresh one."
@@ -215,7 +221,9 @@ function Welcome() {
           required
           className="min-w-0 flex-1"
         />
-        <Button className="h-11 px-5 font-semibold">Save</Button>
+        <SubmitButton className="h-11 px-5 font-semibold" pending="Saving…">
+          Save
+        </SubmitButton>
       </form>
     </section>
   );
@@ -247,9 +255,9 @@ function AddCard({ highlight }: { highlight: boolean }) {
           required
           className="h-9 min-w-0 flex-1 rounded-md border border-line bg-surface px-2.5 text-[15px] text-ink placeholder:text-ink-muted focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none"
         />
-        <Button variant="secondary" size="sm" className="h-9 px-3.5 font-semibold">
+        <SubmitButton variant="secondary" size="sm" className="h-9 px-3.5 font-semibold" pending="Adding…">
           Add
-        </Button>
+        </SubmitButton>
       </div>
     </form>
   );

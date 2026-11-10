@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { leaveQuickCall } from "@/app/dashboard/actions";
+import { markLeavingLesson } from "@/components/dashboard/DashboardBits";
 import Button, { buttonClass } from "@/components/ui/Button";
 import LessonRoom, { type SavedLesson } from "./LessonRoom";
 import LoadingScreen from "./LoadingScreen";
@@ -30,6 +31,14 @@ export default function TeacherRoom({ lesson }: { lesson: SavedLesson }) {
         else setError(data.error ?? "Could not start the lesson");
       })
       .catch(() => setError("Could not start the lesson"));
+    // Next keeps a left page alive but hidden (and re-runs this effect when you come back), so
+    // start fresh: otherwise "Start lesson" for the same lesson showed "Leaving the lesson" forever.
+    return () => {
+      setToken(null);
+      setLeaving(false);
+      setReplaced(false);
+      setError(null);
+    };
   }, [lessonId]);
 
   if (error) {
@@ -70,6 +79,7 @@ export default function TeacherRoom({ lesson }: { lesson: SavedLesson }) {
           return;
         }
         setLeaving(true);
+        markLeavingLesson();
         // Quick calls (the unsaved kind) end when the teacher clicks Leave. A dropped
         // connection doesn't count.
         if (!lesson.saveBoard && reason === DisconnectReason.CLIENT_INITIATED) {

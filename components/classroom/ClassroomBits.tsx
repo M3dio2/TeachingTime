@@ -2,6 +2,7 @@
 
 import { Trash2 } from "lucide-react";
 import { useSyncExternalStore } from "react";
+import { useFormPending } from "@/components/ui/SubmitButton";
 
 const noop = () => () => {};
 
@@ -21,15 +22,18 @@ export function LinkField({ slug, label }: { slug: string; label: string }) {
 
 // "Remove this classroom", away from Start lesson, with today's confirm.
 export function RemoveButton({ name }: { name: string }) {
+  const pending = useFormPending();
   return (
     <button
+      disabled={pending}
+      aria-busy={pending || undefined}
       onClick={(e) => {
         if (!confirm(`Remove ${name}? Their link will stop working and their files are deleted.`)) e.preventDefault();
       }}
-      className="-ml-2 inline-flex h-9 items-center gap-1.5 self-start rounded-md px-2 text-sm font-medium text-danger hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+      className="-ml-2 inline-flex h-9 items-center gap-1.5 self-start rounded-md px-2 text-sm font-medium text-danger hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
     >
       <Trash2 size={16} aria-hidden />
-      Remove this classroom
+      {pending ? "Removing…" : "Remove this classroom"}
     </button>
   );
 }

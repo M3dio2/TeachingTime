@@ -157,7 +157,7 @@ The student validates what it reads (known ids only, no duplicates, at most two,
   - [x] Dashboard: card grid, name chip in the top bar, Remove in each card's ⋯ menu, file counts, quick call banner, first-visit welcome with the arrow doodle
   - [x] Classroom: two columns, link shown in a field, drop area for uploads, filters, storage bar, Remove moves here
   - [x] Join: camera and microphone check before joining (local tracks reused after joining). Needs a real-device check: iOS Safari / Android camera preview, and the blocked-camera message
-- [ ] D5d: one wait, one screen (below)
+- [x] D5d: one wait, one screen (below)
 - [ ] Walk through every screen with the user (login, sign-up, dashboard, classroom, join, room on desktop and phone); list fixes, then do them
 - [ ] Real phone test on the live site
 - [ ] Decide the D5 "Still to decide" items
@@ -178,11 +178,11 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 - [ ] Built: the room in L1 (done) / L2a / A1, the other pages in S5. When the canvas changes, refresh `docs/design/screens/` (see the end of `HANDOFF.md`)
 
 ## D5d: One wait, one screen
-Rule: a wait that takes you into or out of a lesson shows the full loading screen, without breaks. Small actions that keep you on the page (save name, add student) get a pending state on their button.
-- [ ] Dashboard's Suspense fallback ("Loading…") becomes the loading screen, so "Leaving the lesson" flows straight into it until the students are shown (the 15 s auto-refresh doesn't trigger it)
-- [ ] "Start a quick call" switches to "Getting your lesson ready" on click (form pending state) and it stays until connected; no second screen in between
-- [ ] Check that "Start lesson" in a classroom shows the loading screen at once too
-- [ ] Buttons for small actions (Save name, Add, Remove/End) show a pending state
+Rule: a wait that takes you into or out of a lesson shows the full loading screen, without breaks. Built: `SubmitButton` (pending label via `useFormStatus`), `LessonStartScreen` on the quick call form, `app/lesson/[id]/loading.tsx`, and `DashboardLoading` ("Leaving the lesson" while a sessionStorage flag set by `TeacherRoom` is there, otherwise "Loading your classrooms"). Tests: `e2e/d5d-one-wait.spec.ts`. Small actions that keep you on the page (save name, add student) get a pending state on their button.
+- [x] Dashboard's Suspense fallback ("Loading…") becomes the loading screen, so "Leaving the lesson" flows straight into it until the students are shown (the 15 s auto-refresh doesn't trigger it)
+- [x] "Start a quick call" switches to "Getting your lesson ready" on click (form pending state) and it stays until connected; no second screen in between
+- [x] Check that "Start lesson" in a classroom shows the loading screen at once too
+- [x] Buttons for small actions (Save name, Add, Remove/End) show a pending state
 
 ## D5: Still to decide
 - [ ] Dark ink instead of brown for the main buttons

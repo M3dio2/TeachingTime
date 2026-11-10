@@ -19,7 +19,7 @@ export async function logIn(page: Page) {
 // Opens the test teacher's "Test" classroom, adding it first if it doesn't exist yet.
 export async function openTestClassroom(page: Page) {
   const card = page.getByRole("link", { name: `Open ${TEST_CLASSROOM}'s classroom` });
-  await expect(page.getByRole("heading", { name: "Your classrooms" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your classrooms", exact: true })).toBeVisible();
   if (!(await card.count())) {
     await page.getByLabel("Student's name").fill(TEST_CLASSROOM);
     await page.getByRole("button", { name: "Add", exact: true }).click();
