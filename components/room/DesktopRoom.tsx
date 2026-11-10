@@ -1,10 +1,10 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Handle from "@/components/ui/Handle";
 import { useStored, useWindowWidth } from "@/lib/useStored";
 import { CameraColumn, FloatingCameras } from "./CameraTiles";
-import { FilesPanel, FilesStrip } from "./FilesPanel";
+import { FilesPanel, FilesStrip, type RoomFile } from "./FilesPanel";
 import JustTalk from "./JustTalk";
 import type { RoomModel } from "./roomModel";
 import Stage from "./Stage";
@@ -26,6 +26,7 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
   const [camerasW, setCamerasW] = useStored<number | null>("room-cameras-width", null);
   const [filesW, setFilesW] = useStored("room-files-width", FILES.normal);
   const [foldedByHand, setFolded] = useStored<boolean | null>("room-files-folded", null);
+  const [dragging, setDragging] = useState<RoomFile | null>(null); // a file dragged from the panel
 
   if (model.view.justTalk) {
     return (
@@ -53,7 +54,12 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
           />
         </>
       )}
-      <Stage model={model} overlay={showColumn ? undefined : <FloatingCameras />} />
+      <Stage
+        model={model}
+        overlay={showColumn ? undefined : <FloatingCameras />}
+        dragging={dragging}
+        onDropped={() => setDragging(null)}
+      />
       {files &&
         (folded ? (
           <div className="ml-2 flex">
@@ -71,6 +77,8 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
               files={files}
               width={clamp(filesW, FILES.min, FILES.max)}
               onFold={() => setFolded(true)}
+              model={model}
+              onDrag={setDragging}
             />
           </>
         ))}

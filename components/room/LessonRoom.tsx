@@ -16,6 +16,7 @@ import {
   closeTab,
   INITIAL_TABS,
   openTab,
+  openTabAt,
   pickTab,
   screenStarted,
   screenStopped,
@@ -26,6 +27,8 @@ import {
 import { fromBase64 } from "@/lib/sync/base64";
 import { useLessonPersistence } from "@/lib/sync/useLessonPersistence";
 import { type TeacherSettings, useTeacherSettings } from "@/lib/sync/useTeacherSettings";
+import { useViewSync } from "@/lib/sync/useViewSync";
+import { useFileNames } from "@/lib/room/fileCache";
 import { useYjsSync } from "@/lib/sync/useYjsSync";
 import { PHONE_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import DesktopRoom from "./DesktopRoom";
@@ -53,10 +56,11 @@ type Props = {
   token: string;
   role: Role;
   lesson?: SavedLesson;
+  inviteSlug?: string; // student: the link she joined with (teacher: lesson.inviteSlug)
   onLeave: (reason?: DisconnectReason) => void;
 };
 
-export default function LessonRoom({ token, role, lesson, onLeave }: Props) {
+export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave }: Props) {
   const [problem, setProblem] = useState<string | null>(null);
   const isPhone = useMediaQuery(PHONE_QUERY);
 
@@ -90,7 +94,13 @@ export default function LessonRoom({ token, role, lesson, onLeave }: Props) {
         problem={problem}
         onDismissProblem={() => setProblem(null)}
       />
-      <LessonContent role={role} lesson={lesson} isPhone={isPhone} onProblem={setProblem} />
+      <LessonContent
+        role={role}
+        lesson={lesson}
+        inviteSlug={inviteSlug ?? lesson?.inviteSlug}
+        isPhone={isPhone}
+        onProblem={setProblem}
+      />
       <JoinToast />
       <ConnectingScreen />
       <RoomAudioRenderer />
@@ -106,11 +116,13 @@ export default function LessonRoom({ token, role, lesson, onLeave }: Props) {
 function LessonContent({
   role,
   lesson,
+  inviteSlug,
   isPhone,
   onProblem,
 }: {
   role: Role;
   lesson?: SavedLesson;
+  inviteSlug?: string;
   isPhone: boolean;
   onProblem: (message: string) => void;
 }) {
@@ -152,6 +164,13 @@ function LessonContent({
   useYjsSync(doc, "lesson", teacher ? () => studentCanEdit : undefined);
   useLessonPersistence(doc, lesson?.saveBoard ? lesson.id : undefined);
 
+  const sync = useViewSync(teacher);
+  // File tab labels: the teacher knows her files; the student asks for the names.
+  const known = lesson?.files
+    ? Object.fromEntries(lesson.files.map((f) => [`${f.kind}:${f.id}`, f.name]))
+    : undefined;
+  const names = useFileNames(inviteSlug, view.tabs, known);
+
   const other = useRemoteParticipants()[0];
   const studentLesson = Boolean(lesson?.saveBoard);
   const otherName =
@@ -167,9 +186,13 @@ function LessonContent({
     files: studentLesson ? (lesson?.files ?? []) : undefined,
     filesTitle: `${lesson?.title ?? ""}'s files`,
     lessonId: lesson?.id,
+    inviteSlug,
+    names,
+    sync,
     actions: teacher
       ? {
           open: (id) => setTabs((t) => openTab(t, id)),
+          openAt: (id, where) => setTabs((t) => openTabAt(t, id, where)),
           close: (i) => setTabs((t) => closeTab(t, i)),
           pick: (i) => setTabs((t) => pickTab(t, i)),
           setLayout: (l) => setTabs((t) => setLayout(t, l)),

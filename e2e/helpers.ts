@@ -33,9 +33,10 @@ export async function openTestClassroom(page: Page) {
 
 // Teacher: opens the "Test" classroom, reads its student link and starts the lesson.
 // Returns the student's join path (/join/<slug>).
-export async function startTestLesson(page: Page) {
+export async function startTestLesson(page: Page, prepare?: (page: Page) => Promise<void>) {
   await logIn(page);
   await openTestClassroom(page);
+  await prepare?.(page);
   await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
   await page.getByRole("button", { name: "Copy student link" }).click();
   const link = await page.evaluate(() => navigator.clipboard.readText());
@@ -58,4 +59,54 @@ export async function joinAsStudent(
   await page.getByRole("button", { name: "Join" }).click();
   await expect(page.getByText(/^Following /).first()).toBeVisible({ timeout: 30_000 });
   return page;
+}
+
+// A real PDF with `pages` tall pages, each saying "Page n" (pdf.js rebuilds the missing xref).
+export function testPdf(pages: number) {
+  const objs: string[] = [];
+  const kids = Array.from({ length: pages }, (_, i) => `${4 + i * 2} 0 R`).join(" ");
+  objs.push("<< /Type /Catalog /Pages 2 0 R >>");
+  objs.push(`<< /Type /Pages /Kids [${kids}] /Count ${pages} >>`);
+  objs.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
+  for (let i = 0; i < pages; i++) {
+    const text = `BT /F1 64 Tf 72 900 Td (Page ${i + 1}) Tj ET`;
+    objs.push(
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 1008] /Resources << /Font << /F1 3 0 R >> >> /Contents ${5 + i * 2} 0 R >>`,
+    );
+    objs.push(`<< /Length ${text.length} >>\nstream\n${text}\nendstream`);
+  }
+  let out = "%PDF-1.4\n";
+  const offsets: number[] = [];
+  objs.forEach((o, i) => {
+    offsets.push(out.length);
+    out += `${i + 1} 0 obj\n${o}\nendobj\n`;
+  });
+  const xref = out.length;
+  out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n`;
+  for (const off of offsets) out += `${String(off).padStart(10, "0")} 00000 n \n`;
+  out += `trailer\n<< /Size ${objs.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+  return Buffer.from(out, "latin1");
+}
+
+// A small PNG (16 × 12, brown).
+export const TEST_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAABAAAAAMCAIAAADkharWAAAAFUlEQVR4nGPojrMhCTGMahjVgB0BAKrQ28HOz2M8AAAAAElFTkSuQmCC",
+  "base64",
+);
+
+// Classroom: upload a file and wait for its row.
+export async function uploadToClassroom(page: Page, name: string, mimeType: string, buffer: Buffer) {
+  await page.locator('input[type="file"]').setInputFiles({ name, mimeType, buffer });
+  await expect(page.getByRole("listitem").filter({ hasText: name }).first()).toBeVisible({ timeout: 30_000 });
+}
+
+// Classroom: delete every file whose name starts with "e2e-" (leftovers of earlier runs).
+export async function deleteTestFiles(page: Page) {
+  page.on("dialog", (d) => d.accept().catch(() => {}));
+  const leftovers = page.getByRole("listitem").filter({ hasText: /e2e-/ });
+  while (await leftovers.count()) {
+    const before = await leftovers.count();
+    await leftovers.first().getByRole("button", { name: "Delete" }).click();
+    await expect.poll(() => leftovers.count(), { timeout: 30_000 }).toBeLessThan(before);
+  }
 }

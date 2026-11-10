@@ -123,9 +123,21 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 - Then `npm run build`, `npm run lint`, `npm run test:e2e`; screenshots of teacher and student on desktop (1440, 1100, 900) and phone.
 
 ## L2a: PDF and picture tabs
-- [ ] Teacher clicks a PDF or picture in the files panel, or drags it onto the stage (drop areas "Replace …" / "Open beside …") → it opens as a tab for both (`pdfjs-dist` for PDFs, pages load as you scroll). With two tabs open, clicking only shows a hint; dragging onto "Replace …" works
-- [ ] Student access without a login: `/api/resource-url` takes the invite slug and a file id, checks that the file belongs to that lesson, and returns a signed URL valid for a few minutes
-- [ ] Page and scroll position follow the teacher
+**Built on `l2a-file-tabs`, not merged:** waiting for the user's OK on the screenshots. Not tested on real devices (big PDFs, iPad drag and drop: HTML5 drag doesn't work with touch, so tablets use click).
+- [x] Teacher clicks a PDF or picture in the files panel, or drags it onto the stage (drop areas "Replace …" / "Open beside …") → it opens as a tab for both (`pdfjs-dist` for PDFs, pages load as you scroll). With two tabs open, clicking only shows a hint; dragging onto "Replace …" works
+- [x] Student access without a login: `/api/resource-url` takes the invite slug and a file id, checks that the file belongs to that lesson, and returns a signed URL valid for a few minutes
+- [x] Page and scroll position follow the teacher
+
+### L2a plan (branch `l2a-file-tabs`, built solo while the user was away; review the screenshots)
+- **Tab ids** `pdf:<resourceId>` / `image:<resourceId>` (uuid checked by `isTabId`), in the same `tabs` attribute. Labels: the file name (teacher: from the files list; student: from `/api/resource-url`).
+- **`/api/resource-url`** (POST `{ slug, id }`): service-role lookup of the student lesson by `invite_slug`, then the resource by id *and* `lesson_id`; returns `{ name, kind, url }` with a signed URL valid 5 minutes. Both roles use it. The browser downloads the file once (≤ 10 MB) and keeps it for the session (`lib/room/fileCache.ts`), so the short URL never has to be fetched again (pdf.js gets the bytes, range requests off).
+- **Opening** (`openTabAt` in `lib/room/tabs.ts`, from `Main.dc.html`): click = active if open, beside if one tab, else the 4 s footer hint; drag onto the stage = drop zones "Replace …" / "Open beside …" (one tab) or "Replace …" ×2 (two tabs), HTML5 drag and drop. Phone Files sheet: tap opens as the second tab, hint when full.
+- **Drawer statuses:** "On screen" (`marker-soft`) / "In a tab" (`surface-2`). Footer hints as in `Main.dc.html`.
+- **PDF tab** (`pdfjs-dist`, worker via `new URL(…, import.meta.url)`): pages as canvases at the pane width, rendered when near the viewport; "Page n of N" + "Anna sees page n" / "Laura chooses the page".
+- **Picture tab:** fitted on `surface-2`, "Anna sees this picture" / "Laura is showing this picture".
+- **Scroll follows the teacher:** position = page index + fraction into the page (so different widths line up), sent as lossy data messages (topic `view`, ≤ 10/s, teacher only, ignored from anyone else) and re-sent when someone joins. Not in attributes (too frequent). The student can scroll, but jumps back on the teacher's next move.
+- **Tests:** rules spec for `openTabAt` and file ids; `e2e/l2a-file-tabs.spec.ts`: the teacher uploads a 3-page PDF and a picture to "Test" (e2e- prefix, deleted after), opens the PDF by click (the student follows to page 2) and the picture by dragging it onto "Replace Text"; a click with two tabs only shows the hint; the API refuses an unknown file id and bad input.
+- **Found while testing:** moving over a drop area's own text fired `dragleave`, so the area lost its highlight; fixed. The text toolbar's lists are icons now (it wrapped in narrow panes).
 
 ## A1: Audio (replaces the old audio-library milestone)
 - [ ] Audio files from the drawer: play / pause / seek; no tab

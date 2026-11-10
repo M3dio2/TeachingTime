@@ -1,6 +1,9 @@
 "use client";
 
-import { FileText, ImageIcon, Music, PanelRightClose, PanelRightOpen, type LucideIcon } from "lucide-react";
+import { FileText, GripVertical, ImageIcon, Music, PanelRightClose, PanelRightOpen, type LucideIcon } from "lucide-react";
+import { useRef, useState } from "react";
+import { fileTabId, type FileTab } from "@/lib/room/tabs";
+import type { RoomModel } from "./roomModel";
 
 // A classroom file, as the room's files panel lists it (app/lesson/[id]/page.tsx).
 export type RoomFile = {
@@ -16,19 +19,60 @@ const SECTIONS: { kind: RoomFile["kind"]; title: string; Icon: LucideIcon }[] = 
   { kind: "audio", title: "Audio", Icon: Music },
 ];
 
-// "Anna's files" on the right of the stage (teacher, student lessons only). L1 lists the
-// files; opening them (click or drag onto the stage) comes in L2a, so nothing is clickable yet.
+export const tabOf = (f: RoomFile): FileTab | null => (f.kind === "audio" ? null : fileTabId(f.kind, f.id));
+
+// Opening a file from the panel or the phone sheet (docs/design/HANDOFF.md, "Opening files"):
+// already open → it becomes active; one tab open → it opens beside; two open → nothing changes
+// and the footer says why for 4 s.
+export function useFileOpener(model: RoomModel) {
+  const [fullHint, setFullHint] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const { tabs } = model.view;
+  const open = (id: FileTab) => {
+    if (!tabs.includes(id) && tabs.length >= 2) {
+      setFullHint(true);
+      if (timer.current) clearTimeout(timer.current);
+      timer.current = setTimeout(() => setFullHint(false), 4000);
+      return false;
+    }
+    model.actions?.openAt(id, "auto");
+    return true;
+  };
+  return { open, fullHint, full: tabs.length >= 2 };
+}
+
+// "On screen" while visible, "In a tab" while open but hidden.
+export function fileStatus(model: RoomModel, id: FileTab): "on" | "tab" | null {
+  const { tabs, active, layout } = model.view;
+  const at = tabs.indexOf(id);
+  if (at === -1) return null;
+  const split = tabs.length === 2 && layout === "split";
+  return split || at === active ? "on" : "tab";
+}
+
+// "Anna's files" on the right of the stage (teacher, student lessons only). Click a PDF or a
+// picture to show it, or drag it onto the stage (drop areas in Stage.tsx).
 export function FilesPanel({
   title,
   files,
   width,
   onFold,
+  model,
+  onDrag,
 }: {
   title: string;
   files: RoomFile[];
   width: number;
   onFold: () => void;
+  model: RoomModel;
+  onDrag: (file: RoomFile | null) => void;
 }) {
+  const opener = useFileOpener(model);
+  const hint = opener.fullHint
+    ? "Two tabs are open. Close one first, or drag the file onto a tab to replace it."
+    : opener.full
+      ? "Two tabs are open. Drag a file onto one to replace it."
+      : "Click a PDF or picture to open it, or drag it onto the stage.";
   return (
     <aside
       aria-label={title}
@@ -47,13 +91,51 @@ export function FilesPanel({
           <PanelRightClose size={16} aria-hidden />
         </button>
       </div>
-      <FileList files={files} />
+      <FileList files={files} model={model} onOpen={opener.open} onDrag={onDrag} />
+      {files.some((f) => f.kind !== "audio") && (
+        <p
+          aria-live="polite"
+          className={`flex shrink-0 items-start gap-2 border-t border-line px-4 py-2.5 text-[13px] leading-snug ${
+            opener.fullHint ? "bg-surface-2 text-ink" : "text-ink-muted"
+          }`}
+        >
+          <GripVertical size={16} aria-hidden className="mt-px shrink-0" />
+          {hint}
+        </p>
+      )}
     </aside>
   );
 }
 
-// The list, also used in the phone's Files sheet.
-export function FileList({ files }: { files: RoomFile[] }) {
+// The list, also used in the phone's Files sheet. PDFs and pictures open on click (and drag,
+// on desktop); audio comes in A1.
+export function FileList({
+  files,
+  model,
+  onOpen,
+  onDrag,
+}: {
+  files: RoomFile[];
+  model: RoomModel;
+  onOpen: (id: FileTab) => void;
+  onDrag?: (file: RoomFile | null) => void;
+}) {
+  const fileProps = (f: RoomFile) => {
+    const id = tabOf(f)!;
+    return {
+      type: "button" as const,
+      title: onDrag ? "Click to open, or drag onto the stage" : `Show ${f.name}`,
+      onClick: () => onOpen(id),
+      draggable: Boolean(onDrag),
+      onDragStart: (e: React.DragEvent) => {
+        e.dataTransfer.setData("text/plain", f.name);
+        e.dataTransfer.effectAllowed = "copy";
+        // After the browser has taken its drag picture, or the drop areas would be in it.
+        setTimeout(() => onDrag?.(f), 0);
+      },
+      onDragEnd: () => setTimeout(() => onDrag?.(null), 0),
+    };
+  };
   if (!files.length) {
     return (
       <p className="p-4 text-sm text-ink-muted">
@@ -71,30 +153,77 @@ export function FileList({ files }: { files: RoomFile[] }) {
             <h3 className="px-2 pb-1 text-[13px] font-semibold text-ink-muted">{title}</h3>
             {kind === "image" ? (
               <ul className="grid grid-cols-3 gap-2 px-2">
-                {items.map((f) => (
-                  <li key={f.id} className="min-w-0">
-                    <span className="flex aspect-square items-center justify-center overflow-hidden rounded-md bg-surface-2 text-ink-muted">
-                      {f.previewUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={f.previewUrl} alt="" className="h-full w-full object-cover" />
-                      ) : (
-                        <Icon size={16} aria-hidden />
-                      )}
-                    </span>
-                    <span className="mt-1 block truncate text-xs text-ink-muted">{f.name}</span>
-                  </li>
-                ))}
+                {items.map((f) => {
+                  const status = fileStatus(model, tabOf(f)!);
+                  return (
+                    <li key={f.id} className="min-w-0">
+                      <button
+                        {...fileProps(f)}
+                        aria-label={`Open ${f.name}`}
+                        className="block w-full min-w-0 cursor-grab rounded-md text-left focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                      >
+                        <span className="relative flex aspect-square items-center justify-center overflow-hidden rounded-md bg-surface-2 text-ink-muted">
+                          {f.previewUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={f.previewUrl} alt="" draggable={false} className="h-full w-full object-cover" />
+                          ) : (
+                            <Icon size={16} aria-hidden />
+                          )}
+                          {status && (
+                            <span
+                              className={`absolute bottom-1 left-1 rounded-[3px] px-1 text-[10px] font-semibold ${
+                                status === "on" ? "bg-marker-soft text-marker-ink" : "bg-surface-2 text-ink-muted"
+                              }`}
+                            >
+                              {status === "on" ? "On screen" : "In a tab"}
+                            </span>
+                          )}
+                        </span>
+                        <span className="mt-1 block truncate text-xs text-ink-muted">{f.name}</span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             ) : (
               <ul className="flex flex-col">
-                {items.map((f) => (
-                  <li key={f.id} className="flex items-center gap-2.5 rounded-md p-2">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-accent">
-                      <Icon size={16} aria-hidden />
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-sm font-medium">{f.name}</span>
-                  </li>
-                ))}
+                {items.map((f) => {
+                  const row = (
+                    <>
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-accent">
+                        <Icon size={16} aria-hidden />
+                      </span>
+                      <span className="min-w-0 flex-1 truncate text-sm font-medium">{f.name}</span>
+                    </>
+                  );
+                  if (kind === "audio") {
+                    return (
+                      <li key={f.id} className="flex items-center gap-2.5 rounded-md p-2">
+                        {row}
+                      </li>
+                    );
+                  }
+                  const status = fileStatus(model, tabOf(f)!);
+                  return (
+                    <li key={f.id}>
+                      <button
+                        {...fileProps(f)}
+                        className="flex w-full cursor-grab items-center gap-2.5 rounded-md p-2 text-left hover:bg-paper focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                      >
+                        {row}
+                        {status && (
+                          <span
+                            className={`shrink-0 rounded px-1.5 text-xs font-medium ${
+                              status === "on" ? "bg-marker-soft text-marker-ink" : "bg-surface-2 text-ink-muted"
+                            }`}
+                          >
+                            {status === "on" ? "On screen" : "In a tab"}
+                          </span>
+                        )}
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </section>

@@ -3,9 +3,11 @@
 // test them without a browser. Only the teacher's client runs them; the student renders what
 // the teacher publishes (lib/sync/useTeacherSettings.ts).
 
-// L2a adds `pdf:<resourceId>` and `image:<resourceId>`.
+// Built-in tabs, plus one tab per classroom file: `pdf:<resourceId>`, `image:<resourceId>`.
 export const TAB_IDS = ["screen", "text", "draw"] as const;
-export type TabId = (typeof TAB_IDS)[number];
+export type BuiltInTab = (typeof TAB_IDS)[number];
+export type FileTab = `pdf:${string}` | `image:${string}`;
+export type TabId = BuiltInTab | FileTab;
 export type Layout = "split" | "single";
 
 export const MAX_TABS = 2;
@@ -30,11 +32,18 @@ export const INITIAL_TABS: TabState = {
   screenReplaced: null,
 };
 
-const LABELS: Record<TabId, string> = { screen: "Screen", text: "Text", draw: "Draw" };
-export const tabLabel = (id: TabId) => LABELS[id];
+const LABELS: Record<BuiltInTab, string> = { screen: "Screen", text: "Text", draw: "Draw" };
+// File tabs are labelled with the file's name; `names` maps tab id → name.
+export const tabLabel = (id: TabId, names?: Record<string, string>) =>
+  isFileTab(id) ? (names?.[id] ?? (id.startsWith("pdf:") ? "PDF" : "Picture")) : LABELS[id];
+
+const FILE_TAB = /^(pdf|image):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+export const isFileTab = (value: string): value is FileTab => FILE_TAB.test(value);
+export const fileTabId = (kind: "pdf" | "image", resourceId: string): FileTab => `${kind}:${resourceId}`;
+export const resourceIdOf = (id: FileTab) => id.slice(id.indexOf(":") + 1);
 
 export const isTabId = (value: unknown): value is TabId =>
-  typeof value === "string" && (TAB_IDS as readonly string[]).includes(value);
+  typeof value === "string" && ((TAB_IDS as readonly string[]).includes(value) || isFileTab(value));
 
 // + shows only while one tab is open.
 export const canAddTab = (s: TabState) => s.tabs.length < MAX_TABS;
@@ -56,6 +65,27 @@ export function openTab(s: TabState, id: TabId): TabState {
   if (!canAddTab(s)) return s;
   const tabs = [...s.tabs, id];
   return { ...s, tabs, active: tabs.length - 1, layout: "split", justTalk: false };
+}
+
+// Where a file goes: "auto" is a click (active if open, beside if one tab, else nothing: the
+// files panel shows a hint); a drop goes "beside" or replaces the tab at an index.
+export type Where = "auto" | "beside" | number;
+
+export function openTabAt(s: TabState, id: TabId, where: Where): TabState {
+  const at = s.tabs.indexOf(id);
+  if (at !== -1) return { ...s, active: at, justTalk: false };
+  if (where === "auto" || where === "beside") return openTab(s, id);
+  if (where < 0 || where >= s.tabs.length) return s;
+  const tabs = [...s.tabs];
+  const replaced = tabs[where];
+  tabs[where] = id;
+  return {
+    ...s,
+    tabs,
+    active: where,
+    justTalk: false,
+    screenReplaced: replaced === "screen" ? null : s.screenReplaced,
+  };
 }
 
 export function closeTab(s: TabState, index: number): TabState {

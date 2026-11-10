@@ -1,6 +1,20 @@
 "use client";
 
-import { Columns2, Eye, Monitor, Pencil, Plus, Square, Type, Users, X } from "lucide-react";
+import {
+  Columns2,
+  Eye,
+  FileText,
+  ImageIcon,
+  Monitor,
+  Pencil,
+  Plus,
+  RefreshCw,
+  Square,
+  SquarePlus,
+  Type,
+  Users,
+  X,
+} from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import Chip from "@/components/ui/Chip";
 import Handle from "@/components/ui/Handle";
@@ -11,20 +25,38 @@ import {
   SPLIT_MIN_PX,
   tabLabel,
   type TabId,
+  type Where,
 } from "@/lib/room/tabs";
 import { useStored } from "@/lib/useStored";
 import { cap, type RoomModel } from "./roomModel";
+import { type RoomFile, tabOf } from "./FilesPanel";
 import TabPane from "./TabPane";
 
-const ICONS: Record<TabId, typeof Monitor> = { screen: Monitor, text: Type, draw: Pencil };
+const ICONS: Record<string, typeof Monitor> = {
+  screen: Monitor,
+  text: Type,
+  draw: Pencil,
+  pdf: FileText,
+  image: ImageIcon,
+};
 export const TabIcon = ({ id, size = 16 }: { id: TabId; size?: number }) => {
-  const Icon = ICONS[id];
+  const Icon = ICONS[id.split(":")[0]];
   return <Icon size={size} aria-hidden className="shrink-0" />;
 };
 
 // The stage (desktop): browser-style tab bar, then one or two tabs side by side.
 // `overlay` sits over the panes (the floating cameras on narrow windows).
-export default function Stage({ model, overlay }: { model: RoomModel; overlay?: ReactNode }) {
+export default function Stage({
+  model,
+  overlay,
+  dragging,
+  onDropped,
+}: {
+  model: RoomModel;
+  overlay?: ReactNode;
+  dragging?: RoomFile | null;
+  onDropped?: () => void;
+}) {
   const { tabs, active, layout } = model.view;
   const area = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -61,6 +93,9 @@ export default function Stage({ model, overlay }: { model: RoomModel; overlay?: 
         className={`relative flex min-h-0 flex-1 ${isSplit ? "bg-paper p-2" : "bg-surface"}`}
       >
         {overlay}
+        {dragging && model.actions && (
+          <DropZones model={model} file={dragging} onDone={() => onDropped?.()} />
+        )}
         {tabs.map((id, i) => {
           const visible = isSplit || i === active;
           // The whiteboard mounts only while visible (Excalidraw can't measure a hidden
@@ -128,13 +163,13 @@ function TabStrip({ model, isSplit, canSplit }: { model: RoomModel; isSplit: boo
                 } ${marked ? "font-semibold" : "font-medium"} ${teacher ? "" : "cursor-default"}`}
               >
                 <TabIcon id={id} />
-                <span className="truncate">{tabLabel(id)}</span>
+                <span className="truncate">{tabLabel(id, model.names)}</span>
               </button>
               {teacher && tabs.length > 1 && (
                 <button
                   type="button"
-                  aria-label={`Close ${tabLabel(id)}`}
-                  title={`Close ${tabLabel(id)}`}
+                  aria-label={`Close ${tabLabel(id, model.names)}`}
+                  title={`Close ${tabLabel(id, model.names)}`}
                   onClick={() => actions?.close(i)}
                   className="mr-1.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
                 >
@@ -279,9 +314,9 @@ function AddTabMenu({ model }: { model: RoomModel }) {
               className="flex h-10 items-center gap-2.5 rounded-md px-2.5 text-left text-sm font-medium hover:bg-paper focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
             >
               <TabIcon id={id} />
-              <span className="flex-1">{tabLabel(id)}</span>
+              <span className="flex-1">{tabLabel(id, model.names)}</span>
               <span className="truncate text-xs font-normal text-ink-muted">
-                Opens beside {tabLabel(tabs[active])}
+                Opens beside {tabLabel(tabs[active], model.names)}
               </span>
             </button>
           ))}
@@ -290,6 +325,78 @@ function AddTabMenu({ model }: { model: RoomModel }) {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+// While a file is dragged from the panel: two drop areas over the stage. One tab open:
+// "Replace …" (left) and "Open beside …" (right); two open: "Replace …" for each. The area
+// under the pointer turns solid and shows "Drop to open".
+function DropZones({ model, file, onDone }: { model: RoomModel; file: RoomFile; onDone: () => void }) {
+  const [over, setOver] = useState<number | null>(null);
+  const { tabs } = model.view;
+  const id = tabOf(file);
+  const zones: { where: Where; title: string; sub: string; beside: boolean }[] =
+    tabs.length < 2
+      ? [
+          { where: 0, title: `Replace ${tabLabel(tabs[0], model.names)}`, sub: "Show it instead", beside: false },
+          {
+            where: "beside",
+            title: `Open beside ${tabLabel(tabs[0], model.names)}`,
+            sub: "Show both side by side",
+            beside: true,
+          },
+        ]
+      : tabs.map((t, i) => ({
+          where: i,
+          title: `Replace ${tabLabel(t, model.names)}`,
+          sub: "Two tabs is the most",
+          beside: false,
+        }));
+
+  return (
+    <div className="absolute inset-0 z-20 flex gap-2 bg-paper/90 p-2" data-testid="drop-zones">
+      {zones.map((z, i) => {
+        const hot = over === i;
+        const Icon = z.beside ? SquarePlus : RefreshCw;
+        return (
+          <div
+            key={i}
+            data-testid={`drop-${i}`}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "copy";
+              if (over !== i) setOver(i);
+            }}
+            onDragLeave={(e) => {
+              // Moving onto the zone's own text counts as leaving it; that doesn't.
+              if (e.currentTarget.contains(e.relatedTarget as Node | null)) return;
+              setOver((o) => (o === i ? null : o));
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              if (id) model.actions?.openAt(id, z.where);
+              onDone();
+            }}
+            className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-3 rounded-panel border-2 border-dashed p-4 text-center ${
+              hot ? "border-accent bg-surface" : "border-ink-muted bg-surface/55"
+            }`}
+          >
+            <span className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-surface-2 text-accent">
+              <Icon size={22} aria-hidden />
+            </span>
+            <span className="text-base font-semibold">{z.title}</span>
+            <span className="text-[13px] text-ink-muted">{z.sub}</span>
+            {hot && (
+              <span className="inline-flex -rotate-2 items-center gap-2 rounded-md border border-line bg-surface px-3 py-1.5 text-[13px] font-medium shadow-soft">
+                <TabIcon id={id ?? "text"} />
+                {file.name}
+                <span className="rounded bg-marker-soft px-1.5 text-xs text-marker-ink">Drop to open</span>
+              </span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

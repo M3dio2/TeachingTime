@@ -6,7 +6,9 @@ import {
   cleanTabs,
   closeTab,
   INITIAL_TABS,
+  isTabId,
   openTab,
+  openTabAt,
   pickTab,
   screenStarted,
   screenStopped,
@@ -104,5 +106,42 @@ test.describe("L1 tab rules", () => {
     expect(cleanActive("1", 2)).toBe(1);
     expect(cleanActive("2", 2)).toBe(0);
     expect(cleanActive("x", 1)).toBe(0);
+  });
+
+  // L2a: classroom files as tabs.
+  const pdf = "pdf:11111111-1111-4111-8111-111111111111" as const;
+  const pic = "image:22222222-2222-4222-8222-222222222222" as const;
+
+  test("file tab ids are checked", () => {
+    expect(isTabId(pdf)).toBe(true);
+    expect(isTabId(pic)).toBe(true);
+    expect(isTabId("pdf:../../etc")).toBe(false);
+    expect(isTabId("audio:22222222-2222-4222-8222-222222222222")).toBe(false);
+    expect(cleanTabs(JSON.stringify([pdf, "text"]))).toEqual([pdf, "text"]);
+  });
+
+  test("clicking a file: beside one tab, nothing with two, active if open", () => {
+    let s = openTabAt(state(["text"]), pdf, "auto");
+    expect(s.tabs).toEqual(["text", pdf]);
+    expect(s.active).toBe(1);
+    expect(openTabAt(s, pic, "auto")).toBe(s); // two open: unchanged (the panel shows a hint)
+    s = pickTab(s, 0);
+    expect(openTabAt(s, pdf, "auto").active).toBe(1);
+  });
+
+  test("dropping a file: replace the tab under it, or open beside", () => {
+    expect(openTabAt(state(["text"]), pic, 0).tabs).toEqual([pic]);
+    expect(openTabAt(state(["text"]), pic, "beside").tabs).toEqual(["text", pic]);
+    const s = openTabAt(state(["text", pdf], 1), pic, 0);
+    expect(s.tabs).toEqual([pic, pdf]);
+    expect(s.active).toBe(0);
+  });
+
+  test("replacing Screen while sharing forgets what it replaced", () => {
+    const sharing = screenStarted(state(["text", "draw"], 1)); // Screen replaced Draw
+    const s = openTabAt(sharing, pdf, 1);
+    expect(s.tabs).toEqual(["text", pdf]);
+    expect(s.screenReplaced).toBeNull();
+    expect(screenStopped(s).tabs).toEqual(["text", pdf]);
   });
 });

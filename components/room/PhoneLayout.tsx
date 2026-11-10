@@ -10,7 +10,7 @@ import Sheet from "@/components/ui/Sheet";
 import Switch from "@/components/ui/Switch";
 import { tabLabel } from "@/lib/room/tabs";
 import { CameraRow } from "./CameraTiles";
-import { FileList } from "./FilesPanel";
+import { FileList, useFileOpener } from "./FilesPanel";
 import JustTalk from "./JustTalk";
 import { MuteStudentButton, useDeviceErrorHandler } from "./RoomControls";
 import { cap, type RoomModel } from "./roomModel";
@@ -70,13 +70,13 @@ function TeacherTabs({ model }: { model: RoomModel }) {
             label: (
               <>
                 <TabIcon id={id} />
-                <span className="truncate">{tabLabel(id)}</span>
+                <span className="truncate">{tabLabel(id, model.names)}</span>
               </>
             ),
             extra: two ? (
               <button
                 type="button"
-                aria-label={`Close ${tabLabel(id)}`}
+                aria-label={`Close ${tabLabel(id, model.names)}`}
                 onClick={() => actions?.close(i)}
                 className="inline-flex h-10 w-8 shrink-0 items-center justify-center text-ink-muted focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
               >
@@ -117,7 +117,7 @@ function StudentTabs({ model }: { model: RoomModel }) {
       <nav aria-label="Lesson tabs" className="flex shrink-0 flex-col gap-2 border-b border-line px-3 pt-2 pb-2.5">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-[13px] text-ink-muted">
-            {two ? `${cap(model.otherName)} shows two tabs` : `${cap(model.otherName)} shows ${tabLabel(tabs[0])}`}
+            {two ? `${cap(model.otherName)} shows two tabs` : `${cap(model.otherName)} shows ${tabLabel(tabs[0], model.names)}`}
           </span>
           <Chip tone="marker" className="text-xs">
             <Eye size={14} aria-hidden />
@@ -134,7 +134,7 @@ function StudentTabs({ model }: { model: RoomModel }) {
               label: (
                 <>
                   <TabIcon id={id} />
-                  <span className="truncate">{tabLabel(id)}</span>
+                  <span className="truncate">{tabLabel(id, model.names)}</span>
                 </>
               ),
             }))}
@@ -204,6 +204,7 @@ function TeacherBar({ model, onProblem }: { model: RoomModel; onProblem: (messag
       on ? "border-accent" : "border-line"
     }`;
   const { actions } = model;
+  const opener = useFileOpener(model);
 
   return (
     <>
@@ -232,7 +233,23 @@ function TeacherBar({ model, onProblem }: { model: RoomModel; onProblem: (messag
 
       {sheet === "files" && model.files && (
         <Sheet title={model.filesTitle} onClose={close}>
-          <FileList files={model.files} />
+          <FileList
+            files={model.files}
+            model={model}
+            onOpen={(id) => {
+              if (opener.open(id)) close();
+            }}
+          />
+          {model.files.some((f) => f.kind !== "audio") && (
+            <p
+              aria-live="polite"
+              className={`px-1 pt-2 text-[13px] leading-snug ${opener.fullHint ? "text-ink" : "text-ink-muted"}`}
+            >
+              {opener.full
+                ? "Two tabs are open. Close one with its × to show a file."
+                : `Tap a file to show it to ${model.otherName}. It opens as a second tab.`}
+            </p>
+          )}
         </Sheet>
       )}
       {sheet === "more" && actions && (

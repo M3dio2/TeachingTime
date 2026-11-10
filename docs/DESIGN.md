@@ -133,7 +133,7 @@ Desktop, 1280 px and wider (teacher):
   - **student:** mic, camera and Leave
   - no screen sharing and no side by side
 
-In L1 the files panel only lists the files; opening them (click or drag) comes in L2a, and the audio bar in A1.
+PDFs and pictures open from the files panel by click or drag (L2a); the audio bar comes in A1.
 
 ## Other pages *(S5)*
 - **Sign-in pages:** one layout. The form on the left, a short explanation of TeachingTime on a `surface-2` panel on the right; on phones, the form only.
