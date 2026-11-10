@@ -4,6 +4,7 @@ import { FileText, ImageIcon, Info, Music, Pause, Play, Trash2, type LucideIcon 
 import { useEffect, useRef, useState } from "react";
 import { removeResource } from "@/app/dashboard/actions";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
+import { useFormPending } from "@/components/ui/SubmitButton";
 import { type ResourceKind, useFileUpload } from "./FileUpload";
 
 export type Resource = {
@@ -174,17 +175,26 @@ function DeleteFile({ file }: { file: Resource }) {
   return (
     <form action={removeResource}>
       <input type="hidden" name="id" value={file.id} />
-      <button
-        aria-label={`Delete ${file.name}`}
-        title="Delete"
-        onClick={(e) => {
-          if (!confirm(`Delete ${file.name}?`)) e.preventDefault();
-        }}
-        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-danger-soft hover:text-danger focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-      >
-        <Trash2 size={16} aria-hidden />
-      </button>
+      <DeleteFileButton name={file.name} />
     </form>
+  );
+}
+
+function DeleteFileButton({ name }: { name: string }) {
+  const pending = useFormPending();
+  return (
+    <button
+      aria-label={`Delete ${name}`}
+      title="Delete"
+      disabled={pending}
+      aria-busy={pending || undefined}
+      onClick={(e) => {
+        if (!confirm(`Delete ${name}?`)) e.preventDefault();
+      }}
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-danger-soft hover:text-danger focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:animate-pulse"
+    >
+      <Trash2 size={16} aria-hidden />
+    </button>
   );
 }
 

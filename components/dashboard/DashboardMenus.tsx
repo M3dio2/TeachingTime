@@ -3,8 +3,8 @@
 import { Ellipsis, Pencil, Trash2 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { removeLesson, setTeacherName } from "@/app/dashboard/actions";
-import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
+import SubmitButton, { useFormPending } from "@/components/ui/SubmitButton";
 
 // A small popover that closes on outside click and Escape.
 function usePopover() {
@@ -73,7 +73,9 @@ export function NameChip({ name }: { name: string }) {
               autoFocus
               required
             />
-            <Button className="h-10">Save</Button>
+            <SubmitButton className="h-10" pending="Saving…">
+              Save
+            </SubmitButton>
           </form>
         </Popover>
       )}
@@ -101,21 +103,30 @@ export function CardMenu({ id, name }: { id: string; name: string }) {
         <Popover className="w-56">
           <form action={removeLesson} role="menu">
             <input type="hidden" name="id" value={id} />
-            <button
-              role="menuitem"
-              onClick={(e) => {
-                if (!confirm(`Remove ${name}? Their link will stop working and their files are deleted.`)) {
-                  e.preventDefault();
-                }
-              }}
-              className="flex h-10 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-sm font-medium text-danger hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-            >
-              <Trash2 size={16} aria-hidden />
-              Remove {name}
-            </button>
+            <RemoveItem name={name} />
           </form>
         </Popover>
       )}
     </div>
+  );
+}
+
+function RemoveItem({ name }: { name: string }) {
+  const pending = useFormPending();
+  return (
+    <button
+      role="menuitem"
+      disabled={pending}
+      aria-busy={pending || undefined}
+      onClick={(e) => {
+        if (!confirm(`Remove ${name}? Their link will stop working and their files are deleted.`)) {
+          e.preventDefault();
+        }
+      }}
+      className="flex h-10 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-sm font-medium text-danger hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
+    >
+      <Trash2 size={16} aria-hidden />
+      {pending ? "Removing…" : `Remove ${name}`}
+    </button>
   );
 }

@@ -5,7 +5,7 @@ import { logIn, TEST_CLASSROOM } from "./helpers";
 
 test("S5 dashboard: classroom card, name chip, ⋯ menu", async ({ page }) => {
   await logIn(page);
-  await expect(page.getByRole("heading", { name: "Your classrooms" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your classrooms", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "Start a quick call" })).toBeVisible();
 
   const card = page.getByRole("listitem").filter({ has: page.getByRole("link", { name: `Open ${TEST_CLASSROOM}'s classroom` }) });
