@@ -1,4 +1,4 @@
-import { AccessToken } from "livekit-server-sdk";
+import { AccessToken, RoomConfiguration, TrackSource } from "livekit-server-sdk";
 import { after } from "next/server";
 import { roomName } from "@/lib/livekit";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
@@ -73,7 +73,12 @@ export async function POST(request: Request) {
     lessonId = lesson.id;
     role = "student";
     // Prefixed, so a student can never take over the teacher's identity.
-    const clientId = /^[a-z0-9-]{8,40}$/i.test(body.clientId) ? body.clientId : crypto.randomUUID();
+    // typeof first: the regex alone accepts a missing id as the string "undefined", and every
+    // such student would then share one identity and kick each other out of the room.
+    const clientId =
+      typeof body.clientId === "string" && /^[a-z0-9-]{8,40}$/i.test(body.clientId)
+        ? body.clientId
+        : crypto.randomUUID();
     identity = `student-${clientId}`;
   } else {
     return Response.json({ error: "Bad request" }, { status: 400 });
@@ -87,7 +92,8 @@ export async function POST(request: Request) {
   });
   // No room admin for anyone (muting goes through /api/mute). Only the teacher may set their own
   // attributes ("student can edit" and the tabs, lib/sync/useTeacherSettings.ts); a student can't change
-  // their metadata, so they can't make themselves a teacher.
+  // their metadata, so they can't make themselves a teacher. Students may publish camera and
+  // microphone only: no screen share, whatever their client says.
   token.addGrant({
     roomJoin: true,
     room: roomName(lessonId),
@@ -95,7 +101,10 @@ export async function POST(request: Request) {
     canSubscribe: true,
     canPublishData: true,
     canUpdateOwnMetadata: role === "teacher",
+    canPublishSources: role === "teacher" ? undefined : [TrackSource.CAMERA, TrackSource.MICROPHONE],
   });
+  // A lesson is two people. The room takes these settings from the token that creates it.
+  token.roomConfig = new RoomConfiguration({ maxParticipants: 2, emptyTimeout: 5 * 60 });
 
   return Response.json({ token: await token.toJwt() });
 }

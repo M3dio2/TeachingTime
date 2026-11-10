@@ -1,36 +1,28 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TeachingTime (lesson-call)
 
-## Getting Started
+1-on-1 online lessons: video call, screen share, a shared text pad and whiteboard, and the
+teacher's PDFs, pictures and audio. Next.js + LiveKit + Yjs + Supabase, deployed on Vercel.
 
-First, run the development server:
+- How to work on it, test it and ship it: `AGENTS.md`
+- What's built and what's next: `docs/ROADMAP.md`
+- How it fits together: `docs/ARCHITECTURE.md`
+- The design: `docs/DESIGN.md` and `docs/design/`
+
+## Run it
 
 ```bash
+cp .env.local.example .env.local   # fill in the LiveKit and Supabase keys
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run the SQL in `supabase/migrations/` (in order) in the Supabase SQL editor, once per project.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Check it
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npx tsc --noEmit -p .
+npm run lint
+npm run test:e2e   # Playwright; needs the test account in .env.local
+npm run build
+```

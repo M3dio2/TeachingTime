@@ -7,6 +7,7 @@ import TextPad from "@/components/board/TextPad";
 import Chip from "@/components/ui/Chip";
 import { isFileTab, type TabId } from "@/lib/room/tabs";
 import { clearBoard, clearText } from "@/lib/sync/clearLesson";
+import { isTeacher } from "@/lib/sync/useTeacherSettings";
 import { PdfPane, PicturePane } from "./FilePanes";
 import { cap, type RoomModel } from "./roomModel";
 
@@ -54,7 +55,9 @@ function WhoWrites({ model }: { model: RoomModel }) {
 
 function ScreenPane({ model }: { model: RoomModel }) {
   const room = useRoomContext();
-  const screen = useTracks([Track.Source.ScreenShare]).at(-1);
+  const screen = useTracks([Track.Source.ScreenShare])
+    .filter((t) => t.participant.isLocal || isTeacher(t.participant))
+    .at(-1);
   const mine = screen?.participant.isLocal;
 
   return (

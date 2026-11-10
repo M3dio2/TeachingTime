@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Geist } from "next/font/google";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -14,11 +14,6 @@ const bricolage = Bricolage_Grotesque({
   axes: ["opsz"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: "TeachingTime",
   description: "1-on-1 English lessons with video, screen share, a shared text pad and whiteboard.",
@@ -30,7 +25,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       // Browser extensions (e.g. LanguageTool) add attributes to <html> before hydration.
       suppressHydrationWarning
-      className={`${geistSans.variable} ${bricolage.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${bricolage.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

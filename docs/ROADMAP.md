@@ -45,7 +45,18 @@ Vercel functions ran in North America while Supabase was in US West, so each pag
 - [x] **Fixed:** open redirect in `/auth/confirm`: `next=/\evil.com` passed the "starts with /" check, and browsers read it as another site. Now checked on the parsed URL.
 - [x] Findings written here, plus the "Before going commercial" list below
 
-Accepted for now: a tampered student client can still put content on the board while editing is off (its full-state diff is accepted, so the teacher's refreshed page can recover). The teacher can Clear and remove the student. A strict script CSP is left out (needs a nonce per request, which makes every page dynamic).
+A strict script CSP is left out (needs a nonce per request, which makes every page dynamic).
+
+### Security review, phase 1 (Nov 2026, branch `security-1`)
+- [x] Next 16.4.6 and React 19.3.1 (the Oct/Nov Cache-Components and RSC fixes); dev-only audit fixes
+- [x] Student tokens: `canPublishSources` camera + microphone only; `roomConfig` with 2 participants and a 5-minute empty timeout; the room only treats the teacher's screen track as "sharing"
+- [x] A full-state diff is applied only from a peer we asked, and each peer gets at most one full diff every 3 s (`useYjsSync`)
+- [x] **Fixed:** a student whose browser blocks localStorage got the identity `student-undefined` (the regex accepted a missing id), so two such students kicked each other out
+- [x] `poweredByHeader` off; `server-only` on the Supabase admin and LiveKit helpers; `noindex` on join, lesson, dashboard and classroom pages; SQL length checks on titles, names, slugs and sizes (`0007_text_limits.sql`, run it in Supabase); dead template files and the unused mono font removed
+- [x] Tests: `e2e/security-token.spec.ts`
+- Left in `npm audit`: 9 high, all inside Excalidraw's Mermaid import (lodash-es, nanoid, langium); that UI isn't exposed. Watch for an Excalidraw release.
+
+Phase 2 (before the friends test): invite code or allow-list on sign-up; GitHub Actions gate + Dependabot; dev Supabase + LiveKit projects for the tests; rate limiting on `/api/*`; error pages; "Make a new link" per classroom; shorter email-link lifetime and sign out other sessions on password change. Phase 3 (performance): lazy-load the room on the join page; whiteboard garbage collection; targeted `listRooms` and no dashboard polling while hidden.
 
 ## P1: Stronger passwords
 - [x] Sign-up and reset page: "Confirm password" field; mismatches are refused before Supabase is asked
@@ -213,4 +224,6 @@ Rule: a wait that takes you into or out of a lesson shows the full loading scree
 - [ ] Own email sender (Resend, Postmark, …) instead of the teacher's Gmail
 - [ ] Strict CSP for scripts (nonces) if the speed cost is acceptable; recheck LiveKit and Excalidraw
 - [ ] Rate limit the token route (invite slugs can't be guessed, but it costs nothing to limit)
+- [ ] Monitoring (Sentry or a Vercel log drain): today a broken deploy is noticed by the user; Vercel's free log retention is 1 h
+- [ ] Re-check HSTS once the app has its own domain (Vercel sends it for `*.vercel.app`)
 - [ ] Free tiers: LiveKit's monthly participant minutes are shared by all teachers (a 1-hour lesson uses about 120); Supabase free projects pause after about a week without activity

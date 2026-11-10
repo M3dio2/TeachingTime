@@ -1,4 +1,5 @@
 import { ArrowLeft, Video } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -11,6 +12,9 @@ import { buttonClass } from "@/components/ui/Button";
 import Wordmark from "@/components/ui/Wordmark";
 import { createClient } from "@/lib/supabase/server";
 import { removeLesson } from "../actions";
+
+// Private: never listed by search engines.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 // A student's classroom (docs/design/HANDOFF.md, "Classroom"): the student, their link and
 // Start lesson on the left with the storage card and Remove; the files on the right.

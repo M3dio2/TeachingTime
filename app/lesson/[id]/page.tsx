@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import LoadingScreen from "@/components/room/LoadingScreen";
@@ -5,6 +6,9 @@ import type { RoomFile } from "@/components/room/FilesPanel";
 import TeacherRoom from "@/components/room/TeacherRoom";
 import { createClient } from "@/lib/supabase/server";
 import { isWithin } from "@/lib/time";
+
+// Private: never listed by search engines.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 // After this long without activity, the next start is a new lesson with a clean board.
 const NEW_LESSON_AFTER_MS = 3 * 60 * 60 * 1000;
