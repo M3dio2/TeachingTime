@@ -139,7 +139,7 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 ## S5: UX/UI polish
 - [ ] Build the redesign of the other pages (`docs/design/HANDOFF.md`, "Other pages"), each on its own branch if it's big:
   - [x] Sign-in pages (branch `s5-sign-in`, waiting for screenshot OK): one two-column layout (form + explanation, form only on phones), show/hide password, "Forgot" next to the label, student pointer on login
-  - [ ] Dashboard: card grid, name chip in the top bar, Remove in each card's ⋯ menu, file counts, quick call banner, first-visit welcome with the arrow doodle
+  - [x] Dashboard (branch `s5-dashboard`, on top of `s5-sign-in`; waiting for screenshot OK): card grid, name chip in the top bar, Remove in each card's ⋯ menu, file counts, quick call banner, first-visit welcome with the arrow doodle
   - [ ] Classroom: two columns, link shown in a field, drop area for uploads, filters, storage bar, Remove moves here
   - [ ] Join: camera and microphone check before joining (local tracks reused after joining)
 - [ ] D5d: one wait, one screen (below)

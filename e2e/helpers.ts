@@ -21,7 +21,7 @@ export async function openTestClassroom(page: Page) {
   const card = page.getByRole("link", { name: `Open ${TEST_CLASSROOM}'s classroom` });
   await expect(page.getByRole("heading", { name: "Your classrooms" })).toBeVisible();
   if (!(await card.count())) {
-    await page.getByLabel("Add a classroom").fill(TEST_CLASSROOM);
+    await page.getByLabel("Student's name").fill(TEST_CLASSROOM);
     await page.getByRole("button", { name: "Add", exact: true }).click();
     await expect(card).toBeVisible();
   }
