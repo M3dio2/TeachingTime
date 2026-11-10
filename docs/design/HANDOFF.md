@@ -78,9 +78,9 @@ The mock-ups use raw colours. In code, always use the tokens from `app/globals.c
 - **Who follows:** the student never clicks tabs on desktop. The pill in the tab bar says "Anna sees what you see" (teacher) or "Following Laura" (student).
 
 ### What is synced
-- **Shared, from the teacher's LiveKit participant attributes:** `tabs` (JSON array of ids), `active` (0 or 1), `layout` (`split` or `single`), `justTalk`, plus the existing `canEdit`. Put them in one hook, extending `lib/sync/useStudentCanEdit.ts`. Only the teacher's token may set attributes, so a student can't change them. The student renders from these values and writes nothing.
+- **Shared, from the teacher's LiveKit participant attributes:** `tabs` (JSON array of ids), `active` (0 or 1), `layout` (`split` or `single`), `justTalk`, plus the existing `studentCanEdit`. Built in L1 as one hook, `lib/sync/useTeacherSettings.ts` (format in `docs/ARCHITECTURE.md`). Only the teacher's token may set attributes, so a student can't change them. The student renders from these values and writes nothing.
 - **Personal, in `localStorage`, never synced:** camera column width, files panel width, the split between the two tabs, files panel folded.
-- **The (!) nudge goes away** (`lib/sync/useNudge.ts`): following the teacher's tabs replaces it.
+- **The (!) nudge is gone** (removed in L1): following the teacher's tabs replaces it.
 
 ### Sizes and resizing
 The room follows the window width:
@@ -89,7 +89,7 @@ The room follows the window width:
 |---|---|---|---|
 | 1280 px and wider | column, 240 px | open, 272 px | |
 | 1024–1279 px | column, 200 px | folded to a 48 px icon strip | |
-| 768–1023 px | no column; two small tiles float over the stage's top-right corner (148 px wide, `surface` border, `shadow-soft`) | folded | |
+| 768–1023 px | no column; two small tiles float over the stage (148 px wide, `surface` border, `shadow-soft`), draggable to any corner (user, L1) | folded | bottom bar icons only; Just talk = the other person big, you small and draggable |
 | below 768 px | phone layout | none | see below |
 
 - **Handles** between cameras and stage, between the two tabs, and between stage and files.

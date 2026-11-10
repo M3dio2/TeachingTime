@@ -25,7 +25,6 @@
     "next": "16.4.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-resizable-panels": "^4.15.0",
     "yjs": "^13.6.33"
   },
   "devDependencies": {

@@ -1,0 +1,85 @@
+<!doctype html>
+<!-- Mock-up: Just talk, two options (L1 feedback, 10 Nov 2026). Open with ?o=a or ?o=b.
+     Raw colours are fine in mock-ups only; the build uses the tokens (docs/DESIGN.md). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Just talk – options</title>
+<style>
+  body { margin: 0; font-family: Geist, system-ui, sans-serif; background: #FAF6F0; color: #3B2A1E; }
+  .room { height: 100vh; box-sizing: border-box; padding: 8px; display: flex; flex-direction: column; gap: 8px; }
+  .note-row { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 40px; }
+  .chip { padding: 3px 10px; border-radius: 6px; background: #FBEDB5; color: #6B4E0E; font-size: 14px; font-weight: 500; }
+  .btn { height: 36px; padding: 0 14px; border: 0; border-radius: 6px; background: #8B5E3C; color: #fff; font: inherit; font-size: 14px; font-weight: 500; }
+  .tile { position: relative; background: #2E2620; border-radius: 10px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  .face { border-radius: 50%; background: #76604F; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+  .name { position: absolute; left: 10px; bottom: 10px; padding: 3px 8px; border-radius: 6px; background: rgba(46,38,32,.85); color: #fff; font-size: 13px; }
+  .bar { height: 56px; flex: 0 0 56px; display: flex; align-items: center; justify-content: center; gap: 8px; color: #76604F; font-size: 14px; }
+  .bar span { height: 40px; padding: 0 14px; border: 1px solid #E6D9C8; border-radius: 6px; background: #fff; display: inline-flex; align-items: center; color: #3B2A1E; }
+  .bar .leave { background: #fff; color: #B4442F; }
+  .label { position: fixed; top: 12px; left: 12px; padding: 4px 10px; border-radius: 6px; background: #3B2A1E; color: #F4D35E; font-size: 13px; font-weight: 600; z-index: 50; }
+
+  /* A: the other person large; you small, floating, draggable, snapping to a corner */
+  .stageA { position: relative; flex: 1; min-height: 0; background: #2E2620; border-radius: 10px; overflow: hidden; }
+  .stageA .big { position: absolute; inset: 0; }
+  .self { position: absolute; width: 240px; aspect-ratio: 16 / 9; border: 2px solid #fff; border-radius: 8px; box-shadow: 0 6px 20px rgba(59,42,30,.25); cursor: grab; touch-action: none; transition: left .2s ease-out, top .2s ease-out; }
+  .self.dragging { cursor: grabbing; transition: none; }
+  .self .name { left: 6px; bottom: 6px; font-size: 12px; padding: 1px 6px; }
+  .grip { position: absolute; top: 6px; right: 6px; padding: 2px 6px; border-radius: 4px; background: rgba(46,38,32,.85); color: #F3EBE0; font-size: 11px; }
+  .hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); padding: 4px 10px; border-radius: 6px; background: rgba(46,38,32,.85); color: #F3EBE0; font-size: 12px; }
+
+  /* B: both side by side, in their real 16:9 shape, centred */
+  .stageB { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; gap: 8px; }
+  .stageB .tile { flex: 1 1 0; max-width: calc((100vh - 140px) * 16 / 9); aspect-ratio: 16 / 9; }
+</style>
+</head>
+<body>
+<div id="a" hidden>
+  <div class="label">A · Spotlight: Anna big, you small and draggable</div>
+  <div class="room">
+    <div class="note-row"><span class="chip">Just talking. The tabs are folded for both of you.</span><button class="btn">Show the 2 tabs</button></div>
+    <div class="stageA" id="stageA">
+      <div class="big tile" style="border-radius:0"><div class="face" style="width:140px;height:140px;font-size:52px">A</div><span class="name">Anna</span></div>
+      <div class="self tile" id="self"><div class="face" style="width:44px;height:44px;font-size:18px">L</div><span class="name">You</span><span class="grip">⠿ drag</span></div>
+      <span class="hint">Drag your camera to any corner. Double-click to swap.</span>
+    </div>
+    <div class="bar"><span>Mute Anna</span><span>Anna views only</span><span>Mic</span><span>Camera</span><span>Share</span><span class="leave">Leave</span></div>
+  </div>
+</div>
+<div id="b" hidden>
+  <div class="label">B · Side by side, in their real shape</div>
+  <div class="room">
+    <div class="note-row"><span class="chip">Just talking. The tabs are folded for both of you.</span><button class="btn">Show the 2 tabs</button></div>
+    <div class="stageB">
+      <div class="tile"><div class="face" style="width:110px;height:110px;font-size:42px">A</div><span class="name">Anna</span></div>
+      <div class="tile"><div class="face" style="width:110px;height:110px;font-size:42px">L</div><span class="name">You</span></div>
+    </div>
+    <div class="bar"><span>Mute Anna</span><span>Anna views only</span><span>Mic</span><span>Camera</span><span>Share</span><span class="leave">Leave</span></div>
+  </div>
+</div>
+<script>
+  const o = new URLSearchParams(location.search).get("o") || "a";
+  document.getElementById(o).hidden = false;
+  // A: drag the self-view anywhere; on release it snaps to the nearest corner.
+  const stage = document.getElementById("stageA"), self = document.getElementById("self");
+  const M = 16;
+  const place = (corner) => {
+    const r = stage.getBoundingClientRect(), w = self.offsetWidth, h = self.offsetHeight;
+    self.style.left = (corner.includes("l") ? M : r.width - w - M) + "px";
+    self.style.top = (corner.includes("t") ? M : r.height - h - M) + "px";
+  };
+  place("br");
+  self.addEventListener("pointerdown", (e) => {
+    const r = stage.getBoundingClientRect(), dx = e.clientX - self.offsetLeft - r.left, dy = e.clientY - self.offsetTop - r.top;
+    self.classList.add("dragging"); self.setPointerCapture(e.pointerId);
+    const move = (ev) => { self.style.left = ev.clientX - r.left - dx + "px"; self.style.top = ev.clientY - r.top - dy + "px"; };
+    const up = () => {
+      self.classList.remove("dragging"); self.removeEventListener("pointermove", move);
+      const cx = self.offsetLeft + self.offsetWidth / 2, cy = self.offsetTop + self.offsetHeight / 2;
+      place((cy < r.height / 2 ? "t" : "b") + (cx < r.width / 2 ? "l" : "r"));
+    };
+    self.addEventListener("pointermove", move); self.addEventListener("pointerup", up, { once: true });
+  });
+</script>
+</body>
+</html>

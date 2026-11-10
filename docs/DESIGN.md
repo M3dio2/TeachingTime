@@ -15,11 +15,11 @@ The November 2026 redesign is the target: mock-ups in `docs/design/screens/`, de
      - danger: destructive actions or errors
      - ok: allowed or success
 3. **The teacher leads, the student follows easily.**
-   - The student sees what the teacher shows: the same open tabs, the same active tab, side by side or not, and Just talk. The student never configures anything to follow the lesson. *(L1; until then the (!) nudge switches the student's board.)*
+   - The student sees what the teacher shows: the same open tabs, the same active tab, side by side or not, and Just talk. The student never configures anything to follow the lesson.
    - Teacher-only controls sit in two places, each next to what it affects:
-     - tab bar: + (open a tab), × on tabs, the layout switch, Just talk, and Clear in the board's own toolbar *(L1)*
+     - tab bar: + (open a tab), × on tabs, the layout switch, Just talk, and Clear in the Text and Draw toolbars
      - control bar, left of mic and camera: Mute student, "Student can edit" (pencil), share screen
-   - On phones the extra controls move into a ⋯ sheet *(L1)*.
+   - On phones the extra controls move into a ⋯ sheet.
    - Each one has a tooltip and an `aria-label`.
    - Nothing changes the lesson by surprise: a new tab never silently replaces an open one (screen sharing is the one exception, see `HANDOFF.md`).
 4. **Everyone owns their sizes.**
@@ -32,7 +32,7 @@ The November 2026 redesign is the target: mock-ups in `docs/design/screens/`, de
    - Text contrast is at least **4.5:1** (WCAG AA). All token pairs below are checked.
    - Every interactive element has a visible focus ring (`focus-visible:ring-accent`).
    - Touch targets are at least **40 px** on phones.
-   - Use words for actions. Icons alone only for universally known ones (mic, camera, leave), or with a tooltip, as (!), the pencil and the trash can have.
+   - Use words for actions. Icons alone only for universally known ones (mic, camera, leave), or with a tooltip and `aria-label`, as the trash can and the layout switch have.
    - Icons come from `lucide-react`, at 16 px.
 7. **Friendly, plain copy.**
    - Short sentences that say what happened and what to do next ("Your browser blocked the camera. Click…").
@@ -89,7 +89,6 @@ A yellow marker used the way a teacher marks a text: one stroke at the right mom
   Sizes `sm` and `md`. On phones the hit area is at least 40 px.
 - **Field:** a labelled input on `surface`, with a line border and accent focus ring.
 - **Panel:** `surface` with a `line` border, `rounded-panel` corners and an optional header bar on `surface-2`.
-- **TabBar:** segmented tabs in a header. The active tab has an `accent` underline or fill, and the rest are `ink-muted`.
 - **Wordmark:** the dark "T" tile (same as `app/icon.svg`) and "Teaching" underlined by the marker. `underline="draw"` animates the underline, `"still"` shows it drawn, `"none"` leaves it out where the screen has its own marker gesture.
 - **Marker:** a hand-drawn yellow stroke that draws itself (see "The marker" above).
 - **Waiting and arriving** (`components/room/`):
@@ -97,15 +96,15 @@ A yellow marker used the way a teacher marks a text: one stroke at the right mom
   - `JoinToast`: "Anna joined" at the top when someone arrives; camera tiles fade in.
   - `RoomMessage` with `tick`: "See you next time!" when the call has ended.
 - **Banner** (`components/room/StatusBanner.tsx`): info on `surface-2`, warning in amber tones, error in danger tones. Can be dismissed when the user can act on it.
-- **New in the redesign** (add them to `components/ui/` when first needed):
-  - **Tabs** *(L1)*: browser-style tabs in a `surface-2` bar. The open tab is `surface` and merges into the content; the active one gets the marker underline.
-  - **Segmented control:** two or more options in a `surface-2` track, the chosen one on `surface`. Used for phone tabs and the classroom's file filters.
-  - **Handle** *(L1)*: a resize `<button>` with an 8 px hit area and a thin `line` mark, `accent` on hover and focus, and arrow-key steps.
-  - **Sheet** *(L1)*: a phone bottom sheet with a `bg-video/45` backdrop, a `surface` panel with `rounded-t-2xl`, a grab bar and a close button.
-  - **Switch:** a `role="switch"` toggle, `ok` when on. Used for "Student can write and draw" on phones.
-  - **Label chip:** a small `rounded` label in `marker-soft`/`marker-ink` ("On screen", "Waiting") or `surface-2`/`ink-muted` ("In a tab", "View only").
+- **New in the redesign** (in `components/ui/` since L1, unless noted):
+  - **Tabs** (`components/room/Stage.tsx`): browser-style tabs in a `surface-2` bar. The open tab is `surface` and merges into the content; the active one gets the marker underline.
+  - **Segmented control** (`Segmented`): options in a `surface-2` track, the chosen one on `surface`. Used for phone tabs and the classroom's file filters.
+  - **Handle** (`Handle`): a resize `<button>` with an 8 px hit area and a thin `line` mark, `accent` on hover and focus, and arrow-key steps.
+  - **Sheet** (`Sheet`): a phone bottom sheet with a `bg-video/45` backdrop, a `surface` panel with `rounded-t-2xl`, a grab bar and a close button.
+  - **Switch** (`Switch`): a `role="switch"` toggle, `ok` when on. Used for "Student can write and draw" on phones.
+  - **Label chip** (`Chip`): a small `rounded` label in `marker-soft`/`marker-ink` ("On screen", "Waiting") or `surface-2`/`ink-muted` ("In a tab", "View only").
 
-## Lesson layout *(L1)*
+## Lesson layout
 Desktop, 1280 px and wider (teacher):
 ```
 ┌────────┬┬──────────────────────────────────────┬┬──────────┐
@@ -123,10 +122,10 @@ Desktop, 1280 px and wider (teacher):
 - **Sizes by window width:**
   - 1280 px and wider: camera column 240 px, files panel 272 px.
   - 1024–1279 px: camera column 200 px, files folded to icons.
-  - 768–1023 px: no camera column; small camera tiles float over the stage's corner.
+  - 768–1023 px: no camera column; small camera tiles float over the stage. They can be dragged and snap to the nearest corner (remembered per browser). The bottom bar shows icons only (each with a tooltip and label).
   - Each tab needs 320 px. When there isn't room for two, the stage switches to one at a time by itself.
 - **Handles:** all dividers can be dragged (cameras 160–360 px, files 220–400 px). Sizes are saved per browser.
-- **Just talk:** the two cameras fill the room.
+- **Just talk:** the two cameras fill the room side by side. Below 1024 px: the other person fills the room and your own camera floats small, draggable to any corner.
 - **The student** has no files panel and no teacher controls.
 - **Phone (below 768 px):**
   - camera tiles in a row, the audio bar, the tabs as a segmented control, then the active tab
@@ -134,7 +133,7 @@ Desktop, 1280 px and wider (teacher):
   - **student:** mic, camera and Leave
   - no screen sharing and no side by side
 
-Until L1 is built, today's layout applies: the stage on the left (the shared screen, or the other person's camera large with a small self-view), the board on the right with [Text][Draw] and the (!) nudge and Clear, and a camera strip under both while sharing. On phones, the share or the other person's camera fills the stage, with no board, no self-view and no Share button.
+In L1 the files panel only lists the files; opening them (click or drag) comes in L2a, and the audio bar in A1.
 
 ## Other pages *(S5)*
 - **Sign-in pages:** one layout. The form on the left, a short explanation of TeachingTime on a `surface-2` panel on the right; on phones, the form only.
