@@ -79,3 +79,8 @@ Details:
 ## Join camera check (S5)
 - `components/room/CameraCheck.tsx`: the join card starts the camera and microphone with `createLocalTracks` (if both fail together it tries each alone, so a missing camera still lets the mic work) and shows a preview with mic/camera buttons that mute the tracks.
 - Joining hands the tracks to `LessonRoom` (`tracks` prop): `LiveKitRoom` then gets `video={false} audio={false}` and `PublishTracks` publishes the same tracks once connected, so a muted mic stays muted. LiveKit stops them on disconnect. Rejoin skips the check and lets LiveKit start new tracks.
+
+## Writing on PDFs (L2b)
+- `lib/room/pdfInk.ts`: one flat `Y.Map` `pdfInk` in the lesson Y.Doc, keyed by item id: `{ file, page, tool: "pen" | "highlighter" | "text", pts | at + text }`. Coordinates are fractions of the page width on both axes, so every screen size lines up. Flat keys can't clash when both write at once; the eraser and Clear delete keys. It syncs and saves with the rest of the doc (the teacher ignores the student's edits while "can edit" is off).
+- `components/room/PdfInk.tsx`: the sticky toolbar (Scroll is the default, so the PDF scrolls as before) and an SVG layer per page. With a tool picked the layer takes pointer events (`touch-action: none`); a stroke is sent when the pen lifts.
+- **Save as new PDF** (teacher, student lessons): `inkedPdf` draws the items onto the original with `pdf-lib` (`drawSvgPath` on the crop box, Helvetica text), then `lib/files/uploadResource.ts` (shared with the classroom page's uploads) stores "Name (10 Nov 2026).pdf" and the room adds it to the files panel (`model.addFile`).

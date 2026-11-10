@@ -175,9 +175,11 @@ function LessonContent({
   useLessonPersistence(doc, lesson?.saveBoard ? lesson.id : undefined);
 
   const sync = useViewSync(teacher);
+  // The classroom's files; "Save as new PDF" adds one during the lesson.
+  const [files, setFiles] = useState<RoomFile[]>(lesson?.files ?? []);
   // File tab labels: the teacher knows her files; the student asks for the names.
   const known = lesson?.files
-    ? Object.fromEntries(lesson.files.map((f) => [`${f.kind}:${f.id}`, f.name]))
+    ? Object.fromEntries(files.map((f) => [`${f.kind}:${f.id}`, f.name]))
     : undefined;
   const names = useFileNames(inviteSlug, view.tabs, known);
 
@@ -193,7 +195,8 @@ function LessonContent({
     canEdit: teacher || view.studentCanEdit,
     sharing,
     otherName,
-    files: studentLesson ? (lesson?.files ?? []) : undefined,
+    files: studentLesson ? files : undefined,
+    addFile: (f) => setFiles((list) => [...list, f]),
     filesTitle: `${lesson?.title ?? ""}'s files`,
     lessonId: lesson?.id,
     inviteSlug,

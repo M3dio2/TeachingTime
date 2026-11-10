@@ -229,3 +229,14 @@ body {
     --lg-icon-size: 0.875rem;
   }
 }
+
+/* L2b: "Saved as …" in a PDF tab stays a while, then fades. */
+@keyframes fade-away {
+  0%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
