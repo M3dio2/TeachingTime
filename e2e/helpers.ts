@@ -54,7 +54,7 @@ export async function joinAsStudent(
   const page = await context.newPage();
   await page.goto(joinPath);
   await page.getByLabel("Your name").fill("E2E Student");
-  await page.getByRole("button", { name: "Join" }).click();
+  await page.getByRole("button", { name: "Join lesson" }).click();
   await expect(page.getByText(/^Following /).first()).toBeVisible({ timeout: 30_000 });
   return page;
 }

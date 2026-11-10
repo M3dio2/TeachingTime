@@ -70,3 +70,7 @@ Details:
 - **Screen sharing:** only the teacher has the Share button (the student's bar has mic, camera and Leave).
 - **"Clear"** sits in the Text and Draw toolbars (teacher only) and clears only that tab for both (`lib/sync/clearLesson.ts`): `clearText` empties the text fragment, `clearBoard` marks whiteboard elements deleted with a higher version.
 - The old (!) nudge (`useNudge`, a one-off data message that switched the student's board) is gone since L1: the student follows the teacher's tabs instead.
+
+## Join camera check (S5)
+- `components/room/CameraCheck.tsx`: the join card starts the camera and microphone with `createLocalTracks` (if both fail together it tries each alone, so a missing camera still lets the mic work) and shows a preview with mic/camera buttons that mute the tracks.
+- Joining hands the tracks to `LessonRoom` (`tracks` prop): `LiveKitRoom` then gets `video={false} audio={false}` and `PublishTracks` publishes the same tracks once connected, so a muted mic stays muted. LiveKit stops them on disconnect. Rejoin skips the check and lets LiveKit start new tracks.

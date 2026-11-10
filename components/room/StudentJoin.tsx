@@ -4,9 +4,9 @@ import { DisconnectReason } from "livekit-client";
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
-import Panel from "@/components/ui/Panel";
 import Marker from "@/components/ui/Marker";
 import Wordmark from "@/components/ui/Wordmark";
+import { CameraPreview, type PreJoinTracks, useCameraCheck } from "./CameraCheck";
 import LessonRoom from "./LessonRoom";
 import RoomMessage from "./RoomMessage";
 
@@ -34,9 +34,10 @@ export default function StudentJoin({ slug }: { slug: string }) {
   const [error, setError] = useState<string | null>(null);
   const [joining, setJoining] = useState(false);
   const [exit, setExit] = useState<Exit | null>(null);
+  const [tracks, setTracks] = useState<PreJoinTracks | null>(null);
 
-  async function join(e?: React.FormEvent) {
-    e?.preventDefault();
+  // `preJoin`: the camera check's tracks (first join only; Rejoin lets LiveKit start new ones).
+  async function join(preJoin?: PreJoinTracks | null) {
     setJoining(true);
     setError(null);
     const res = await fetch("/api/livekit-token", {
@@ -51,6 +52,7 @@ export default function StudentJoin({ slug }: { slug: string }) {
       return;
     }
     setExit(null);
+    setTracks(preJoin ?? null);
     setToken(data.token);
   }
 
@@ -59,6 +61,7 @@ export default function StudentJoin({ slug }: { slug: string }) {
       <LessonRoom
         token={token}
         role="student"
+        tracks={tracks}
         onLeave={(reason) => {
           setToken(null);
           setExit(
@@ -95,41 +98,86 @@ export default function StudentJoin({ slug }: { slug: string }) {
     );
   }
 
+  if (exit === "left") {
+    return (
+      <RoomMessage
+        title="You left the lesson"
+        actions={
+          <Button disabled={joining} onClick={() => join()} className="h-12 w-full text-[17px] font-semibold">
+            {joining ? "Joining…" : "Rejoin"}
+          </Button>
+        }
+      >
+        Left by mistake? Join again with the same name.
+        {error && <span className="mt-2 block text-sm text-danger">{error}</span>}
+      </RoomMessage>
+    );
+  }
+
+  return <JoinCard name={name} setName={setName} joining={joining} error={error} onJoin={join} />;
+}
+
+// "Join your lesson": the camera check, the name and Join lesson.
+function JoinCard({
+  name,
+  setName,
+  joining,
+  error,
+  onJoin,
+}: {
+  name: string;
+  setName: (name: string) => void;
+  joining: boolean;
+  error: string | null;
+  onJoin: (tracks: PreJoinTracks | null) => void;
+}) {
+  const check = useCameraCheck();
   return (
-    <main className="flex min-h-dvh flex-1 items-center justify-center p-4">
-      <Panel className="w-full max-w-sm">
-        <form onSubmit={join} className="flex flex-col gap-4 p-6">
-          <div className="flex flex-col gap-3">
-            <Wordmark size="sm" underline="none" />
-            <h1 className="text-2xl">
-              {exit === "left" ? (
-                "You left the lesson"
-              ) : (
-                <>
-                  Join your{" "}
-                  <span className="relative isolate inline-block">
-                    lesson
-                    <Marker
-                      shape="underline"
-                      delay={0.2}
-                      className="absolute -bottom-[0.15em] -left-[3%] -z-10 h-[0.3em] w-[106%]"
-                    />
-                  </span>
-                </>
-              )}
-            </h1>
-          </div>
-          <Field
-            label="Your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            autoComplete="given-name"
-            required
-          />
-          <Button disabled={joining}>{joining ? "Joining…" : exit === "left" ? "Rejoin" : "Join"}</Button>
-          {error && <p className="text-sm text-danger">{error}</p>}
-        </form>
-      </Panel>
+    <main className="flex min-h-dvh flex-1 items-center justify-center px-4 py-6">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          onJoin(check.handOver());
+        }}
+        className="flex w-full max-w-[440px] flex-col gap-5 rounded-panel border border-line bg-surface p-6"
+      >
+        <Wordmark size="sm" underline="none" />
+        <CameraPreview check={check} />
+        <div className="flex flex-col gap-1.5">
+          <h1 className="text-[32px] leading-[1.1] tracking-[-0.02em]">
+            Join your{" "}
+            <span className="relative isolate inline-block">
+              lesson
+              <Marker
+                shape="underline"
+                delay={0.2}
+                className="absolute -bottom-[0.15em] -left-[3%] -z-10 h-[0.3em] w-[106%]"
+              />
+            </span>
+          </h1>
+          <p className="text-ink-muted">Check your camera, type your name, and you&apos;re in.</p>
+        </div>
+        <Field
+          label="Your name"
+          placeholder="e.g. Anna"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          autoComplete="given-name"
+          className="[&_input]:h-12 [&_input]:text-[17px]"
+          required
+        />
+        {error && (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
+        <Button disabled={joining} className="h-12 text-[17px] font-semibold">
+          {joining ? "Joining…" : "Join lesson"}
+        </Button>
+        <p className="text-center text-[13px] leading-snug text-ink-muted">
+          When your browser asks, allow the camera and microphone.
+        </p>
+      </form>
     </main>
   );
 }
