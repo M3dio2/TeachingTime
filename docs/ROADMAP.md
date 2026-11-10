@@ -68,17 +68,19 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 
 ## L1: Tabbed call layout
 Design and rules: `docs/design/HANDOFF.md` ("Lesson room"), screens `Main`, `Room-*`, `Phone-teacher`, `Phone-student` in `docs/design/screens/`.
-- [ ] Desktop: cameras column on the left | stage with tabs | "Anna's files" on the right (teacher only, student lessons only, folds to an icon strip; lists the files, opening them comes in L2a). Quick calls have no files panel
-- [ ] Tabs like a browser, **one or two open**: **Screen** (only while someone shares), **Text**, **Draw** (PDFs and pictures in L2a). + only while one tab is open, × on each tab while two are open; side by side or one at a time; yellow underline on the active tab. A new tab never replaces one silently
-- [ ] Screen sharing opens the Screen tab beside the open one; with two open it takes the active tab's place and gives it back when sharing stops
-- [ ] The student follows: the teacher's `tabs`, `active`, `layout` and `justTalk` go into her LiveKit attributes next to "student can edit" (one hook for all teacher settings). The (!) nudge goes away; Clear moves into the Text and Draw toolbars
-- [ ] "Just talk": the teacher folds the tabs away for both; the cameras fill the room. Works in quick calls too
-- [ ] Resizing: handles for the cameras, the split between tabs and the files (sizes per browser); breakpoints 1280 / 1024 / 768 px with floating cameras below 1024; one at a time by itself when a tab would get under 320 px
-- [ ] Phone: teacher (segmented tabs, Files and ⋯ sheets, five big buttons) and student (two-way switch, follows the teacher)
+- [x] Desktop: cameras column on the left | stage with tabs | "Anna's files" on the right (teacher only, student lessons only, folds to an icon strip; lists the files, opening them comes in L2a). Quick calls have no files panel
+- [x] Tabs like a browser, **one or two open**: **Screen** (only while someone shares), **Text**, **Draw** (PDFs and pictures in L2a). + only while one tab is open, × on each tab while two are open; side by side or one at a time; yellow underline on the active tab. A new tab never replaces one silently
+- [x] Screen sharing opens the Screen tab beside the open one; with two open it takes the active tab's place and gives it back when sharing stops
+- [x] The student follows: the teacher's `tabs`, `active`, `layout` and `justTalk` go into her LiveKit attributes next to "student can edit" (one hook for all teacher settings). The (!) nudge goes away; Clear moves into the Text and Draw toolbars
+- [x] "Just talk": the teacher folds the tabs away for both; the cameras fill the room. Works in quick calls too
+- [x] Resizing: handles for the cameras, the split between tabs and the files (sizes per browser); breakpoints 1280 / 1024 / 768 px with floating cameras below 1024; one at a time by itself when a tab would get under 320 px
+- [x] Phone: teacher (segmented tabs, Files and ⋯ sheets, five big buttons) and student (two-way switch, follows the teacher)
 - [x] Rewrite `docs/DESIGN.md` principles 3–4 and the layout part (done with the redesign, Nov 2026)
-- [ ] Update `docs/ARCHITECTURE.md` (teacher settings hook, nudge removed)
+- [x] Update `docs/ARCHITECTURE.md` (teacher settings hook, nudge removed)
 
-### L1 plan (branch `l1-tabbed-call`)
+### L1 plan (branch `l1-tabbed-call`, merged 10 Nov)
+Still to check on real devices: a real screen share on Mac/Windows (also stopping from the browser's own bar); iOS Safari and Android Chrome for both roles (sheets, keyboard over the text pad, finger drawing, dragging the floating cameras on an iPad); a phone teacher with a laptop student; follow speed from Chile; handles with a real trackpad; the files panel with real pictures and PDFs; a teacher refresh mid-lesson.
+
 **Synced state.** `lib/sync/useStudentCanEdit.ts` becomes `lib/sync/useTeacherSettings.ts` (keeps `isTeacher`): one hook, one `setAttributes` call with every key whenever one changes. The teacher writes, the student only reads (from the participant whose token says `teacher`). Attributes are strings:
 - `studentCanEdit`: `"true"` / `"false"` (existing key, unchanged)
 - `tabs`: JSON array of 1–2 tab ids, e.g. `["screen","text"]`. Ids: `screen`, `text`, `draw` (L2a adds `pdf:<resourceId>`, `image:<resourceId>`)
@@ -108,6 +110,8 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 **Phone.** Teacher: camera row (16:9), segmented tabs (+ opens Text or Draw, whichever is closed; × on both while two are open), the active tab, bar with mic, camera, Files, ⋯, Leave (48 px). Files sheet = the list; ⋯ sheet = Mute, "Anna can write and draw" switch, Just talk, "Screen sharing and side by side need a computer." Student: camera row, "Laura shows two tabs" + "Following Laura", a two-way switch she may tap (starts on the teacher's active tab, jumps when the teacher switches or changes the tabs), the active tab, mic, camera, Leave.
 
 **Decided (user, 10 Nov):** Clear moves into the Text and Draw toolbars and clears only its own tab; a phone student may tap between the teacher's two tabs.
+
+**Screenshot review (user, 10 Nov):** + without a background, level with the tab labels. On 768–1023 px windows the floating cameras can be dragged (snap to the nearest corner, remembered), the bottom bar shows icons only, and Just talk shows the other person big with your own camera small and draggable. Mock-up of the Just talk options: `docs/mockups/just-talk.html` (A chosen for tablets).
 
 **Found while building:** LiveKit's minimal control bar had unlabelled icon buttons; the bar now uses LiveKit's toggles with labels ("Microphone", "Camera", "Share your screen", "Leave the lesson") and keeps the device menus. On the whiteboard, "View only" shows only while the board is read-only (Excalidraw's tools need the room otherwise).
 
@@ -155,7 +159,7 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 ## Redesign (Nov 2026)
 - [x] Every page redesigned on the canvas "TeachingTime Redesign" (claude.ai, private to the user), desktop and phone, with resizing rules
 - [x] Copied to `docs/design/screens/`; spec in `docs/design/HANDOFF.md`; `docs/DESIGN.md` updated
-- [ ] Built: the room in L1 / L2a / A1, the other pages in S5. When the canvas changes, refresh `docs/design/screens/` (see the end of `HANDOFF.md`)
+- [ ] Built: the room in L1 (done) / L2a / A1, the other pages in S5. When the canvas changes, refresh `docs/design/screens/` (see the end of `HANDOFF.md`)
 
 ## D5d: One wait, one screen
 Rule: a wait that takes you into or out of a lesson shows the full loading screen, without breaks. Small actions that keep you on the page (save name, add student) get a pending state on their button.

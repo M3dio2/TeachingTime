@@ -9,9 +9,10 @@ import {
   useRemoteParticipants,
 } from "@livekit/components-react";
 import { MediaDeviceFailure, type Participant, Track } from "livekit-client";
-import { LogOut, MicOff, Pencil } from "lucide-react";
+import { LogOut, MicOff, Pencil, PencilOff } from "lucide-react";
 import { useState } from "react";
 import { muteMicrophones } from "@/lib/mute";
+import { useWindowWidth } from "@/lib/useStored";
 import { cap, type RoomModel } from "./roomModel";
 import { deviceProblemMessage } from "./StatusBanner";
 
@@ -36,6 +37,8 @@ export default function RoomControls({
 }) {
   const teacher = model.role === "teacher";
   const onDeviceError = useDeviceErrorHandler(onProblem);
+  // Tablet-sized windows: icons only (each keeps its tooltip and label).
+  const iconOnly = useWindowWidth() < 1024;
 
   return (
     <div className="room-controls flex h-14 shrink-0 items-center gap-2 px-2">
@@ -52,12 +55,18 @@ export default function RoomControls({
         {teacher && model.actions && (
           <>
             {model.lessonId && (
-              <MuteStudentButton lessonId={model.lessonId} name={model.otherName} onProblem={onProblem} />
+              <MuteStudentButton
+                lessonId={model.lessonId}
+                name={model.otherName}
+                onProblem={onProblem}
+                iconOnly={iconOnly}
+              />
             )}
             <StudentCanEditToggle
               name={model.otherName}
               canEdit={model.view.studentCanEdit}
               onChange={model.actions.setStudentCanEdit}
+              iconOnly={iconOnly}
             />
             <span aria-hidden className="mx-1 h-6 w-px bg-line" />
           </>
@@ -66,9 +75,9 @@ export default function RoomControls({
         <DeviceToggle source={Track.Source.Camera} kind="videoinput" label="Camera" onDeviceError={onDeviceError} />
         {/* Only the teacher shares her screen (docs/DESIGN.md). */}
         {teacher && <ShareToggle />}
-        <DisconnectButton aria-label="Leave the lesson">
+        <DisconnectButton aria-label="Leave the lesson" title="Leave the lesson">
           <LogOut size={16} aria-hidden />
-          Leave
+          {!iconOnly && "Leave"}
         </DisconnectButton>
       </div>
       <span className="flex-1" />
@@ -128,12 +137,14 @@ export function MuteStudentButton({
   onProblem,
   className = "lk-button",
   iconSize = 16,
+  iconOnly = false,
 }: {
   lessonId: string;
   name: string;
   onProblem: (message: string) => void;
   className?: string;
   iconSize?: number;
+  iconOnly?: boolean;
 }) {
   const student = useRemoteParticipants()[0];
   return student ? (
@@ -144,11 +155,18 @@ export function MuteStudentButton({
       onProblem={onProblem}
       className={className}
       iconSize={iconSize}
+      iconOnly={iconOnly}
     />
   ) : (
-    <button type="button" className={className} disabled>
+    <button
+      type="button"
+      className={className}
+      disabled
+      aria-label={iconOnly ? `Mute ${name}` : undefined}
+      title={`Mute ${name}`}
+    >
       <MicOff size={iconSize} aria-hidden />
-      Mute {name}
+      {!iconOnly && `Mute ${name}`}
     </button>
   );
 }
@@ -160,6 +178,7 @@ function MuteButton({
   onProblem,
   className,
   iconSize,
+  iconOnly,
 }: {
   participant: Participant;
   lessonId: string;
@@ -167,6 +186,7 @@ function MuteButton({
   onProblem: (message: string) => void;
   className: string;
   iconSize: number;
+  iconOnly: boolean;
 }) {
   const micOff = useIsMuted({ participant, source: Track.Source.Microphone });
   const [busy, setBusy] = useState(false);
@@ -174,6 +194,7 @@ function MuteButton({
     <button
       type="button"
       className={className}
+      aria-label={iconOnly ? `Mute ${name}` : undefined}
       title={micOff ? `${name}'s microphone is off` : `Turn ${name}'s microphone off`}
       disabled={busy || micOff}
       onClick={() => {
@@ -184,7 +205,7 @@ function MuteButton({
       }}
     >
       <MicOff size={iconSize} aria-hidden />
-      Mute {name}
+      {!iconOnly && `Mute ${name}`}
     </button>
   );
 }
@@ -195,21 +216,25 @@ function StudentCanEditToggle({
   name,
   canEdit,
   onChange,
+  iconOnly,
 }: {
   name: string;
   canEdit: boolean;
   onChange: (canEdit: boolean) => void;
+  iconOnly: boolean;
 }) {
+  const label = canEdit ? `${cap(name)} can edit` : `${cap(name)} views only`;
   return (
     <button
       type="button"
       className={`lk-button student-edit-toggle ${canEdit ? "is-on" : ""}`}
-      title={`Let ${name} write and draw`}
+      title={iconOnly ? `${label}. Click to change.` : `Let ${name} write and draw`}
+      aria-label={iconOnly ? label : undefined}
       aria-pressed={canEdit}
       onClick={() => onChange(!canEdit)}
     >
-      <Pencil size={16} aria-hidden />
-      {canEdit ? `${cap(name)} can edit` : `${cap(name)} views only`}
+      {iconOnly && !canEdit ? <PencilOff size={16} aria-hidden /> : <Pencil size={16} aria-hidden />}
+      {!iconOnly && label}
     </button>
   );
 }

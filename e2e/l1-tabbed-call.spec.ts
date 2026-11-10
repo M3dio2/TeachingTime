@@ -139,7 +139,31 @@ test.describe("L1 tabbed call", () => {
     // 768–1023: no column; the cameras float over the stage.
     await page.setViewportSize({ width: 900, height: 800 });
     await expect(column).toHaveCount(0);
-    await expect(page.getByTestId("floating-cameras")).toBeVisible();
+    const floating = page.getByTestId("floating-cameras");
+    await expect(floating).toBeVisible();
+    await expect(floating).toHaveAttribute("data-corner", "br");
+
+    // They can be dragged; on release they snap to the nearest corner (remembered).
+    const box = (await floating.boundingBox())!;
+    const area = (await stage(page).boundingBox())!;
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(area.x + 100, area.y + 100, { steps: 8 });
+    await page.mouse.up();
+    await expect(floating).toHaveAttribute("data-corner", "tl");
+    // Keyboard: arrow keys pick a corner.
+    await floating.focus();
+    await page.keyboard.press("ArrowRight");
+    await expect(floating).toHaveAttribute("data-corner", "tr");
+
+    // The action bar shows icons only here.
+    await expect(page.getByRole("button", { name: "Leave the lesson" })).not.toContainText("Leave");
+    await expect(page.getByRole("button", { name: /views only$/ })).toBeVisible();
+
+    // Just talk on a tablet-sized window: one camera big, your own small (alone here: just yours).
+    await page.getByRole("button", { name: "Just talk" }).click();
+    await expect(page.getByTestId("spotlight")).toBeVisible();
+    await page.getByRole("button", { name: /^Show the/ }).click();
   });
 
   test("phone: the teacher opens a second tab; the student taps and jumps back", async ({ browser }) => {

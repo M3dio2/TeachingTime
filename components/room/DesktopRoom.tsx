@@ -30,7 +30,7 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
   if (model.view.justTalk) {
     return (
       <div className="flex min-h-0 flex-1 flex-col p-2">
-        <JustTalk model={model} />
+        <JustTalk model={model} spotlight={w < 1024} />
       </div>
     );
   }

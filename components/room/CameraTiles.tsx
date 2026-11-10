@@ -10,6 +10,7 @@ import { Track } from "livekit-client";
 import { MicOff } from "lucide-react";
 import type { CSSProperties } from "react";
 import Button from "@/components/ui/Button";
+import Floating from "./Floating";
 
 // Inline sizes everywhere: LiveKit's unlayered CSS beats Tailwind on .lk-* (docs/DESIGN.md).
 const FILL: CSSProperties = { width: "100%", height: "100%" };
@@ -83,24 +84,58 @@ export function CameraColumn({ width, onMute }: { width: number; onMute?: OnMute
   );
 }
 
-// 768–1023 px: two small tiles float over the stage's top-right corner.
+// 768–1023 px: two small tiles float over the stage. They can be dragged to any corner
+// (bottom right at first); the smaller one, you, sits on the side of that corner.
 export function FloatingCameras() {
   const { other, self } = useCameras();
-  const tile = "overflow-hidden rounded-md border-2 border-surface shadow-soft";
+  const tile = "pointer-events-none overflow-hidden rounded-md border-2 border-surface shadow-soft";
   return (
-    <div
-      data-testid="floating-cameras"
-      className="pointer-events-none absolute top-3 right-3 z-10 flex w-[148px] flex-col gap-1.5"
+    <Floating
+      storageKey="room-floating-cameras-corner"
+      label="Cameras"
+      testId="floating-cameras"
+      className="flex w-[148px] flex-col gap-1.5"
     >
-      {other && (
-        <div className={tile} style={{ aspectRatio: "4 / 3" }}>
-          <ParticipantTile trackRef={other} style={FILL} />
-        </div>
+      {(corner) => (
+        <>
+          {other && (
+            <div className={tile} style={{ aspectRatio: "4 / 3" }}>
+              <ParticipantTile trackRef={other} style={FILL} />
+            </div>
+          )}
+          {self && (
+            <div
+              className={`${tile} w-[70%] ${corner.endsWith("l") ? "self-start" : "self-end"}`}
+              style={{ aspectRatio: "4 / 3" }}
+            >
+              <ParticipantTile trackRef={self} style={FILL} />
+            </div>
+          )}
+        </>
       )}
-      {self && (
-        <div className={`${tile} w-[70%] self-end`} style={{ aspectRatio: "4 / 3" }}>
-          <ParticipantTile trackRef={self} style={FILL} />
-        </div>
+    </Floating>
+  );
+}
+
+// Just talk on a tablet-sized window: the other person fills the room, your own camera
+// floats small and can be dragged to any corner.
+export function SpotlightCameras({ onMute }: { onMute?: OnMute }) {
+  const { other, self } = useCameras();
+  const main = other ?? self;
+  return (
+    <div data-testid="spotlight" className="relative min-h-0 flex-1 overflow-hidden rounded-panel bg-video">
+      {main && <CameraTile trackRef={main} onMute={onMute} />}
+      {other && self && (
+        <Floating
+          storageKey="room-spotlight-self-corner"
+          label="Your camera"
+          testId="spotlight-self"
+          className="w-[22%] max-w-60 min-w-36 overflow-hidden rounded-md border-2 border-surface shadow-soft"
+        >
+          <div className="pointer-events-none" style={{ aspectRatio: "16 / 9" }}>
+            <ParticipantTile trackRef={self} style={FILL} />
+          </div>
+        </Floating>
       )}
     </div>
   );

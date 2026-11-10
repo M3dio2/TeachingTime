@@ -2,12 +2,21 @@
 
 import Chip from "@/components/ui/Chip";
 import Button from "@/components/ui/Button";
-import { BigCameras } from "./CameraTiles";
+import { BigCameras, SpotlightCameras } from "./CameraTiles";
 import { cap, type RoomModel } from "./roomModel";
 
 // Just talk: the teacher folded the tabs away for both; the two cameras fill the room.
-// "Show the tabs" brings back the same tabs.
-export default function JustTalk({ model, phone = false }: { model: RoomModel; phone?: boolean }) {
+// "Show the tabs" brings back the same tabs. Tablet-sized windows (`spotlight`): the other
+// person big, your own camera small and draggable.
+export default function JustTalk({
+  model,
+  phone = false,
+  spotlight = false,
+}: {
+  model: RoomModel;
+  phone?: boolean;
+  spotlight?: boolean;
+}) {
   const teacher = model.role === "teacher";
   const count = model.view.tabs.length;
   return (
@@ -24,7 +33,11 @@ export default function JustTalk({ model, phone = false }: { model: RoomModel; p
           </Button>
         )}
       </div>
-      <BigCameras stacked={phone} onMute={model.onMute} />
+      {spotlight ? (
+        <SpotlightCameras onMute={model.onMute} />
+      ) : (
+        <BigCameras stacked={phone} onMute={model.onMute} />
+      )}
     </div>
   );
 }
