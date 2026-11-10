@@ -107,7 +107,9 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 
 **Phone.** Teacher: camera row (16:9), segmented tabs (+ opens Text or Draw, whichever is closed; × on both while two are open), the active tab, bar with mic, camera, Files, ⋯, Leave (48 px). Files sheet = the list; ⋯ sheet = Mute, "Anna can write and draw" switch, Just talk, "Screen sharing and side by side need a computer." Student: camera row, "Laura shows two tabs" + "Following Laura", a two-way switch she may tap (starts on the teacher's active tab, jumps when the teacher switches or changes the tabs), the active tab, mic, camera, Leave.
 
-**Decided (user, 10 Nov):** Clear moves into the Text and Draw toolbars; a phone student may tap between the teacher's two tabs.
+**Decided (user, 10 Nov):** Clear moves into the Text and Draw toolbars and clears only its own tab; a phone student may tap between the teacher's two tabs.
+
+**Found while building:** LiveKit's minimal control bar had unlabelled icon buttons; the bar now uses LiveKit's toggles with labels ("Microphone", "Camera", "Share your screen", "Leave the lesson") and keeps the device menus. On the whiteboard, "View only" shows only while the board is read-only (Excalidraw's tools need the room otherwise).
 
 **Tests.**
 - `e2e/l1-tab-rules.spec.ts` (no browser): the rules in `lib/room/tabs.ts`: never more than two, + only with one, the last tab can't close, Screen in and out with and without a remembered tab, closing Screen while sharing.

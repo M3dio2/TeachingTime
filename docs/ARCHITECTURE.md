@@ -34,10 +34,24 @@ One Yjs `Y.Doc` per join, created in `LessonContent` (`components/room/LessonRoo
 - `lib/sync/useYjsSync.ts` syncs the doc over LiveKit **data streams** (`lib/sync/transport.ts`; no size limit).
 - When two peers see each other, they exchange state vectors and the missing updates. Late joins and refreshes recover from the peer.
 
-## Edit permission
-The teacher's "student can edit" switch is **not** in the Y.Doc (the teacher accepts full-state diffs from the student, and those could change it). It's a LiveKit participant attribute on the teacher (`lib/sync/useStudentCanEdit.ts`). The token route gives only teachers `canUpdateOwnMetadata`, so a student can't set attributes or change their own role. It starts off on every join.
+## Teacher settings (what the student follows)
+The teacher's settings live in her LiveKit participant attributes (`lib/sync/useTeacherSettings.ts`), not in the Y.Doc: the teacher accepts full-state diffs from the student (to recover after a refresh), and those could change anything in the doc. The token route gives only teachers `canUpdateOwnMetadata`, so a student can't set attributes or change their own role. One hook publishes all keys in one `setAttributes` call whenever one changes, and on every (re)connect. Values are strings:
+- `studentCanEdit`: `"true"` / `"false"` (see "Edit permission")
+- `tabs`: JSON array of 1–2 tab ids (`screen`, `text`, `draw`; L2a adds `pdf:<id>`, `image:<id>`)
+- `active`: `"0"` / `"1"`, the tab the teacher clicked last
+- `layout`: `"split"` / `"single"` (a teacher on a phone publishes `single`)
+- `justTalk`: `"true"` / `"false"`
 
-Enforced in two places:
+The student reads them only from the participant whose token metadata says `teacher`, checks them (`cleanTabs`, `cleanActive`, `cleanLayout` in `lib/room/tabs.ts`: known ids, no duplicates, at most two) and writes nothing. Every join starts from the defaults (`["text"]`, side by side, not Just talk, editing off). When the teacher drops out, the student keeps the last tabs, but editing goes off.
+
+The tab rules are pure functions in `lib/room/tabs.ts` (open, close, pick, screen started / stopped), tested without a browser in `e2e/l1-tab-rules.spec.ts`. Only the teacher's client runs them, in `LessonContent` (`components/room/LessonRoom.tsx`). It watches the room's screen-share track: a share opens Screen (left of a single tab, or in the active tab's place, remembering that tab), and the end of the share closes it and gives the remembered tab back.
+
+Personal sizes (camera column, files panel, split between tabs, files folded) are in `localStorage` (`lib/useStored.ts`), never synced. Whether two tabs fit side by side is measured on each screen separately (320 px per tab); below that the stage shows one at a time by itself.
+
+On a phone the student may tap between the teacher's two tabs; her choice lasts until the teacher switches tabs or opens or closes one.
+
+## Edit permission
+"Student can edit" is the `studentCanEdit` teacher setting above. It's enforced in two places:
 - The student's editors are read-only when permission is off (Tiptap's `setEditable`, Excalidraw's `viewModeEnabled`).
 - The teacher's client ignores student updates while permission is off.
 
@@ -53,5 +67,6 @@ Details:
 
 ## Teacher actions
 - **Muting:** `/api/mute` (teacher only, checks lesson ownership) mutes microphones through LiveKit's server API and sends a server-only data message (`lib/mute.ts`) so the student sees why. LiveKit can't switch a mic back on; the student unmutes themselves.
-- **(!) nudge** (`lib/sync/useNudge.ts`): a one-off LiveKit data message (topic `nudge`), not stored in the Y.Doc, so it isn't replayed on join or refresh. Only accepted from a participant whose token says `teacher`. The student's board switches to that tab and highlights it.
-- **"Clear"** (`lib/sync/clearLesson.ts`) marks whiteboard elements deleted with a higher version, and empties the text fragment.
+- **Screen sharing:** only the teacher has the Share button (the student's bar has mic, camera and Leave).
+- **"Clear"** sits in the Text and Draw toolbars (teacher only) and clears only that tab for both (`lib/sync/clearLesson.ts`): `clearText` empties the text fragment, `clearBoard` marks whiteboard elements deleted with a higher version.
+- The old (!) nudge (`useNudge`, a one-off data message that switched the student's board) is gone since L1: the student follows the teacher's tabs instead.

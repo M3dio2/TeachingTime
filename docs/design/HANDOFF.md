@@ -78,9 +78,9 @@ The mock-ups use raw colours. In code, always use the tokens from `app/globals.c
 - **Who follows:** the student never clicks tabs on desktop. The pill in the tab bar says "Anna sees what you see" (teacher) or "Following Laura" (student).
 
 ### What is synced
-- **Shared, from the teacher's LiveKit participant attributes:** `tabs` (JSON array of ids), `active` (0 or 1), `layout` (`split` or `single`), `justTalk`, plus the existing `canEdit`. Put them in one hook, extending `lib/sync/useStudentCanEdit.ts`. Only the teacher's token may set attributes, so a student can't change them. The student renders from these values and writes nothing.
+- **Shared, from the teacher's LiveKit participant attributes:** `tabs` (JSON array of ids), `active` (0 or 1), `layout` (`split` or `single`), `justTalk`, plus the existing `studentCanEdit`. Built in L1 as one hook, `lib/sync/useTeacherSettings.ts` (format in `docs/ARCHITECTURE.md`). Only the teacher's token may set attributes, so a student can't change them. The student renders from these values and writes nothing.
 - **Personal, in `localStorage`, never synced:** camera column width, files panel width, the split between the two tabs, files panel folded.
-- **The (!) nudge goes away** (`lib/sync/useNudge.ts`): following the teacher's tabs replaces it.
+- **The (!) nudge is gone** (removed in L1): following the teacher's tabs replaces it.
 
 ### Sizes and resizing
 The room follows the window width:

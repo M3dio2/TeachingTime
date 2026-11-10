@@ -3,11 +3,23 @@
 import Collaboration from "@tiptap/extension-collaboration";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
 import type * as Y from "yjs";
+import ClearButton from "./ClearButton";
 
 // Shared rich-text pad. The Y.Doc is synced by useYjsSync in LessonRoom.
-export default function TextPad({ doc, editable }: { doc: Y.Doc; editable: boolean }) {
+// The toolbar shows who may write (`chip`) and, for the teacher, Clear (`onClear`).
+export default function TextPad({
+  doc,
+  editable,
+  chip,
+  onClear,
+}: {
+  doc: Y.Doc;
+  editable: boolean;
+  chip?: ReactNode;
+  onClear?: () => void;
+}) {
   const editor = useEditor({
     immediatelyRender: false,
     editable,
@@ -17,7 +29,7 @@ export default function TextPad({ doc, editable }: { doc: Y.Doc; editable: boole
       Collaboration.configure({ document: doc }),
     ],
     editorProps: {
-      attributes: { class: "tiptap min-h-full p-4 text-lg outline-none" },
+      attributes: { class: "tiptap min-h-full p-4 text-lg outline-none", "aria-label": "Text pad" },
     },
   });
 
@@ -28,13 +40,18 @@ export default function TextPad({ doc, editable }: { doc: Y.Doc; editable: boole
 
   return (
     <div className="flex h-full w-full flex-col bg-surface text-ink">
-      {editor && editable && <Toolbar editor={editor} />}
+      <div className="flex min-h-11 items-center gap-1 border-b border-line px-2 py-1.5">
+        {editor && editable && <Tools editor={editor} />}
+        <span className="flex-1" />
+        {chip}
+        {onClear && <ClearButton what="text" onClear={onClear} />}
+      </div>
       <EditorContent editor={editor} className="min-h-0 flex-1 overflow-y-auto" />
     </div>
   );
 }
 
-function Toolbar({ editor }: { editor: Editor }) {
+function Tools({ editor }: { editor: Editor }) {
   const active = useEditorState({
     editor,
     selector: ({ editor }) => ({
@@ -99,11 +116,14 @@ function Toolbar({ editor }: { editor: Editor }) {
   ];
 
   return (
-    <div className="flex flex-wrap gap-1 border-b border-line px-2 py-1.5">
+    <div className="flex min-w-0 flex-wrap gap-1">
       {buttons.map((b) => (
         <button
           key={b.title}
+          type="button"
           title={b.title}
+          aria-label={b.title}
+          aria-pressed={b.on}
           onClick={b.run}
           className={`rounded px-2.5 py-1 text-sm ${b.className ?? ""} ${
             b.on ? "bg-accent text-white" : "text-ink-muted hover:bg-surface-2 hover:text-ink"

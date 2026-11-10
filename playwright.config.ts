@@ -17,7 +17,15 @@ export default defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
     // Fake camera and mic, allowed without a prompt, for call tests.
-    launchOptions: { args: ["--use-fake-ui-for-media-stream", "--use-fake-device-for-media-stream"] },
+    // Screen sharing: Chromium picks a source by itself (L1 screen-share test).
+    launchOptions: {
+      args: [
+        "--use-fake-ui-for-media-stream",
+        "--use-fake-device-for-media-stream",
+        "--auto-select-desktop-capture-source=Entire screen",
+        "--auto-accept-this-tab-capture",
+      ],
+    },
   },
   projects: [{ name: "desktop", use: { ...devices["Desktop Chrome"] } }],
   // Uses the running dev server; starts one only if none is running.

@@ -5,8 +5,9 @@ import { CaptureUpdateAction, Excalidraw, MainMenu, reconcileElements } from "@e
 import type { OrderedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type { RemoteExcalidrawElement } from "@excalidraw/excalidraw/data/reconcile";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
-import { useEffect, useMemo, useRef } from "react";
+import { type ReactNode, useEffect, useMemo, useRef } from "react";
 import type * as Y from "yjs";
+import ClearButton from "./ClearButton";
 
 const SEND_INTERVAL_MS = 50;
 const WHITEBOARD = "whiteboard"; // transaction origin for this component's own writes
@@ -21,7 +22,19 @@ function copiesFrom(board: Y.Map<OrderedExcalidrawElement>) {
 // Shared Excalidraw board. Elements live in the lesson Y.Doc as a map of id → element,
 // so they sync (and late-join) with the rest of the lesson via useYjsSync.
 // Load with next/dynamic and ssr: false; Excalidraw needs the browser.
-export default function Whiteboard({ doc, editable }: { doc: Y.Doc; editable: boolean }) {
+// Clear (`onClear`, teacher) sits top right in Excalidraw's own UI. `chip` ("View only") shows
+// only while the board is read-only: then Excalidraw hides its tools and there's room for it.
+export default function Whiteboard({
+  doc,
+  editable,
+  chip,
+  onClear,
+}: {
+  doc: Y.Doc;
+  editable: boolean;
+  chip?: ReactNode;
+  onClear?: () => void;
+}) {
   const board = useMemo(() => doc.getMap<OrderedExcalidrawElement>("board"), [doc]);
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
   const pending = useRef<readonly OrderedExcalidrawElement[] | null>(null);
@@ -83,7 +96,8 @@ export default function Whiteboard({ doc, editable }: { doc: Y.Doc; editable: bo
 
   return (
     // `whiteboard` hooks up the narrow-panel rules in app/globals.css.
-    <div ref={container} className="whiteboard h-full w-full">
+    <div ref={container} className="whiteboard relative h-full w-full">
+      {!editable && chip && <div className="absolute top-3 right-3 z-10">{chip}</div>}
       <Excalidraw
         excalidrawAPI={(api) => {
           apiRef.current = api;
@@ -93,6 +107,9 @@ export default function Whiteboard({ doc, editable }: { doc: Y.Doc; editable: bo
           elements: copiesFrom(board).sort((a, b) => ((a.index ?? "") < (b.index ?? "") ? -1 : 1)),
         }}
         viewModeEnabled={!editable}
+        renderTopRightUI={() => (
+          onClear ? <ClearButton what="drawing" onClear={onClear} /> : null
+        )}
         onChange={(elements) => {
           pending.current = elements;
           timer.current ??= setTimeout(flush, SEND_INTERVAL_MS);
@@ -103,7 +120,7 @@ export default function Whiteboard({ doc, editable }: { doc: Y.Doc; editable: bo
         }}
       >
         {/* Only what's useful in a lesson: no help, links, socials, theme or local "reset"
-            (the board header has a shared Clear). */}
+            (the toolbar has a shared Clear). */}
         <MainMenu>
           <MainMenu.DefaultItems.SaveAsImage />
         </MainMenu>

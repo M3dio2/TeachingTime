@@ -128,16 +128,17 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
 }
-/* The border sits on the surrounding .room-controls (components/room/RoomControls.tsx). */
-.lesson-room .lk-control-bar {
-  border-top: 0;
-  background: var(--color-paper);
-}
 /* "Student can edit" toggle: green while the student may edit. */
 .lesson-room .student-edit-toggle.is-on {
   color: #fff;
   background: var(--color-ok);
   border-color: var(--color-ok);
+}
+/* Sharing your screen: the accent, not LiveKit's blue. */
+.lesson-room .lk-button[data-lk-source="screen_share"][data-lk-enabled="true"] {
+  color: #fff;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
 }
 .lesson-room .lk-button,
 .lesson-room .lk-disconnect-button {

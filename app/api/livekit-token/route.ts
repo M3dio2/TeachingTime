@@ -86,7 +86,7 @@ export async function POST(request: Request) {
     ttl: "4h",
   });
   // No room admin for anyone (muting goes through /api/mute). Only the teacher may set their own
-  // attributes ("student can edit", lib/sync/useStudentCanEdit.ts); a student can't change
+  // attributes ("student can edit" and the tabs, lib/sync/useTeacherSettings.ts); a student can't change
   // their metadata, so they can't make themselves a teacher.
   token.addGrant({
     roomJoin: true,
