@@ -30,7 +30,7 @@ Vercel functions ran in North America while Supabase was in US West, so each pag
 - [x] `proxy.ts`: sign-up and forgot-password for logged-out visitors, reset page needs the link's login
 - [x] User, in Supabase: Gmail as custom SMTP, sign-ups on with "Confirm email", minimum password 8, email templates, redirect URLs
 - [x] Test: sign up with a second email, confirm, reset password (live and local)
-- [ ] An empty dashboard welcomes a new teacher (see "Arrow doodle" below)
+- [ ] An empty dashboard welcomes a new teacher (designed: `Dashboard-new`; built in S5)
 - [x] Update "Teacher account" in `docs/ARCHITECTURE.md`
 
 ## S3: Security check (before inviting friends)
@@ -67,20 +67,25 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 - [x] `npm run build` + `npm run lint`, merged to `main`
 
 ## L1: Tabbed call layout
-- [ ] Desktop: cameras stacked on the left | tabs in the middle | resource drawer on the right (teacher only, student lessons only, folds to an icon strip). Phone: tabs and small cameras, no drawer
-- [ ] Tabs like a browser: **Screen** (while someone shares), **Text**, **Draw**, and one per opened PDF (L2a)
-- [ ] The student follows the teacher's tab. The teacher's current tab, open tabs and "folded" go into the teacher's LiveKit attributes, like "student can edit" (one hook for all teacher settings). The (!) nudge goes away
-- [ ] "Just talk": the teacher folds the tabs away for both; the cameras fill the room. Works in quick calls too (they have no drawer)
-- [ ] Rewrite `docs/DESIGN.md` principles 3–4 and the layout part; update `docs/ARCHITECTURE.md`
+Design and rules: `docs/design/HANDOFF.md` ("Lesson room"), screens `Main`, `Room-*`, `Phone-teacher`, `Phone-student` in `docs/design/screens/`.
+- [ ] Desktop: cameras column on the left | stage with tabs | "Anna's files" on the right (teacher only, student lessons only, folds to an icon strip; lists the files, opening them comes in L2a). Quick calls have no files panel
+- [ ] Tabs like a browser, **one or two open**: **Screen** (only while someone shares), **Text**, **Draw** (PDFs and pictures in L2a). + only while one tab is open, × on each tab while two are open; side by side or one at a time; yellow underline on the active tab. A new tab never replaces one silently
+- [ ] Screen sharing opens the Screen tab beside the open one; with two open it takes the active tab's place and gives it back when sharing stops
+- [ ] The student follows: the teacher's `tabs`, `active`, `layout` and `justTalk` go into her LiveKit attributes next to "student can edit" (one hook for all teacher settings). The (!) nudge goes away; Clear moves into the Text and Draw toolbars
+- [ ] "Just talk": the teacher folds the tabs away for both; the cameras fill the room. Works in quick calls too
+- [ ] Resizing: handles for the cameras, the split between tabs and the files (sizes per browser); breakpoints 1280 / 1024 / 768 px with floating cameras below 1024; one at a time by itself when a tab would get under 320 px
+- [ ] Phone: teacher (segmented tabs, Files and ⋯ sheets, five big buttons) and student (two-way switch, follows the teacher)
+- [x] Rewrite `docs/DESIGN.md` principles 3–4 and the layout part (done with the redesign, Nov 2026)
+- [ ] Update `docs/ARCHITECTURE.md` (teacher settings hook, nudge removed)
 
-## L2a: PDF tabs
-- [ ] Teacher clicks a PDF in the drawer → it opens as a tab for both (`pdfjs-dist`, pages load as you scroll)
+## L2a: PDF and picture tabs
+- [ ] Teacher clicks a PDF or picture in the files panel, or drags it onto the stage (drop areas "Replace …" / "Open beside …") → it opens as a tab for both (`pdfjs-dist` for PDFs, pages load as you scroll). With two tabs open, clicking only shows a hint; dragging onto "Replace …" works
 - [ ] Student access without a login: `/api/resource-url` takes the invite slug and a file id, checks that the file belongs to that lesson, and returns a signed URL valid for a few minutes
 - [ ] Page and scroll position follow the teacher
 
 ## A1: Audio (replaces the old audio-library milestone)
 - [ ] Audio files from the drawer: play / pause / seek; no tab
-- [ ] Progress bar above the tabs for both (start time and length in the teacher's attributes, so the student's bar runs on its own)
+- [ ] Progress bar above the tabs for both (start time and length in the teacher's attributes, so the student's bar runs on its own). Design: the audio bar in `Main`, with the yellow playhead
 - [ ] Played as an extra LiveKit audio track (Web Audio), so the student hears it while the teacher's mic is muted
 
 ## L2b: Write and draw on PDFs
@@ -88,6 +93,11 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 - [ ] Teacher: **Save as new PDF** (`pdf-lib` in the browser draws the strokes and text onto the original) → "Name (date).pdf" in the classroom. The original stays as it was
 
 ## S5: UX/UI polish
+- [ ] Build the redesign of the other pages (`docs/design/HANDOFF.md`, "Other pages"), each on its own branch if it's big:
+  - [ ] Sign-in pages: one two-column layout (form + explanation, form only on phones), show/hide password, "Forgot" next to the label, student pointer on login
+  - [ ] Dashboard: card grid, name chip in the top bar, Remove in each card's ⋯ menu, file counts, quick call banner, first-visit welcome with the arrow doodle
+  - [ ] Classroom: two columns, link shown in a field, drop area for uploads, filters, storage bar, Remove moves here
+  - [ ] Join: camera and microphone check before joining (local tracks reused after joining)
 - [ ] D5d: one wait, one screen (below)
 - [ ] Walk through every screen with the user (login, sign-up, dashboard, classroom, join, room on desktop and phone); list fixes, then do them
 - [ ] Real phone test on the live site
@@ -103,6 +113,11 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 
 # Open design work
 
+## Redesign (Nov 2026)
+- [x] Every page redesigned on the canvas "TeachingTime Redesign" (claude.ai, private to the user), desktop and phone, with resizing rules
+- [x] Copied to `docs/design/screens/`; spec in `docs/design/HANDOFF.md`; `docs/DESIGN.md` updated
+- [ ] Built: the room in L1 / L2a / A1, the other pages in S5. When the canvas changes, refresh `docs/design/screens/` (see the end of `HANDOFF.md`)
+
 ## D5d: One wait, one screen
 Rule: a wait that takes you into or out of a lesson shows the full loading screen, without breaks. Small actions that keep you on the page (save name, add student) get a pending state on their button.
 - [ ] Dashboard's Suspense fallback ("Loading…") becomes the loading screen, so "Leaving the lesson" flows straight into it until the students are shown (the 15 s auto-refresh doesn't trigger it)
@@ -112,7 +127,7 @@ Rule: a wait that takes you into or out of a lesson shows the full loading scree
 
 ## D5: Still to decide
 - [ ] Dark ink instead of brown for the main buttons
-- [ ] Arrow doodle pointing to "Add a classroom" on an empty dashboard
+- [x] Arrow doodle pointing to "Add a classroom" on an empty dashboard: yes, in the redesign (`Dashboard-new`)
 
 # Later
 

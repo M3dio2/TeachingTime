@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Your classrooms</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #FAF6F0; color: #3B2A1E; font-family: Geist, system-ui, sans-serif; font-size: 16px">
+
+<header style="max-width: 1120px; margin: 0 auto; box-sizing: border-box; padding: 20px clamp(16px, 4vw, 32px); display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap">
+<div style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.01em">
+<svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#3B2A1E"></rect><rect x="8" y="8" width="16" height="4.5" rx="1.5" fill="#F4D35E"></rect><rect x="13.75" y="8" width="4.5" height="17" rx="1.5" fill="#F4D35E"></rect></svg>
+<span><span style="position: relative; display: inline-block; isolation: isolate">Teaching<sc-if value="{{ wordmarkUnderline }}" hint-placeholder-val="{{ true }}"><svg aria-hidden="true" width="100" height="8" viewBox="0 0 100 8" preserveAspectRatio="none" style="position: absolute; left: -3%; bottom: -2px; width: 106%; height: 8px; z-index: -1"><path d="M2 5 C 22 2, 48 7, 70 4 S 92 3, 98 5" fill="none" stroke="#F4D35E" stroke-width="6" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></svg></sc-if></span>Time</span>
+</div>
+<div style="display: flex; align-items: center; gap: 8px">
+<button type="button" title="Change the name students see in lessons" aria-label="{{ chipAria }}" style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: {{ chipPad }}; border: 1px solid #E6D9C8; border-radius: 999px; background: #FFFFFF; color: #3B2A1E; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">
+<span style="width: 28px; height: 28px; border-radius: 50%; background: #3B2A1E; color: #F4D35E; display: inline-flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 13px">{{ teacherInitial }}</span>
+<sc-if value="{{ notPhone }}" hint-placeholder-val="{{ true }}">{{ teacherLabel }}
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#76604F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg></sc-if>
+</button>
+<button type="button" style="height: 36px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">Log out</button>
+</div>
+</header>
+
+<main style="max-width: 1120px; margin: 0 auto; box-sizing: border-box; padding: 12px clamp(16px, 4vw, 32px) 64px; display: flex; flex-direction: column; gap: 28px">
+
+<sc-if value="{{ firstVisit }}" hint-placeholder-val="{{ false }}">
+<section style="display: flex; flex-wrap: wrap; gap: 20px 32px; align-items: flex-end; padding: 24px; background: #FFFFFF; border: 1px solid #8B5E3C; border-radius: 10px">
+<div style="flex: 1 1 340px; display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 26px; line-height: 1.15; letter-spacing: -0.01em">Welcome! What should your students call you?</h2>
+<p style="margin: 0; color: #76604F">This name is shown on your camera in every lesson. You can change it later.</p>
+</div>
+<div style="flex: 1 1 340px; display: flex; gap: 8px; align-items: flex-end">
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<label for="t-name" style="font-size: 14px; font-weight: 500">Your name in lessons</label>
+<input id="t-name" type="text" placeholder="e.g. Ms Smith" style="height: 44px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; font: inherit">
+</div>
+<button type="button" style="height: 44px; padding: 0 20px; border: 0; border-radius: 6px; background: #8B5E3C; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer">Save</button>
+</div>
+</section>
+</sc-if>
+
+<sc-if value="{{ quickCallLive }}" hint-placeholder-val="{{ false }}">
+<section style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 16px 20px; background: #FFFFFF; border: 1px solid #8B5E3C; border-radius: 10px">
+<span style="width: 40px; height: 40px; border-radius: 50%; background: #F3EBE0; color: #8B5E3C; display: inline-flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg></span>
+<div style="flex: 1 1 220px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-weight: 600">Quick call in progress</span>
+<span style="font-size: 14px; color: #76604F">Your student is waiting.</span>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 8px">
+<button type="button" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>Copy student link</button>
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; height: 36px; padding: 0 14px; border-radius: 6px; background: #8B5E3C; color: #FFFFFF; font-size: 14px; font-weight: 600; text-decoration: none">Rejoin</a>
+<button type="button" style="height: 36px; padding: 0 12px; border: 0; border-radius: 6px; background: transparent; color: #B4442F; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer">End call</button>
+</div>
+</section>
+</sc-if>
+
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px 24px">
+<div style="flex: 1 1 360px; display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: {{ h1Size }}; line-height: 1.1; letter-spacing: -0.02em">Your classrooms</h1>
+<p style="margin: 0; color: #76604F; max-width: 560px">One classroom per student: their files, and a link that stays the same every week.</p>
+</div>
+<div style="display: flex; flex-direction: column; align-items: {{ quickAlign }}; gap: 6px; flex: {{ quickFlex }}">
+<button type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: {{ quickH }}; padding: 0 18px; border: 0; border-radius: 6px; background: #8B5E3C; color: #FFFFFF; font: inherit; font-weight: 600; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg>{{ quickLabel }}</button>
+<span style="font-size: 13px; color: #76604F">{{ quickHint }}</span>
+</div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr)); gap: 16px">
+
+<sc-for list="{{ students }}" as="c" hint-placeholder-count="5">
+<article style="position: relative; display: flex; flex-direction: column; gap: 14px; padding: 16px; background: #FFFFFF; border: 1px solid {{ c.border }}; border-radius: 10px; box-shadow: {{ c.shadow }}">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="flex: 0 0 44px; width: 44px; height: 44px; border-radius: 50%; background: #F3EBE0; color: #8B5E3C; display: inline-flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 18px">{{ c.initial }}</span>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+<a href="Classroom.dc.html" aria-label="{{ c.openLabel }}" style="font-size: 17px; font-weight: 600; color: #3B2A1E; text-decoration: none">{{ c.name }}<span style="position: absolute; inset: 0; border-radius: 10px"></span></a>
+<span style="font-size: 14px; color: #76604F">{{ c.last }}</span>
+</div>
+<sc-if value="{{ c.waiting }}" hint-placeholder-val="{{ false }}">
+<span style="position: relative; padding: 2px 10px; border-radius: 999px; background: #FBEDB5; color: #6B4E0E; font-size: 12px; font-weight: 600">Waiting<svg aria-hidden="true" width="100" height="40" viewBox="0 0 100 40" preserveAspectRatio="none" style="position: absolute; left: -9px; top: -7px; width: calc(100% + 18px); height: calc(100% + 14px); pointer-events: none"><path d="M60 4 C 22 2, 3 12, 5 23 C 8 36, 72 39, 93 29 C 104 21, 95 5, 50 5" fill="none" stroke="#F4D35E" stroke-width="3" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></svg></span>
+</sc-if>
+</div>
+<div style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #76604F"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>{{ c.files }}</div>
+<div style="position: relative; z-index: 1; display: flex; align-items: center; gap: 6px; padding-top: 12px; border-top: 1px solid #E6D9C8">
+<a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; box-sizing: border-box; border: 1px solid {{ c.startBorder }}; border-radius: 6px; background: {{ c.startBg }}; color: {{ c.startColor }}; font-size: 14px; font-weight: 600; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg>Start lesson</a>
+<button type="button" onClick="{{ c.copy }}" aria-label="{{ c.copyAria }}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 10px; border: 0; border-radius: 6px; background: transparent; color: #3B2A1E; font: inherit; font-size: 14px; font-weight: 500; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>{{ c.copyText }}</button>
+<span style="flex: 1"></span>
+<button type="button" aria-label="{{ c.moreLabel }}" title="More" style="width: 36px; height: 36px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #76604F; display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
+</div>
+</article>
+</sc-for>
+
+<div style="display: flex; flex-direction: column; gap: 14px; padding: 16px; border: 1.5px dashed {{ addBorder }}; border-radius: 10px; background: {{ addBg }}">
+<div style="display: flex; align-items: center; gap: 12px">
+<span style="flex: 0 0 44px; width: 44px; height: 44px; box-sizing: border-box; border-radius: 50%; border: 1.5px dashed #76604F; color: #76604F; display: inline-flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg></span>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 17px; font-weight: 600">Add a classroom</span>
+<span style="font-size: 14px; color: #76604F">For a new student</span>
+</div>
+</div>
+<div style="display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid #E6D9C8">
+<label for="add-name" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">Student's name</label>
+<input id="add-name" type="text" placeholder="Student's name, e.g. Anna" style="flex: 1; min-width: 0; height: 36px; box-sizing: border-box; padding: 0 10px; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; font: inherit; font-size: 15px">
+<button type="button" style="height: 36px; padding: 0 14px; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Add</button>
+</div>
+</div>
+
+<sc-if value="{{ isEmpty }}" hint-placeholder-val="{{ false }}">
+<div style="display: flex; align-items: center; gap: 16px; padding: 8px 4px">
+<svg width="104" height="64" viewBox="0 0 104 64" aria-hidden="true" style="flex: 0 0 104px"><path d="M98 50 C 74 60, 36 54, 14 28" fill="none" stroke="#F4D35E" stroke-width="5" stroke-linecap="round"></path><path d="M8 37 L 13 25 L 26 27" fill="none" stroke="#F4D35E" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-weight: 600">Start with your first student</span>
+<span style="font-size: 14px; line-height: 1.45; color: #76604F">Type their name and press Add. You get a classroom for their files and a link to send them.</span>
+</div>
+</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"firstVisit":{"editor":"boolean","default":false},"quickCallLive":{"editor":"boolean","default":false},"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this._onResize = () => {
+      const w = window.innerWidth;
+      if (w !== (this.state || {}).w) this.setState({ w: w });
+    };
+    window.addEventListener('resize', this._onResize);
+    this._onResize();
+  }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._onResize);
+  }
+  renderVals() {
+    const p = this.props || {};
+    const s = this.state || {};
+    const w = s.w ?? ((typeof window !== 'undefined' && window.innerWidth) || 1280);
+    const phone = w < 768;
+    const first = !!p.firstVisit;
+    const live = !!p.quickCallLive && !first;
+    const data = first ? [] : [
+      { name: 'Anna', last: 'Last lesson: Tue, 4 Nov', files: '3 pictures · 2 PDFs · 2 audio', waiting: true },
+      { name: 'Mateo', last: 'Last lesson: Thu, 6 Nov', files: '1 PDF', waiting: false },
+      { name: 'Sofía', last: 'Last lesson: Mon, 3 Nov', files: '4 pictures · 1 audio', waiting: false },
+      { name: 'Lucas', last: 'Last lesson: Fri, 31 Oct', files: 'No files yet', waiting: false },
+      { name: 'Valentina', last: 'No lessons yet', files: 'No files yet', waiting: false }
+    ];
+    const students = data.map((c) => {
+      const copied = s.copied === c.name;
+      return {
+        name: c.name,
+        initial: c.name.charAt(0),
+        last: c.last,
+        files: c.files,
+        waiting: c.waiting,
+        border: c.waiting ? '#3B2A1E' : '#E6D9C8',
+        shadow: c.waiting ? '3px 3px 0 #F4D35E' : 'none',
+        startBg: c.waiting ? '#8B5E3C' : '#FFFFFF',
+        startColor: c.waiting ? '#FFFFFF' : '#3B2A1E',
+        startBorder: c.waiting ? '#8B5E3C' : '#E6D9C8',
+        openLabel: 'Open ' + c.name + "'s classroom",
+        moreLabel: 'More for ' + c.name,
+        copyAria: 'Copy ' + c.name + "'s student link",
+        copyText: copied ? 'Copied!' : 'Copy link',
+        copy: () => {
+          this.setState({ copied: c.name });
+          setTimeout(() => this.setState({ copied: null }), 2000);
+        }
+      };
+    });
+    return {
+      notPhone: !phone,
+      chipPad: phone ? '0 4px' : '0 12px 0 4px',
+      chipAria: first ? 'Add your name' : 'Your name in lessons: Laura. Change it',
+      h1Size: phone ? '30px' : '36px',
+      quickAlign: phone ? 'stretch' : 'flex-end',
+      quickFlex: phone ? '1 1 100%' : '0 0 auto',
+      quickH: phone ? '48px' : '44px',
+      firstVisit: first,
+      quickCallLive: live,
+      isEmpty: students.length === 0,
+      students: students,
+      wordmarkUnderline: !first,
+      teacherInitial: first ? '?' : 'L',
+      teacherLabel: first ? 'Add your name' : 'Laura',
+      quickLabel: live ? 'Start a new quick call' : 'Start a quick call',
+      quickHint: live ? 'Ends the call above and starts a fresh one.' : 'A one-off call with a new link. Nothing is saved.',
+      addBorder: first ? '#8B5E3C' : '#76604F',
+      addBg: first ? '#FFFFFF' : 'transparent'
+    };
+  }
+}
+</script>
+</body>
+</html>

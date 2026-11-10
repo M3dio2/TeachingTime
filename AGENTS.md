@@ -10,65 +10,69 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # TeachingTime (repo: lesson-call)
 
-These are the project instructions for every coding agent (Claude Code reads them through `CLAUDE.md`, Hermes and others read this file directly). `next dev` only rewrites the block above; everything below it is ours.
+Instructions for every agent (Claude Code via `CLAUDE.md`, Hermes etc. directly). `next dev` only rewrites the block above.
 
-1-on-1 video lesson app for an English teacher and one student. Like Google Meet, plus: screen share with both cameras visible, a shared text pad and whiteboard that sync instantly, and a teacher toggle for whether the student may edit them.
+1-on-1 video lessons, one English teacher and one student: Google Meet plus screen share with both cameras visible, a shared text pad and whiteboard that sync instantly, and a teacher switch for whether the student may edit them.
 
 ## Current milestone
-S1–S3, P1, C1 and C1b done (speed, sign-up, security, passwords, classroom, storage limits). Next: **L1 (tabbed call)**, starting with a plan and an HTML mock-up for the user; then L2a PDFs, A1 audio, L2b PDF drawing, S5–S6, then the friends test (date to agree). See `docs/ROADMAP.md`. Update this line when a milestone is finished.
+S1–S3, P1, C1, C1b done. Next: **L1 (tabbed call)**, starting with a plan; its design is done (`docs/design/HANDOFF.md`). Then L2a PDF/picture tabs, A1 audio, L2b PDF drawing, S5 (incl. page redesign), S6, friends test (date to agree). Update this line when a milestone is done.
+
+## Read first
+- `docs/ROADMAP.md` every session; one milestone per session.
+- `docs/ARCHITECTURE.md` before touching `lib/sync/`, the room or API routes.
+- `docs/DESIGN.md` before any UI work; new UI: `docs/design/HANDOFF.md` + `docs/design/screens/`.
+- `node_modules/next/dist/docs/` before using Next APIs.
 
 ## Stack
-- Next.js 16 (App Router) + React 19 + TypeScript + Tailwind v4. Next 16 differs from older versions, so check `node_modules/next/dist/docs/` before using Next APIs.
-- **LiveKit Cloud** (`livekit-client`, `@livekit/components-react`) for audio, video, screen share, and all live sync over its data channel (Yjs, whiteboard, teacher messages).
-- **Supabase** for teacher auth (`@supabase/ssr`; open sign-up, emails sent via the teacher's Gmail SMTP), the `lessons` table (with snapshots) and the `resources` table + private Storage bucket. Not used for live sync.
-- Text pad: Tiptap + Yjs. Whiteboard: Excalidraw, loaded with `dynamic(..., { ssr: false })`.
-- Hosted on Vercel (Hobby). Supabase project and Vercel functions both in **US East** (`iad1` in `vercel.json`): keep them in the same region. Testers are in South America, later users global.
+- Next.js 16 App Router, React 19, TypeScript, Tailwind v4; Vercel Hobby, deploys from `main`.
+- LiveKit Cloud (`livekit-client`, `@livekit/components-react`): audio, video, screen share, and all live sync over its data channel (Yjs, whiteboard, teacher messages).
+- Supabase: teacher auth (`@supabase/ssr`, open sign-up, mail via the teacher's Gmail SMTP), `lessons` (with snapshots), `resources` + private Storage bucket. Not for live sync.
+- Text pad Tiptap + Yjs; whiteboard Excalidraw via `dynamic(..., { ssr: false })`.
+- Supabase and Vercel functions both in US East (`iad1`, `vercel.json`): keep them together. Testers in South America, later global.
 
 ## Commands
-- `npm run dev`: dev server at http://localhost:3000. In a container, use `npm run dev -- -H 0.0.0.0` so the published port reaches it.
-- `npm run build`: must pass before every commit. Stop `npm run dev` first: a build rewrites `.next`, and the dev server then serves stale CSS until restarted with `.next/dev` deleted.
-- `npm run lint`: ESLint.
+- `npm run dev` → http://localhost:3000 (container: `npm run dev -- -H 0.0.0.0`).
+- `npm run build` must pass before every commit. Stop `npm run dev` first, or the dev server serves stale CSS until restarted with `.next/dev` deleted.
+- `npm run lint`; `npm run test:e2e` (Playwright, below).
 
-## Environment
-- Variable names live in `.env.local.example`. Real values go in `.env.local` (gitignored) and Vercel's env settings.
-- Secrets (`LIVEKIT_API_SECRET`, `SUPABASE_SECRET_KEY`) only in server code (route handlers). Never prefix them with `NEXT_PUBLIC_`.
-- The agent never asks for, prints or handles secret values (don't `cat .env.local`). The user pastes them in themselves.
+## Secrets
+- Names in `.env.local.example`; values in `.env.local` (gitignored) and Vercel.
+- `LIVEKIT_API_SECRET`, `SUPABASE_SECRET_KEY`: server code (route handlers) only, never `NEXT_PUBLIC_`.
+- Never ask for, print or handle secret values (no `cat .env.local`); the user pastes them.
 
 ## Architecture (short)
-**Read `docs/ARCHITECTURE.md` before touching `lib/sync/`, the room or the API routes.**
-- Role (`teacher`/`student`) is in the LiveKit token metadata, set by `/api/livekit-token`. Teachers sign up and log in (Supabase); a student joins with `invite_slug` + name, no account.
-- One Yjs `Y.Doc` per join (text pad, `board`), synced peer-to-peer by `lib/sync/useYjsSync.ts`. "Student can edit" is a LiveKit attribute on the teacher, not in the doc. Teacher saves it to `lessons.doc_snapshot`.
-- Edit permission is enforced twice: read-only editors on the student, and the teacher's client drops student updates.
-- **`cacheComponents` is on.** Any component that reads `cookies()`, `params` or Supabase data must sit inside `<Suspense>`, or the build fails. Pattern: sync page, inner async component does the read. `createClient()` in `lib/supabase/server.ts` calls `await connection()` first.
-- Auth redirects live in `proxy.ts` (Next 16's name for middleware).
+- Role (`teacher`/`student`) is in the LiveKit token metadata from `/api/livekit-token`. Teachers log in; students join with `invite_slug` + name.
+- One Yjs `Y.Doc` per join (text pad, `board`), synced peer-to-peer by `lib/sync/useYjsSync.ts`, saved by the teacher to `lessons.doc_snapshot`.
+- "Student can edit" is a LiveKit attribute on the teacher (not in the doc), enforced twice: read-only editors on the student, the teacher's client drops student updates.
+- `cacheComponents` is on: anything reading `cookies()`, `params` or Supabase must sit inside `<Suspense>` or the build fails (sync page, inner async component). `createClient()` (`lib/supabase/server.ts`) calls `await connection()` first.
+- Auth redirects: `proxy.ts` (Next 16's middleware).
 
 ## Layout
-- `app/`: routes (`dashboard/`, `dashboard/[id]/` classroom, `lesson/[id]/` teacher room, `join/[slug]/` student join, `api/`)
-- `components/room/`: video layout and controls; `components/board/`: TextPad, Whiteboard; `components/ui/`: shared UI
-- `lib/sync/`: data-channel transport and Yjs provider; `lib/supabase/`: Supabase clients
-- `supabase/migrations/`: SQL, run manually by the user in the Supabase SQL editor
+- `app/`: `dashboard/`, `dashboard/[id]/` classroom, `lesson/[id]/` teacher room, `join/[slug]/` student join, `api/`
+- `components/room/` video + controls · `components/board/` TextPad, Whiteboard · `components/ui/` shared UI
+- `lib/sync/` transport + Yjs provider · `lib/supabase/` clients · `supabase/migrations/` SQL the user runs in the Supabase SQL editor · `e2e/` Playwright tests · `docs/design/` redesign
 
-## Design
-- **Read `docs/DESIGN.md` before any UI work.** Use token classes (`bg-paper`, `text-ink-muted`, `bg-accent`, …), never raw hex or `neutral-*`/`blue-*`.
-- LiveKit's stylesheet is unlayered and beats Tailwind on `.lk-*` elements: use inline `style` for sizes on LiveKit components.
-- CSS changes not showing in dev: stop the server, delete `.next/dev`, restart, hard-reload.
+## UI rules
+- Token classes (`bg-paper`, `text-ink-muted`, `bg-accent` …), never raw hex or `neutral-*`/`blue-*`.
+- LiveKit's unlayered CSS beats Tailwind on `.lk-*`: size LiveKit components with inline `style`.
+- CSS not updating in dev: stop the server, delete `.next/dev`, restart, hard-reload.
 
 ## Workflow
 The agent develops on its own and tests itself; the user decides function and design.
-- One milestone per session. Start by reading `docs/ROADMAP.md`.
-- **Plan:** write a short spec for the milestone into the roadmap (what changes, open questions). Ask the user only real choices: behaviour, wording, design direction; decide the rest and note it.
-- **UX/UI changes:** ask the user first, with an **HTML mock-up** (claude.ai artifact or a file in `docs/mockups/`) before building. After building, send screenshots (desktop and phone) before merging.
-- **Build** on a feature branch. Never commit straight to `main`.
-- **Test:** `npm run build`, `npm run lint`, `npm run test:e2e` (Playwright, below) all pass. Add or extend a test in `e2e/` for each milestone. List what still needs a real device (real camera, phone, live site) for the user.
-- **Merge:** when the tests pass, the agent may commit, merge to `main` (Vercel deploys from `main`) and push without asking, except UI changes, which wait for the user's OK on the screenshots. Then tick the roadmap and update "Current milestone".
+- **Plan:** a short spec for the milestone in the roadmap (what changes, open questions). Ask the user only real choices (behaviour, wording, design direction); decide the rest and note it.
+- **UX/UI:** ask the user first with an **HTML mock-up** (claude.ai artifact or `docs/mockups/`). The redesign's mock-ups already exist in `docs/design/` (L1, L2a, A1, S5): build from those. After building, send screenshots (desktop and phone) before merging.
+- **Build** on a feature branch, never straight on `main`.
+- **Test:** `npm run build`, `npm run lint`, `npm run test:e2e` all pass. Add or extend an `e2e/` test per milestone. List what still needs a real device (camera, phone, live site) for the user.
+- **Merge:** when tests pass, the agent may commit, merge to `main` (Vercel deploys from `main`) and push without asking; UI changes wait for the user's OK on the screenshots. Then tick the roadmap and update "Current milestone".
+- VPS: the user tests through `ssh -L 3000:localhost:3000 …` at http://localhost:3000. Camera/mic need `localhost` or `https`, never `http://<server-ip>`.
+- Branch switches can make `npm run dev` serve 404s: restart it after committing.
 
 ## Browser tests (Playwright)
-- `npm run test:e2e` runs `e2e/*.spec.ts` against the running dev server, Chromium with a fake camera and mic. Teacher and student are two browser contexts in one test.
-- They log in as the **test teacher account** (`E2E_TEACHER_EMAIL` / `E2E_TEACHER_PASSWORD` in `.env.local`, pasted by the user) and use only its classroom and lesson titled **"Test"**. Never a real teacher's account or lesson.
+- `npm run test:e2e` runs `e2e/*.spec.ts` against the running dev server: Chromium with a fake camera and mic, teacher and student as two browser contexts in one test.
+- They log in as the **test teacher account** (`E2E_TEACHER_EMAIL` / `E2E_TEACHER_PASSWORD` in `.env.local`, pasted by the user) and use only its classroom and lesson titled **"Test"** (no need to ask). Never a real teacher's account or lesson: real lessons may have a teacher live in them.
 - Until the friends test this runs against production Supabase and LiveKit (user's decision); after it, against the dev projects.
-- First time on a machine: `npx playwright install chromium`. In the agent container the default browser folder isn't writable: set `PLAYWRIGHT_BROWSERS_PATH=/opt/data/.cache/ms-playwright`.
-- On the VPS the user tests through an SSH tunnel (`ssh -L 3000:localhost:3000 …`) and opens http://localhost:3000 on their own computer. Camera and mic only work on `localhost` or `https`, never on `http://<server-ip>`.
-- Branch switches can make a running `npm run dev` serve 404s. Restart it after committing.
-- **Playwright** may only join the lesson titled **"Test"** of the test teacher account (no need to ask). Real lessons may have a teacher live in them.
+- First time on a machine: `npx playwright install chromium`. In the agent container set `PLAYWRIGHT_BROWSERS_PATH=/opt/data/.cache/ms-playwright` (the default folder isn't writable).
+
+## Always
 - Keep it simple: small app, no premature abstractions.
-- Write anything the next session must know (open tests, half-done work) into `docs/ROADMAP.md`, not into an agent's private memory: the user switches between agents and machines.
+- Anything the next session needs (open tests, half-done work) goes in `docs/ROADMAP.md`, not an agent's memory: the user switches agents and machines.

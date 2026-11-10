@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Join your lesson</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&amp;family=Geist:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="min-height: 100vh; box-sizing: border-box; padding: 24px 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FAF6F0; color: #3B2A1E; font-family: Geist, system-ui, sans-serif; font-size: 16px">
+
+<sc-if value="{{ isJoin }}" hint-placeholder-val="{{ true }}">
+<main style="width: 100%; max-width: 440px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; padding: 24px; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 12px">
+<div style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.01em">
+<svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#3B2A1E"></rect><rect x="8" y="8" width="16" height="4.5" rx="1.5" fill="#F4D35E"></rect><rect x="13.75" y="8" width="4.5" height="17" rx="1.5" fill="#F4D35E"></rect></svg>TeachingTime
+</div>
+<div style="position: relative; aspect-ratio: 16 / 9; border-radius: 10px; background: #2E2620; overflow: hidden; display: flex; align-items: center; justify-content: center">
+<span style="position: absolute; left: 10px; top: 10px; padding: 2px 8px; border-radius: 6px; background: rgba(46, 38, 32, 0.85); color: #FFFFFF; font-size: 12px">Your camera</span>
+<span style="width: 64px; height: 64px; border-radius: 50%; background: #76604F; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+<div style="position: absolute; left: 0; right: 0; bottom: 10px; display: flex; justify-content: center; gap: 10px">
+<button type="button" aria-label="{{ micLabel }}" title="{{ micLabel }}" aria-pressed="{{ micOff }}" onClick="{{ toggleMic }}" style="width: 44px; height: 44px; padding: 0; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; background: {{ micBg }}; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer">
+<sc-if value="{{ micOn }}" hint-placeholder-val="{{ true }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg></sc-if>
+<sc-if value="{{ micOff }}" hint-placeholder-val="{{ false }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="2" x2="22" y1="2" y2="22"></line><path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"></path><path d="M5 10v2a7 7 0 0 0 12 5"></path><path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"></path><path d="M9 9v3a3 3 0 0 0 5.12 2.12"></path><line x1="12" x2="12" y1="19" y2="22"></line></svg></sc-if>
+</button>
+<button type="button" aria-label="Turn off your camera" title="Camera" style="width: 44px; height: 44px; padding: 0; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; background: rgba(250, 246, 240, 0.12); color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m22 8-6 4 6 4V8Z"></path><rect x="2" y="6" width="14" height="12" rx="2"></rect></svg></button>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 32px; line-height: 1.1; letter-spacing: -0.02em">Join your <span style="position: relative; display: inline-block; isolation: isolate">lesson<svg aria-hidden="true" width="100" height="10" viewBox="0 0 100 10" preserveAspectRatio="none" style="position: absolute; left: -3%; bottom: -1px; width: 106%; height: 10px; z-index: -1"><path d="M2 6 C 22 3, 48 8, 70 5 S 92 4, 98 6" fill="none" stroke="#F4D35E" stroke-width="7" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></svg></span></h1>
+<p style="margin: 0; color: #76604F">Check your camera, type your name, and you're in.</p>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px">
+<label for="j-name" style="font-size: 14px; font-weight: 500">Your name</label>
+<input id="j-name" type="text" placeholder="e.g. Anna" style="height: 48px; box-sizing: border-box; width: 100%; padding: 0 12px; border: 1px solid #E6D9C8; border-radius: 6px; background: #FFFFFF; color: #3B2A1E; font: inherit; font-size: 17px">
+</div>
+<button type="button" style="height: 48px; border: 0; border-radius: 6px; background: #8B5E3C; color: #FFFFFF; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer">Join lesson</button>
+<p style="margin: 0; font-size: 13px; line-height: 1.45; color: #76604F; text-align: center">When your browser asks, allow the camera and microphone.</p>
+</main>
+</sc-if>
+
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+<main role="status" style="display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 36px; line-height: 1.1; letter-spacing: -0.02em">Getting your lesson ready</h1>
+<svg aria-hidden="true" width="160" height="28" viewBox="0 0 160 28"><path d="M6 14 C 16 4, 26 4, 36 14 S 56 24, 66 14 S 86 4, 96 14 S 116 24, 126 14 S 146 4, 154 14" fill="none" stroke="#F4D35E" stroke-width="7" stroke-linecap="round"></path></svg>
+<p style="margin: 0; color: #76604F">This takes a few seconds.</p>
+</main>
+</sc-if>
+
+<sc-if value="{{ isEnded }}" hint-placeholder-val="{{ false }}">
+<main style="width: 100%; max-width: 440px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 28px 24px; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 12px">
+<div style="display: inline-flex; align-items: center; gap: 8px; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -0.01em">
+<svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#3B2A1E"></rect><rect x="8" y="8" width="16" height="4.5" rx="1.5" fill="#F4D35E"></rect><rect x="13.75" y="8" width="4.5" height="17" rx="1.5" fill="#F4D35E"></rect></svg>TeachingTime
+</div>
+<svg aria-hidden="true" width="52" height="44" viewBox="0 0 52 44" style="margin: 8px 0 4px"><path d="M6 24 L 19 37 L 46 7" fill="none" stroke="#F4D35E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 32px; line-height: 1.1; letter-spacing: -0.02em">See you next time!</h1>
+<p style="margin: 0; color: #76604F">The lesson has ended. You can close this page.</p>
+</main>
+</sc-if>
+
+<sc-if value="{{ isLeft }}" hint-placeholder-val="{{ false }}">
+<main style="width: 100%; max-width: 440px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px; padding: 24px; background: #FFFFFF; border: 1px solid #E6D9C8; border-radius: 12px">
+<h1 style="margin: 0; font-family: 'Bricolage Grotesque', Geist, sans-serif; font-weight: 800; font-size: 32px; line-height: 1.1; letter-spacing: -0.02em">You left the lesson</h1>
+<p style="margin: 0; color: #76604F">Left by mistake? Join again with the same name.</p>
+<button type="button" style="height: 48px; border: 0; border-radius: 6px; background: #8B5E3C; color: #FFFFFF; font: inherit; font-size: 17px; font-weight: 600; cursor: pointer">Rejoin</button>
+</main>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"screen":{"editor":"enum","options":["join","loading","ended","left"],"default":"join"},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props || {};
+    const s = this.state || {};
+    const screen = p.screen ?? 'join';
+    const micOff = !!s.micOff;
+    return {
+      isJoin: screen === 'join',
+      isLoading: screen === 'loading',
+      isEnded: screen === 'ended',
+      isLeft: screen === 'left',
+      micOff: micOff,
+      micOn: !micOff,
+      micBg: micOff ? '#B4442F' : 'rgba(250, 246, 240, 0.12)',
+      micLabel: micOff ? 'Turn on your microphone' : 'Turn off your microphone',
+      toggleMic: () => this.setState({ micOff: !micOff })
+    };
+  }
+}
+</script>
+</body>
+</html>
