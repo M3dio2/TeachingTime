@@ -245,7 +245,8 @@ function AddTabMenu({ model }: { model: RoomModel }) {
   }, [open]);
 
   return (
-    <div ref={wrap} className="relative mb-1.5 shrink-0 self-center">
+    // As tall as a tab, so the + sits level with the tab labels.
+    <div ref={wrap} className="relative flex h-9 shrink-0 items-center self-end">
       <button
         type="button"
         aria-label="Open a tab"
@@ -253,8 +254,8 @@ function AddTabMenu({ model }: { model: RoomModel }) {
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen(!open)}
-        className={`inline-flex h-[30px] w-[30px] items-center justify-center rounded-md text-ink hover:bg-surface focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
-          open ? "bg-surface" : ""
+        className={`inline-flex h-8 w-8 items-center justify-center rounded-md transition-colors hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+          open ? "text-accent" : "text-ink-muted"
         }`}
       >
         <Plus size={16} aria-hidden />
@@ -263,7 +264,7 @@ function AddTabMenu({ model }: { model: RoomModel }) {
         <div
           role="menu"
           aria-label="Open a tab"
-          className="absolute top-9 left-0 z-30 flex w-72 flex-col gap-0.5 rounded-panel border border-line bg-surface p-1.5 shadow-soft"
+          className="absolute top-full left-0 z-30 mt-1 flex w-72 flex-col gap-0.5 rounded-panel border border-line bg-surface p-1.5 shadow-soft"
         >
           <div className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-ink-muted">Open a tab</div>
           {items.map((id) => (
