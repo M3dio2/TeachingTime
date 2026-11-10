@@ -1,15 +1,17 @@
 "use client";
 
+import { Link2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AuthCard, { textLink } from "@/components/auth/AuthCard";
+import AuthCard, { FormError, submitClass, textLink } from "@/components/auth/AuthCard";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
+import PasswordField from "@/components/ui/PasswordField";
 import { authErrorMessage } from "@/lib/authErrors";
 import { createClient } from "@/lib/supabase/client";
 
-// Teacher login. New teachers create an account at /signup.
+// Teacher login. New teachers create an account at /signup; students never log in.
 export default function LoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -32,40 +34,51 @@ export default function LoginForm() {
   }
 
   return (
-    <AuthCard title="Teacher login">
+    <AuthCard title="Teacher login" intro="Welcome back. Log in to see your classrooms.">
       <form onSubmit={logIn} className="flex flex-col gap-4">
         <Field
           label="Email"
           type="email"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
+          invalid={Boolean(error)}
           required
         />
-        <Field
+        <PasswordField
           label="Password"
-          type="password"
+          placeholder="Your password"
+          aside={
+            <Link href="/forgot-password" className={`${textLink} text-sm`}>
+              Forgot your password?
+            </Link>
+          }
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           autoComplete="current-password"
+          invalid={Boolean(error)}
           required
         />
-        <Button disabled={loading}>{loading ? "Logging in…" : "Log in"}</Button>
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <FormError>{error}</FormError>}
+        <Button disabled={loading} className={submitClass}>
+          {loading ? "Logging in…" : "Log in"}
+        </Button>
       </form>
-      <div className="flex flex-col gap-1 text-sm text-ink-muted">
-        <p>
-          <Link href="/forgot-password" className={textLink}>
-            Forgot your password?
-          </Link>
-        </p>
-        <p>
-          New here?{" "}
-          <Link href="/signup" className={textLink}>
-            Create a teacher account
-          </Link>
-        </p>
-        <p>Students: use the invite link from your teacher.</p>
+      <p className="text-[15px] text-ink-muted">
+        New here?{" "}
+        <Link href="/signup" className={textLink}>
+          Create a teacher account
+        </Link>
+      </p>
+      <div className="flex items-start gap-3 rounded-panel border border-line bg-surface px-4 py-3.5 text-sm leading-snug">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-accent">
+          <Link2 size={16} aria-hidden />
+        </span>
+        <span>
+          <strong className="font-semibold">Are you a student?</strong>{" "}
+          <span className="text-ink-muted">Open the invite link from your teacher. You don&apos;t need an account.</span>
+        </span>
       </div>
     </AuthCard>
   );

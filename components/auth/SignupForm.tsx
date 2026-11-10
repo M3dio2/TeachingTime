@@ -2,8 +2,9 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, Mail } from "lucide-react";
 import { useState } from "react";
-import AuthCard, { textLink } from "@/components/auth/AuthCard";
+import AuthCard, { FormError, submitClass, textLink } from "@/components/auth/AuthCard";
 import NewPasswordFields from "@/components/auth/NewPasswordFields";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
@@ -58,23 +59,34 @@ export default function SignupForm() {
 
   if (emailSent) {
     return (
-      <AuthCard title="Check your email">
-        <p>
-          We sent a link to <span className="font-medium">{email}</span>. Click it to finish
-          creating your account.
-        </p>
-        <p className="text-sm text-ink-muted">
+      <AuthCard
+        title="Check your email"
+        icon={<Mail size={24} aria-hidden />}
+        intro={
+          <span className="text-ink">
+            We sent a link to <strong className="font-semibold">{email}</strong>. Click it to finish creating
+            your account.
+          </span>
+        }
+      >
+        <p className="rounded-md bg-surface-2 px-3.5 py-3 text-sm text-ink-muted">
           No email after a few minutes? Look in your spam folder.
         </p>
+        <BackToLogin />
       </AuthCard>
     );
   }
 
   return (
-    <AuthCard title="Create a teacher account">
+    <AuthCard
+      title="Create a teacher account"
+      intro="Set up a classroom for each student and invite them with a link."
+    >
       <form onSubmit={signUp} className="flex flex-col gap-4">
         <Field
-          label="Your name (students see it)"
+          label="Your name"
+          placeholder="e.g. Laura"
+          hint="Students see it on your camera in every lesson."
           value={name}
           onChange={(e) => setName(e.target.value)}
           autoComplete="name"
@@ -84,6 +96,7 @@ export default function SignupForm() {
         <Field
           label="Email"
           type="email"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
@@ -96,15 +109,26 @@ export default function SignupForm() {
           onPasswordChange={setPassword}
           onConfirmChange={setConfirm}
         />
-        <Button disabled={loading}>{loading ? "Creating your account…" : "Create account"}</Button>
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <FormError>{error}</FormError>}
+        <Button disabled={loading} className={submitClass}>
+          {loading ? "Creating your account…" : "Create account"}
+        </Button>
       </form>
-      <p className="text-sm text-ink-muted">
+      <p className="text-[15px] text-ink-muted">
         Already have an account?{" "}
         <Link href="/" className={textLink}>
           Log in
         </Link>
       </p>
     </AuthCard>
+  );
+}
+
+export function BackToLogin() {
+  return (
+    <Link href="/" className={`${textLink} inline-flex items-center gap-1.5 self-start text-[15px]`}>
+      <ArrowLeft size={16} aria-hidden />
+      Back to login
+    </Link>
   );
 }

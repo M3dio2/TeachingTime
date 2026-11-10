@@ -2,7 +2,7 @@ import type { AuthError } from "@supabase/supabase-js";
 
 // Plain-language messages for Supabase auth errors (docs/DESIGN.md: no raw error text).
 const messages: Record<string, string> = {
-  invalid_credentials: "Wrong email or password.",
+  invalid_credentials: "Wrong email or password. Check both, or reset your password.",
   email_not_confirmed: "Please confirm your email first: click the link we sent you.",
   user_already_exists: "There's already an account with this email. Log in instead.",
   email_exists: "There's already an account with this email. Log in instead.",

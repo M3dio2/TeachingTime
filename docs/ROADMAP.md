@@ -30,7 +30,7 @@ Vercel functions ran in North America while Supabase was in US West, so each pag
 - [x] `proxy.ts`: sign-up and forgot-password for logged-out visitors, reset page needs the link's login
 - [x] User, in Supabase: Gmail as custom SMTP, sign-ups on with "Confirm email", minimum password 8, email templates, redirect URLs
 - [x] Test: sign up with a second email, confirm, reset password (live and local)
-- [ ] An empty dashboard welcomes a new teacher (designed: `Dashboard-new`; built in S5)
+- [x] An empty dashboard welcomes a new teacher (designed: `Dashboard-new`; built in S5)
 - [x] Update "Teacher account" in `docs/ARCHITECTURE.md`
 
 ## S3: Security check (before inviting friends)
@@ -123,7 +123,7 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 - Then `npm run build`, `npm run lint`, `npm run test:e2e`; screenshots of teacher and student on desktop (1440, 1100, 900) and phone.
 
 ## L2a: PDF and picture tabs
-**Built on `l2a-file-tabs`, not merged:** waiting for the user's OK on the screenshots. Not tested on real devices (big PDFs, iPad drag and drop: HTML5 drag doesn't work with touch, so tablets use click).
+**Built and merged; not fully tested yet:** Not tested on real devices (big PDFs, iPad drag and drop: HTML5 drag doesn't work with touch, so tablets use click).
 - [x] Teacher clicks a PDF or picture in the files panel, or drags it onto the stage (drop areas "Replace …" / "Open beside …") → it opens as a tab for both (`pdfjs-dist` for PDFs, pages load as you scroll). With two tabs open, clicking only shows a hint; dragging onto "Replace …" works
 - [x] Student access without a login: `/api/resource-url` takes the invite slug and a file id, checks that the file belongs to that lesson, and returns a signed URL valid for a few minutes
 - [x] Page and scroll position follow the teacher
@@ -140,7 +140,7 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 - **Found while testing:** moving over a drop area's own text fired `dragleave`, so the area lost its highlight; fixed. The text toolbar's lists are icons now (it wrapped in narrow panes).
 
 ## A1: Audio (replaces the old audio-library milestone)
-**Built on `a1-audio` (on top of `l2a-file-tabs`), not merged:** waiting for the user's OK on the screenshots. Not tested on real devices: whether the teacher's microphone picks up the audio from her speakers (echo; headphones avoid it), MP3/M4A files from phones, iOS Safari playing it.
+**Built and merged; not fully tested yet:** Not tested on real devices: whether the teacher's microphone picks up the audio from her speakers (echo; headphones avoid it), MP3/M4A files from phones, iOS Safari playing it.
 - How: the teacher's browser plays the file through Web Audio into its own LiveKit track (`lib/room/useLessonAudio.ts`, source "unknown", name `lesson-audio`), which LiveKit's audio renderer plays on the student's side, mic muted or not. The `audio` attribute holds `{ id, name, duration, startedAt, pausedAt }` (`lib/room/audio.ts`); the student's bar computes its own position from it. Seek: click or drag the bar, arrow keys ±5 s. Audio files go through `/api/resource-url` like PDFs.
 - Tests: `e2e/a1-audio.spec.ts` (a 6 s WAV: the bar for both, a separate track reaches the student, the student's bar runs and stops on pause, Stop removes it; attribute checks).
 - [x] Audio files from the drawer: play / pause / seek; no tab
@@ -152,11 +152,11 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 - [ ] Teacher: **Save as new PDF** (`pdf-lib` in the browser draws the strokes and text onto the original) → "Name (date).pdf" in the classroom. The original stays as it was
 
 ## S5: UX/UI polish
-- [ ] Build the redesign of the other pages (`docs/design/HANDOFF.md`, "Other pages"), each on its own branch if it's big:
-  - [ ] Sign-in pages: one two-column layout (form + explanation, form only on phones), show/hide password, "Forgot" next to the label, student pointer on login
-  - [ ] Dashboard: card grid, name chip in the top bar, Remove in each card's ⋯ menu, file counts, quick call banner, first-visit welcome with the arrow doodle
-  - [ ] Classroom: two columns, link shown in a field, drop area for uploads, filters, storage bar, Remove moves here
-  - [ ] Join: camera and microphone check before joining (local tracks reused after joining)
+- [x] Build the redesign of the other pages (`docs/design/HANDOFF.md`, "Other pages"), each on its own branch if it's big:
+  - [x] Sign-in pages: one two-column layout (form + explanation, form only on phones), show/hide password, "Forgot" next to the label, student pointer on login
+  - [x] Dashboard: card grid, name chip in the top bar, Remove in each card's ⋯ menu, file counts, quick call banner, first-visit welcome with the arrow doodle
+  - [x] Classroom: two columns, link shown in a field, drop area for uploads, filters, storage bar, Remove moves here
+  - [x] Join: camera and microphone check before joining (local tracks reused after joining). Needs a real-device check: iOS Safari / Android camera preview, and the blocked-camera message
 - [ ] D5d: one wait, one screen (below)
 - [ ] Walk through every screen with the user (login, sign-up, dashboard, classroom, join, room on desktop and phone); list fixes, then do them
 - [ ] Real phone test on the live site

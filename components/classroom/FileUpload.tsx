@@ -50,8 +50,9 @@ function kindOf(type: string): ResourceKind {
 
 // Uploads straight from the browser to Supabase Storage (server actions cap request bodies),
 // then adds the file's row. RLS checks both against the teacher's own students.
-// Each file is sorted into Pictures, PDFs or Audio by its type.
-export default function FileUpload({
+// Each file is sorted into Pictures, PDFs or Audio by its type. Returns the header button and
+// the drop area (with the messages), which sit in different places.
+export function useFileUpload({
   teacherId,
   lessonId,
   usedBytes,
@@ -119,37 +120,94 @@ export default function FileUpload({
     router.refresh();
   }
 
-  return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-3">
-        <Button variant="secondary" disabled={!!busy} onClick={() => input.current?.click()}>
-          <Upload size={16} aria-hidden />
-          Upload files
-        </Button>
+  const pick = () => input.current?.click();
+  const [over, setOver] = useState(false);
+
+  return {
+    busy,
+    pick,
+    // "Upload files" (the header button).
+    button: (
+      <Button
+        variant="secondary"
+        disabled={!!busy}
+        onClick={pick}
+        className="h-11 w-full font-semibold md:h-10 md:w-auto"
+      >
+        <Upload size={16} aria-hidden />
+        Upload files
+      </Button>
+    ),
+    // The drop area (desktop) and the upload messages; files dropped here use the same code.
+    area: (
+      <div className="flex flex-col gap-2">
+        <div
+          data-testid="drop-area"
+          onDragOver={(e) => {
+            if (!e.dataTransfer.types.includes("Files")) return;
+            e.preventDefault();
+            setOver(true);
+          }}
+          onDragLeave={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setOver(false);
+          }}
+          onDrop={(e) => {
+            e.preventDefault();
+            setOver(false);
+            const files = Array.from(e.dataTransfer.files);
+            if (files.length) upload(files);
+          }}
+          className={`hidden flex-wrap items-center justify-center gap-x-4 gap-y-3 rounded-panel border-[1.5px] border-dashed p-[22px] text-center md:flex ${
+            over ? "border-accent bg-surface-2" : "border-ink-muted bg-paper"
+          }`}
+        >
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-accent">
+            <Upload size={18} aria-hidden />
+          </span>
+          <div className="flex flex-col gap-0.5 text-left">
+            <span className="font-semibold">{over ? "Drop to upload" : "Drop files here"}</span>
+            <span className="text-[13px] text-ink-muted">Pictures, PDFs or audio, up to 10 MB each</span>
+          </div>
+        </div>
         <p className="text-sm text-ink-muted" aria-live="polite">
-          {busy || "Pictures, PDFs or audio, up to 10 MB each."}
+          {busy}
         </p>
+        <input
+          ref={input}
+          type="file"
+          accept={[...IMAGE_TYPES, "application/pdf", "audio/*", ".jpg,.jpeg,.png,.webp,.gif,.pdf"].join(",")}
+          multiple
+          hidden
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            e.target.value = ""; // so the same file can be picked again
+            if (files.length) upload(files);
+          }}
+        />
+        {error && (
+          <p role="alert" className="text-sm text-danger">
+            {error}
+          </p>
+        )}
       </div>
-      <p className="text-sm text-ink-muted">
-        {Math.ceil(usedBytes / MB)} MB of your 200 MB used, all classrooms together.
-      </p>
-      <input
-        ref={input}
-        type="file"
-        accept={[...IMAGE_TYPES, "application/pdf", "audio/*", ".jpg,.jpeg,.png,.webp,.gif,.pdf"].join(",")}
-        multiple
-        hidden
-        onChange={(e) => {
-          const files = Array.from(e.target.files ?? []);
-          e.target.value = ""; // so the same file can be picked again
-          if (files.length) upload(files);
-        }}
-      />
-      {error && (
-        <p role="alert" className="text-sm text-danger">
-          {error}
-        </p>
-      )}
-    </div>
+    ),
+  };
+}
+
+// "38 MB of 200 MB" with a bar: all the teacher's classrooms together.
+export function StorageCard({ usedBytes }: { usedBytes: number }) {
+  const used = Math.ceil(usedBytes / MB);
+  const pct = Math.min(100, (usedBytes / TEACHER_BYTES) * 100);
+  return (
+    <section className="flex flex-col gap-2.5 rounded-panel border border-line bg-surface p-5">
+      <div className="flex items-baseline justify-between gap-2">
+        <span className="font-semibold">Storage</span>
+        <span className="text-sm text-ink-muted tabular-nums">{used} MB of 200 MB</span>
+      </div>
+      <div role="img" aria-label={`${used} of 200 MB used`} className="h-2 overflow-hidden rounded bg-surface-2">
+        <div className="h-full rounded bg-accent" style={{ width: `${pct}%` }} />
+      </div>
+      <span className="text-[13px] leading-snug text-ink-muted">All your classrooms together. Up to 10 MB per file.</span>
+    </section>
   );
 }

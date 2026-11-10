@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import AuthCard from "@/components/auth/AuthCard";
+import AuthCard, { FormError, submitClass } from "@/components/auth/AuthCard";
 import NewPasswordFields from "@/components/auth/NewPasswordFields";
 import Button from "@/components/ui/Button";
 import { authErrorMessage } from "@/lib/authErrors";
@@ -37,7 +37,7 @@ export default function ResetPasswordForm() {
   }
 
   return (
-    <AuthCard title="Choose a new password">
+    <AuthCard title="Choose a new password" intro="You'll use it the next time you log in.">
       <form onSubmit={save} className="flex flex-col gap-4">
         <NewPasswordFields
           label="New password"
@@ -46,8 +46,10 @@ export default function ResetPasswordForm() {
           onPasswordChange={setPassword}
           onConfirmChange={setConfirm}
         />
-        <Button disabled={loading}>{loading ? "Saving…" : "Save and continue"}</Button>
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <FormError>{error}</FormError>}
+        <Button disabled={loading} className={submitClass}>
+          {loading ? "Saving…" : "Save password"}
+        </Button>
       </form>
     </AuthCard>
   );

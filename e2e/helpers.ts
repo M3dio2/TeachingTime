@@ -11,7 +11,7 @@ export async function logIn(page: Page) {
   }
   await page.goto("/");
   await page.getByLabel("Email").fill(email);
-  await page.getByLabel("Password").fill(password);
+  await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
   await page.waitForURL("**/dashboard");
 }
@@ -21,7 +21,7 @@ export async function openTestClassroom(page: Page) {
   const card = page.getByRole("link", { name: `Open ${TEST_CLASSROOM}'s classroom` });
   await expect(page.getByRole("heading", { name: "Your classrooms" })).toBeVisible();
   if (!(await card.count())) {
-    await page.getByLabel("Add a classroom").fill(TEST_CLASSROOM);
+    await page.getByLabel("Student's name").fill(TEST_CLASSROOM);
     await page.getByRole("button", { name: "Add", exact: true }).click();
     await expect(card).toBeVisible();
   }
@@ -37,13 +37,12 @@ export async function startTestLesson(page: Page, prepare?: (page: Page) => Prom
   await logIn(page);
   await openTestClassroom(page);
   await prepare?.(page);
-  await page.context().grantPermissions(["clipboard-read", "clipboard-write"]);
-  await page.getByRole("button", { name: "Copy student link" }).click();
-  const link = await page.evaluate(() => navigator.clipboard.readText());
+  // The student link sits in a read-only field on the classroom page.
+  const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
   await page.getByRole("link", { name: "Start lesson" }).click();
   await page.waitForURL(/\/lesson\/[0-9a-f-]+$/);
   await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
-  return new URL(link).pathname;
+  return new URL(`http://${link}`).pathname;
 }
 
 // Student: a fresh browser context (no login) that joins with the link.
@@ -56,7 +55,7 @@ export async function joinAsStudent(
   const page = await context.newPage();
   await page.goto(joinPath);
   await page.getByLabel("Your name").fill("E2E Student");
-  await page.getByRole("button", { name: "Join" }).click();
+  await page.getByRole("button", { name: "Join lesson" }).click();
   await expect(page.getByText(/^Following /).first()).toBeVisible({ timeout: 30_000 });
   return page;
 }

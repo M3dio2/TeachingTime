@@ -6,10 +6,11 @@ import {
   RoomAudioRenderer,
   useConnectionState,
   useRemoteParticipants,
+  useRoomContext,
   useTracks,
 } from "@livekit/components-react";
 import { ConnectionState, type DisconnectReason, MediaDeviceFailure, Track } from "livekit-client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as Y from "yjs";
 import { muteMicrophones } from "@/lib/mute";
 import {
@@ -32,6 +33,7 @@ import { useFileNames } from "@/lib/room/fileCache";
 import { useLessonAudio } from "@/lib/room/useLessonAudio";
 import { useYjsSync } from "@/lib/sync/useYjsSync";
 import { PHONE_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
+import type { PreJoinTracks } from "./CameraCheck";
 import DesktopRoom from "./DesktopRoom";
 import type { RoomFile } from "./FilesPanel";
 import JoinToast from "./JoinToast";
@@ -59,9 +61,11 @@ type Props = {
   lesson?: SavedLesson;
   inviteSlug?: string; // student: the link she joined with (teacher: lesson.inviteSlug)
   onLeave: (reason?: DisconnectReason) => void;
+  // Student: the tracks from the join card's camera check, published as they are.
+  tracks?: PreJoinTracks | null;
 };
 
-export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave }: Props) {
+export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, tracks }: Props) {
   const [problem, setProblem] = useState<string | null>(null);
   const isPhone = useMediaQuery(PHONE_QUERY);
 
@@ -70,8 +74,8 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave }:
       token={token}
       serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
       connect
-      video
-      audio
+      video={!tracks}
+      audio={!tracks}
       onDisconnected={onLeave}
       onMediaDeviceFailure={(failure, kind) => setProblem(deviceProblemMessage(failure, kind))}
       // Camera/mic failures also arrive here (e.g. "Permission denied by system" on macOS).
@@ -105,6 +109,7 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave }:
       <JoinToast />
       <ConnectingScreen />
       <RoomAudioRenderer />
+      {tracks && <PublishTracks tracks={tracks} />}
     </LiveKitRoom>
   );
 }
@@ -233,4 +238,20 @@ function ConnectingScreen() {
   return connection === ConnectionState.Connecting ? (
     <LoadingScreen title="Getting your lesson ready" />
   ) : null;
+}
+
+// Publishes the join card's tracks once connected (muted ones stay muted, so the choice carries
+// over). LiveKit stops them when the room disconnects.
+function PublishTracks({ tracks }: { tracks: PreJoinTracks }) {
+  const room = useRoomContext();
+  const connection = useConnectionState();
+  const done = useRef(false);
+  useEffect(() => {
+    if (connection !== ConnectionState.Connected || done.current) return;
+    done.current = true;
+    for (const track of [tracks.audio, tracks.video]) {
+      if (track) room.localParticipant.publishTrack(track).catch(() => {});
+    }
+  }, [connection, room, tracks]);
+  return null;
 }
