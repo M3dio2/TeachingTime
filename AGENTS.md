@@ -15,7 +15,7 @@ Instructions for every agent (Claude Code via `CLAUDE.md`, Hermes etc. directly)
 1-on-1 video lessons, one English teacher and one student: Google Meet plus screen share with both cameras visible, a shared text pad and whiteboard that sync instantly, and a teacher switch for whether the student may edit them.
 
 ## Current milestone
-S1–S3, P1, C1, C1b, L1 done. Next: **L2a (PDF and picture tabs)**, starting with a plan; its design is done (`docs/design/HANDOFF.md`). Then A1 audio, L2b PDF drawing, S5 (incl. page redesign), S6, friends test (date to agree). Update this line when a milestone is done.
+S1–S3, P1, C1, C1b, L1 done (L1 still needs its real-device test, see the roadmap). Next: **L2a (PDF and picture tabs)**, starting with a plan; its design is done (`docs/design/HANDOFF.md`). Then A1 audio, L2b PDF drawing, S5 (incl. page redesign), S6, friends test (date to agree). Update this line when a milestone is done.
 
 ## Read first
 - `docs/ROADMAP.md` every session; one milestone per session.

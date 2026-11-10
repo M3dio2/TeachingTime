@@ -67,6 +67,7 @@ Each student in the list becomes a classroom: the teacher keeps that student's f
 - [x] `npm run build` + `npm run lint`, merged to `main`
 
 ## L1: Tabbed call layout
+**Built and merged; not fully tested yet:** only automated browser tests so far. The real-device checks are listed under "L1 plan" below.
 Design and rules: `docs/design/HANDOFF.md` ("Lesson room"), screens `Main`, `Room-*`, `Phone-teacher`, `Phone-student` in `docs/design/screens/`.
 - [x] Desktop: cameras column on the left | stage with tabs | "Anna's files" on the right (teacher only, student lessons only, folds to an icon strip; lists the files, opening them comes in L2a). Quick calls have no files panel
 - [x] Tabs like a browser, **one or two open**: **Screen** (only while someone shares), **Text**, **Draw** (PDFs and pictures in L2a). + only while one tab is open, × on each tab while two are open; side by side or one at a time; yellow underline on the active tab. A new tab never replaces one silently
