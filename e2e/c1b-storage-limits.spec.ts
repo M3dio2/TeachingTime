@@ -13,7 +13,7 @@ function pdf(bytes: number) {
 }
 
 async function usedMB(page: Page) {
-  const line = page.getByText(/MB of your 200 MB used/);
+  const line = page.getByText(/^\d+ MB of 200 MB$/);
   const text = (await line.textContent()) ?? "";
   return Number(text.match(/^(\d+) MB/)?.[1]);
 }
@@ -28,7 +28,7 @@ test("C1b: file and teacher storage limits", async ({ page }) => {
   await logIn(page);
   await openTestClassroom(page);
 
-  // Leftovers from an earlier failed run would skew the "used" line.
+  // Leftovers from an earlier failed run would skew the storage line.
   const leftovers = page.getByRole("listitem").filter({ hasText: /^e2e-/ });
   while (await leftovers.count()) {
     await leftovers.first().getByRole("button", { name: "Delete" }).click();

@@ -1,51 +1,37 @@
-import { FileText, ImageIcon, Music, type LucideIcon } from "lucide-react";
+import { ArrowLeft, Video } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
-import FileUpload, { type ResourceKind } from "@/components/classroom/FileUpload";
-import { ConfirmSubmit, LocalDate } from "@/components/dashboard/DashboardBits";
+import { LinkField, RemoveButton } from "@/components/classroom/ClassroomBits";
+import ClassroomFiles, { type Resource } from "@/components/classroom/ClassroomFiles";
+import { StorageCard } from "@/components/classroom/FileUpload";
+import { LocalDate } from "@/components/dashboard/DashboardBits";
 import { buttonClass } from "@/components/ui/Button";
 import Wordmark from "@/components/ui/Wordmark";
 import { createClient } from "@/lib/supabase/server";
-import { removeResource } from "../actions";
+import { removeLesson } from "../actions";
 
-// A student's classroom: their link, Start lesson, and the teacher's files for them.
+// A student's classroom (docs/design/HANDOFF.md, "Classroom"): the student, their link and
+// Start lesson on the left with the storage card and Remove; the files on the right.
 export default function ClassroomPage({ params }: PageProps<"/dashboard/[id]">) {
   return (
-    <main className="flex min-h-dvh flex-1 flex-col gap-8 p-4 sm:p-8">
-      <header className="flex items-center justify-between">
+    <div className="flex min-h-dvh flex-1 flex-col">
+      <header className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-4 px-[clamp(16px,4vw,32px)] py-5">
         <Wordmark underline="still" />
-        <Link href="/dashboard" className={buttonClass("ghost", "sm")}>
-          ← Your classrooms
+        <Link href="/dashboard" className={buttonClass("ghost", "sm", "h-9 text-ink!")}>
+          <ArrowLeft size={16} aria-hidden />
+          Your classrooms
         </Link>
       </header>
-
-      <div className="mx-auto flex w-full max-w-2xl flex-col gap-8">
+      <main className="mx-auto flex w-full max-w-[1120px] flex-wrap items-start gap-6 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
         <Suspense fallback={<p className="text-ink-muted">Loading…</p>}>
           <Classroom params={params} />
         </Suspense>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
-
-type Resource = {
-  id: string;
-  kind: ResourceKind;
-  name: string;
-  path: string;
-  size: number;
-  created_at: string;
-  url?: string;
-};
-
-// The three file sections, in page order.
-const sections: { kind: ResourceKind; title: string; Icon: LucideIcon; empty: string }[] = [
-  { kind: "image", title: "Pictures", Icon: ImageIcon, empty: "No pictures yet." },
-  { kind: "pdf", title: "PDFs", Icon: FileText, empty: "No PDFs yet." },
-  { kind: "audio", title: "Audio", Icon: Music, empty: "No audio yet." },
-];
 
 async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params">) {
   const { id } = await params;
@@ -68,7 +54,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
   ]);
   if (!student || !auth.user) notFound();
 
-  const resources = (files ?? []) as Resource[];
+  const resources = (files ?? []) as (Resource & { path: string })[];
   // "Open" links and picture previews for the teacher, valid for an hour.
   const { data: signed } = resources.length
     ? await supabase.storage.from("resources").createSignedUrls(
@@ -81,120 +67,59 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
 
   return (
     <>
-      <section className="flex flex-col gap-4 rounded-panel border border-line bg-surface p-4">
-        <div>
-          <h1 className="text-2xl">{student.title}</h1>
-          <p className="text-sm text-ink-muted">
-            {student.last_active_at ? (
-              <>
-                Last lesson: <LocalDate iso={student.last_active_at} />
-              </>
-            ) : (
-              "No lessons yet"
-            )}
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Link href={`/lesson/${student.id}`} className={buttonClass("primary", "md")}>
+      <aside className="flex min-w-0 flex-[1_1_300px] flex-col gap-4 md:max-w-[380px]">
+        <section className="flex flex-col gap-[18px] rounded-panel border border-line bg-surface p-5">
+          <div className="flex items-center gap-3.5">
+            <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-surface-2 font-display text-2xl font-extrabold text-accent">
+              {student.title.charAt(0).toUpperCase()}
+            </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h1 className="truncate text-[32px] leading-[1.1] tracking-[-0.02em]">{student.title}</h1>
+              <span className="text-sm text-ink-muted">
+                {student.last_active_at ? (
+                  <>
+                    Last lesson: <LocalDate iso={student.last_active_at} />
+                  </>
+                ) : (
+                  "No lessons yet"
+                )}
+              </span>
+            </div>
+          </div>
+          <Link href={`/lesson/${student.id}`} className={buttonClass("primary", "md", "h-11 font-semibold")}>
+            <Video size={16} aria-hidden />
             Start lesson
           </Link>
-          <CopyLinkButton slug={student.invite_slug} />
-        </div>
-        <p className="text-sm text-ink-muted">
-          {student.title} joins with the student link. It stays the same every week.
-        </p>
-      </section>
-
-      <section
-        aria-labelledby="files"
-        className="flex flex-col gap-5 rounded-panel border border-line bg-surface p-4"
-      >
-        <div className="flex flex-col gap-3">
-          <h2 id="files" className="text-xl font-semibold">
-            Files
-          </h2>
-          <FileUpload teacherId={auth.user.id} lessonId={student.id} usedBytes={Number(usedBytes ?? 0)} />
-        </div>
-
-        {sections.map(({ kind, title, Icon, empty }) => {
-          const list = resources.filter((r) => r.kind === kind);
-          return (
-            <div key={kind} className="flex flex-col gap-2">
-              <div className="flex items-center gap-2.5">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-accent">
-                  <Icon size={16} aria-hidden />
-                </span>
-                <h3 className="font-semibold">{title}</h3>
-                {list.length > 0 && (
-                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-ink-muted">
-                    {list.length}
-                  </span>
-                )}
-              </div>
-              {list.length === 0 ? (
-                <p className="text-sm text-ink-muted">{empty}</p>
-              ) : (
-                <FileList files={list} Icon={Icon} />
-              )}
-            </div>
-          );
-        })}
-      </section>
+          <StudentLink slug={student.invite_slug} name={student.title} />
+        </section>
+        <StorageCard usedBytes={Number(usedBytes ?? 0)} />
+        <form action={removeLesson} className="flex flex-col gap-1 px-1">
+          <input type="hidden" name="id" value={student.id} />
+          <input type="hidden" name="then" value="dashboard" />
+          <RemoveButton name={student.title} />
+          <span className="text-[13px] text-ink-muted">The link stops working and the files are deleted.</span>
+        </form>
+      </aside>
+      <ClassroomFiles
+        files={resources.map((r) => ({ id: r.id, kind: r.kind, name: r.name, size: r.size, created_at: r.created_at, url: r.url }))}
+        teacherId={auth.user.id}
+        lessonId={student.id}
+        usedBytes={Number(usedBytes ?? 0)}
+      />
     </>
   );
 }
 
-function FileList({ files, Icon }: { files: Resource[]; Icon: LucideIcon }) {
+// The student link in a read-only field with Copy. The host is read on the client.
+function StudentLink({ slug, name }: { slug: string; name: string }) {
   return (
-    <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
-      {files.map((file) => (
-        <li key={file.id} className="flex items-center gap-3 px-3 py-2.5">
-          {file.kind === "image" && file.url ? (
-            // Signed URLs change on every load, so Next's image optimizer wouldn't help.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={file.url}
-              alt=""
-              loading="lazy"
-              className="size-10 shrink-0 rounded-md border border-line bg-surface-2 object-cover"
-            />
-          ) : (
-            <Icon size={16} aria-hidden className="shrink-0 text-ink-muted" />
-          )}
-          <div className="min-w-0 flex-1">
-            {file.url ? (
-              <a
-                href={file.url}
-                target="_blank"
-                rel="noreferrer"
-                className="block truncate font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              >
-                {file.name}
-              </a>
-            ) : (
-              <p className="truncate font-medium">{file.name}</p>
-            )}
-            <p className="text-sm text-ink-muted">
-              {formatSize(file.size)} · <LocalDate iso={file.created_at} />
-            </p>
-          </div>
-          <DeleteFile file={file} />
-        </li>
-      ))}
-    </ul>
+    <div className="flex flex-col gap-1.5">
+      <span className="text-sm font-medium">{name}&apos;s link</span>
+      <div className="flex gap-2">
+        <LinkField slug={slug} label={`${name}'s link`} />
+        <CopyLinkButton slug={slug} label="Copy" />
+      </div>
+      <span className="text-[13px] text-ink-muted">{name} joins with this link. It stays the same every week.</span>
+    </div>
   );
-}
-
-function DeleteFile({ file }: { file: Resource }) {
-  return (
-    <form action={removeResource}>
-      <input type="hidden" name="id" value={file.id} />
-      <ConfirmSubmit message={`Delete ${file.name}?`}>Delete</ConfirmSubmit>
-    </form>
-  );
-}
-
-function formatSize(bytes: number) {
-  if (bytes < 1024 * 1024) return `${Math.max(1, Math.round(bytes / 1024))} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }

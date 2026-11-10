@@ -62,6 +62,8 @@ export async function removeLesson(formData: FormData) {
   const { data } = await supabase.from("lessons").delete().eq("id", id).select("id");
   if (data?.length) await closeRoom(data[0].id);
   revalidatePath("/dashboard");
+  // Removed from its own classroom page: back to the dashboard.
+  if (formData.get("then") === "dashboard") redirect("/dashboard");
 }
 
 // Deletes one file from a classroom: the stored file, then its row.
