@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { Mail } from "lucide-react";
 import { useState } from "react";
-import AuthCard, { textLink } from "@/components/auth/AuthCard";
+import AuthCard, { FormError, submitClass } from "@/components/auth/AuthCard";
+import { BackToLogin } from "@/components/auth/SignupForm";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import { authErrorMessage } from "@/lib/authErrors";
@@ -34,40 +35,45 @@ export default function ForgotPasswordForm() {
 
   if (sent) {
     return (
-      <AuthCard title="Check your email">
-        <p>
-          If there&apos;s an account for <span className="font-medium">{email}</span>, we sent it
-          a link to choose a new password.
-        </p>
-        <p className="text-sm text-ink-muted">
+      <AuthCard
+        title="Check your email"
+        icon={<Mail size={24} aria-hidden />}
+        intro={
+          <span className="text-ink">
+            If there&apos;s an account for <strong className="font-semibold">{email}</strong>, we sent it a link
+            to choose a new password.
+          </span>
+        }
+      >
+        <p className="rounded-md bg-surface-2 px-3.5 py-3 text-sm text-ink-muted">
           No email after a few minutes? Look in your spam folder.
         </p>
+        <BackToLogin />
       </AuthCard>
     );
   }
 
   return (
-    <AuthCard title="Forgot your password?">
+    <AuthCard
+      title="Forgot your password?"
+      intro="Enter your email and we'll send you a link to choose a new one."
+    >
       <form onSubmit={sendLink} className="flex flex-col gap-4">
-        <p className="text-sm text-ink-muted">
-          Enter your email and we&apos;ll send you a link to choose a new one.
-        </p>
         <Field
           label="Email"
           type="email"
+          placeholder="you@example.com"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
           required
         />
-        <Button disabled={loading}>{loading ? "Sending…" : "Send link"}</Button>
-        {error && <p className="text-sm text-danger">{error}</p>}
+        {error && <FormError>{error}</FormError>}
+        <Button disabled={loading} className={submitClass}>
+          {loading ? "Sending…" : "Send link"}
+        </Button>
       </form>
-      <p className="text-sm text-ink-muted">
-        <Link href="/" className={textLink}>
-          Back to login
-        </Link>
-      </p>
+      <BackToLogin />
     </AuthCard>
   );
 }
