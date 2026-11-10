@@ -118,6 +118,9 @@ body {
   --lk-border-radius: 6px;
   --lk-accent-bg: var(--color-accent);
   --lk-accent-fg: #fff;
+  --lk-accent2: var(--color-accent-hover);
+  --lk-accent3: var(--color-accent-hover);
+  --lk-accent4: var(--color-accent-hover);
   --lk-danger: var(--color-danger);
   --lk-control-fg: var(--color-ink);
   --lk-control-bg: var(--color-surface);
