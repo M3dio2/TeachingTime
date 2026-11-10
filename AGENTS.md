@@ -71,6 +71,8 @@ The agent develops on its own and tests itself; the user decides function and de
 - `npm run test:e2e` runs `e2e/*.spec.ts` against the running dev server: Chromium with a fake camera and mic, teacher and student as two browser contexts in one test.
 - They log in as the **test teacher account** (`E2E_TEACHER_EMAIL` / `E2E_TEACHER_PASSWORD` in `.env.local`, pasted by the user) and use only its classroom and lesson titled **"Test"** (no need to ask). Never a real teacher's account or lesson: real lessons may have a teacher live in them.
 - Until the friends test this runs against production Supabase and LiveKit (user's decision); after it, against the dev projects.
+- Call tests: `startTestLesson` and `joinAsStudent` in `e2e/helpers.ts` give a teacher and a student in the "Test" lesson. Screen sharing works headless (Chromium flags in `playwright.config.ts`).
+- Screenshots for the user: a throwaway spec plus a config that spreads `playwright.config.ts` with another `testDir`, kept outside the repo; don't commit them.
 - First time on a machine: `npx playwright install chromium`. In the agent container set `PLAYWRIGHT_BROWSERS_PATH=/opt/data/.cache/ms-playwright` (the default folder isn't writable).
 
 ## Always
