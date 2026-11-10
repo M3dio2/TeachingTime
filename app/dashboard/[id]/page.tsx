@@ -93,12 +93,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           <StudentLink slug={student.invite_slug} name={student.title} />
         </section>
         <StorageCard usedBytes={Number(usedBytes ?? 0)} />
-        <form action={removeLesson} className="flex flex-col gap-1 px-1">
-          <input type="hidden" name="id" value={student.id} />
-          <input type="hidden" name="then" value="dashboard" />
-          <RemoveButton name={student.title} />
-          <span className="text-[13px] text-ink-muted">The link stops working and the files are deleted.</span>
-        </form>
+        <RemoveClassroom id={student.id} name={student.title} className="hidden md:flex" />
       </aside>
       <ClassroomFiles
         files={resources.map((r) => ({ id: r.id, kind: r.kind, name: r.name, size: r.size, created_at: r.created_at, url: r.url }))}
@@ -106,7 +101,20 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
         lessonId={student.id}
         usedBytes={Number(usedBytes ?? 0)}
       />
+      {/* Phones: Remove sits at the very end of the page, after the files. */}
+      <RemoveClassroom id={student.id} name={student.title} className="flex md:hidden" />
     </>
+  );
+}
+
+function RemoveClassroom({ id, name, className }: { id: string; name: string; className: string }) {
+  return (
+    <form action={removeLesson} className={`flex-col gap-1 px-1 ${className}`}>
+      <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="then" value="dashboard" />
+      <RemoveButton name={name} />
+      <span className="text-[13px] text-ink-muted">The link stops working and the files are deleted.</span>
+    </form>
   );
 }
 
