@@ -5,8 +5,9 @@ import { Track } from "livekit-client";
 import dynamic from "next/dynamic";
 import TextPad from "@/components/board/TextPad";
 import Chip from "@/components/ui/Chip";
-import type { TabId } from "@/lib/room/tabs";
+import { isFileTab, type TabId } from "@/lib/room/tabs";
 import { clearBoard, clearText } from "@/lib/sync/clearLesson";
+import { PdfPane, PicturePane } from "./FilePanes";
 import { cap, type RoomModel } from "./roomModel";
 
 const Whiteboard = dynamic(() => import("@/components/board/Whiteboard"), {
@@ -17,6 +18,9 @@ const Whiteboard = dynamic(() => import("@/components/board/Whiteboard"), {
 // The content of one tab. Screen shows the shared screen; Text and Draw are the shared doc.
 export default function TabPane({ id, model }: { id: TabId; model: RoomModel }) {
   if (id === "screen") return <ScreenPane model={model} />;
+  if (isFileTab(id)) {
+    return id.startsWith("pdf:") ? <PdfPane id={id} model={model} /> : <PicturePane id={id} model={model} />;
+  }
   const teacher = model.role === "teacher";
   const chip = <WhoWrites model={model} />;
   if (id === "text") {

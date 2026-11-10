@@ -59,6 +59,7 @@ export default function StudentJoin({ slug }: { slug: string }) {
       <LessonRoom
         token={token}
         role="student"
+        inviteSlug={slug}
         onLeave={(reason) => {
           setToken(null);
           setExit(

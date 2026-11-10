@@ -1,6 +1,8 @@
 import type * as Y from "yjs";
-import type { Layout, TabId } from "@/lib/room/tabs";
+import type { Layout, TabId, Where } from "@/lib/room/tabs";
 import type { TeacherSettings } from "@/lib/sync/useTeacherSettings";
+import type { ViewSync } from "@/lib/sync/useViewSync";
+import type { LessonAudio } from "@/lib/room/useLessonAudio";
 import type { OnMute } from "./CameraTiles";
 import type { RoomFile } from "./FilesPanel";
 
@@ -9,6 +11,8 @@ export type Role = "teacher" | "student";
 // Teacher only: what she can change on the stage. The student gets none (she follows).
 export type TabActions = {
   open: (id: TabId) => void;
+  // A classroom file: "auto" = a click, "beside" or an index = a drop (lib/room/tabs.ts).
+  openAt: (id: TabId, where: Where) => void;
   close: (index: number) => void;
   pick: (index: number) => void;
   setLayout: (layout: Layout) => void;
@@ -30,6 +34,10 @@ export type RoomModel = {
   filesTitle: string; // "Anna's files"
   onMute?: OnMute;
   lessonId?: string;
+  inviteSlug?: string; // for /api/resource-url (both roles)
+  names: Record<string, string>; // file tab id → file name
+  sync: ViewSync; // PDF scroll positions
+  audio?: LessonAudio; // teacher only: play classroom audio for both (A1)
 };
 
 // "your student" at the start of a sentence.

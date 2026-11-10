@@ -23,7 +23,8 @@ Read this before touching `lib/sync/`, the room (`components/room/`) or the API 
 - Each teacher can store 200 MB across all classrooms (the free tier's 1 GB is shared by every teacher). `resources_used_bytes()` sums the teacher's folder in Storage, and the upload policy refuses new files once it reaches 200 MB; the size of the file being uploaded isn't known there, so the total can end up at most one file (10 MB) over. The upload form checks the exact total first and shows how much is used.
 - `components/classroom/FileUpload.tsx` uploads from the browser straight to Storage (server actions cap request bodies), then inserts the row. If the row fails, it deletes the upload again.
 - Deleting a file or a student (`removeResource`, `removeLesson`) removes the stored files first: the rows cascade with the lesson, the files don't.
-- The classroom's "open" links are signed URLs valid for an hour. Students get no Storage access; L2a will hand them short signed URLs from the server.
+- The classroom's "open" links are signed URLs valid for an hour. Students get no Storage access.
+- **In a lesson (L2a):** PDFs and pictures open as tabs (`pdf:<id>`, `image:<id>`). Both roles get the file through `/api/resource-url` (POST `{ slug, id }`): the service-role client finds the *student* lesson by `invite_slug` and the resource by id **and** `lesson_id`, then returns `{ name, kind, url }` with a signed URL valid 5 minutes. The browser downloads each file once and keeps it for the session (`lib/room/fileCache.ts`: PDF bytes, picture object URLs), so the short URL is never needed again. pdf.js (`pdfjs-dist`) renders from the bytes; its worker loads from the package via `new URL(…, import.meta.url)`.
 
 ## Shared state
 One Yjs `Y.Doc` per join, created in `LessonContent` (`components/room/LessonRoom.tsx`). It holds:
@@ -49,6 +50,10 @@ The tab rules are pure functions in `lib/room/tabs.ts` (open, close, pick, scree
 Personal sizes (camera column, files panel, split between tabs, files folded) are in `localStorage` (`lib/useStored.ts`), never synced. Whether two tabs fit side by side is measured on each screen separately (320 px per tab); below that the stage shows one at a time by itself.
 
 On a phone the student may tap between the teacher's two tabs; her choice lasts until the teacher switches tabs or opens or closes one.
+
+**Audio (A1):** the `audio` attribute (`{ id, name, duration, startedAt, pausedAt }`, checked by `cleanAudio` in `lib/room/audio.ts`) drives both people's audio bar; the student computes the position from it. The sound itself is a separate LiveKit track from the teacher (`lib/room/useLessonAudio.ts`: an `<audio>` element → Web Audio → `MediaStreamAudioDestinationNode` → `publishTrack`, source "unknown"), so muting her microphone doesn't mute it. It's unpublished on Stop, at the end of the file and when she leaves.
+
+**PDF scroll position** (`lib/sync/useViewSync.ts`) isn't an attribute: it changes too often. The teacher sends `{ tab, pos }` (pos = page index + fraction into the page, so different widths line up) as lossy data messages on topic `view`, at most 10 a second, and everything again (reliably) when someone joins. Only messages from the teacher count. The student can scroll but jumps to the teacher's next position.
 
 ## Edit permission
 "Student can edit" is the `studentCanEdit` teacher setting above. It's enforced in two places:

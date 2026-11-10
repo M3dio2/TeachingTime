@@ -3,6 +3,7 @@
 import Collaboration from "@tiptap/extension-collaboration";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { List, ListOrdered } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
 import type * as Y from "yjs";
 import ClearButton from "./ClearButton";
@@ -102,13 +103,13 @@ function Tools({ editor }: { editor: Editor }) {
       className: "font-semibold",
     },
     {
-      label: "• List",
+      label: <List size={16} aria-hidden />,
       title: "Bullet list",
       on: active.bulletList,
       run: () => editor.chain().focus().toggleBulletList().run(),
     },
     {
-      label: "1. List",
+      label: <ListOrdered size={16} aria-hidden />,
       title: "Numbered list",
       on: active.orderedList,
       run: () => editor.chain().focus().toggleOrderedList().run(),
@@ -116,7 +117,7 @@ function Tools({ editor }: { editor: Editor }) {
   ];
 
   return (
-    <div className="flex min-w-0 flex-wrap gap-1">
+    <div className="flex min-w-0 flex-wrap gap-0.5">
       {buttons.map((b) => (
         <button
           key={b.title}
@@ -125,7 +126,7 @@ function Tools({ editor }: { editor: Editor }) {
           aria-label={b.title}
           aria-pressed={b.on}
           onClick={b.run}
-          className={`rounded px-2.5 py-1 text-sm ${b.className ?? ""} ${
+          className={`inline-flex h-8 min-w-8 items-center justify-center rounded px-2 text-sm ${b.className ?? ""} ${
             b.on ? "bg-accent text-white" : "text-ink-muted hover:bg-surface-2 hover:text-ink"
           }`}
         >
