@@ -28,7 +28,6 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-display: var(--font-bricolage);
-  --font-mono: var(--font-geist-mono);
 }
 
 body {

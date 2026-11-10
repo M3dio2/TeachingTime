@@ -1,4 +1,5 @@
 import { Video } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
@@ -13,6 +14,9 @@ import { occupiedLessons } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
 import { addStudent, removeLesson, setTeacherName, signOut, startQuickCall } from "./actions";
+
+// Private: never listed by search engines.
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 // Time for the teacher to get into a new quick call before it counts as empty.
 const QUICK_CALL_GRACE_MS = 2 * 60 * 1000;

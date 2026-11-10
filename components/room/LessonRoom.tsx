@@ -27,7 +27,7 @@ import {
 } from "@/lib/room/tabs";
 import { fromBase64 } from "@/lib/sync/base64";
 import { useLessonPersistence } from "@/lib/sync/useLessonPersistence";
-import { type TeacherSettings, useTeacherSettings } from "@/lib/sync/useTeacherSettings";
+import { isTeacher, type TeacherSettings, useTeacherSettings } from "@/lib/sync/useTeacherSettings";
 import { useViewSync } from "@/lib/sync/useViewSync";
 import { useFileNames } from "@/lib/room/fileCache";
 import { useLessonAudio } from "@/lib/room/useLessonAudio";
@@ -145,7 +145,11 @@ function LessonContent({
 
   // A screen share opens the Screen tab and closing it gives the replaced tab back
   // (lib/room/tabs.ts). Adjusted while rendering, React's way to follow a changing value.
-  const sharing = useTracks([Track.Source.ScreenShare]).length > 0;
+  // Only the teacher shares (her token is the only one allowed to publish a screen). A screen
+  // track from anyone else is ignored, so a tampered student client can't open the Screen tab.
+  const sharing = useTracks([Track.Source.ScreenShare]).some((t) =>
+    t.participant.isLocal ? teacher : isTeacher(t.participant),
+  );
   const [seenSharing, setSeenSharing] = useState(false);
   if (teacher && sharing !== seenSharing) {
     setSeenSharing(sharing);

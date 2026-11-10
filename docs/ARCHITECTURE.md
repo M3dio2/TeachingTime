@@ -34,6 +34,7 @@ One Yjs `Y.Doc` per join, created in `LessonContent` (`components/room/LessonRoo
 ## Sync
 - `lib/sync/useYjsSync.ts` syncs the doc over LiveKit **data streams** (`lib/sync/transport.ts`; no size limit).
 - When two peers see each other, they exchange state vectors and the missing updates. Late joins and refreshes recover from the peer.
+- A full-state `diff` is applied only from a peer we asked (`awaitingDiff`: our join, a reconnect, or a gap after a dropped update), and a peer gets at most one full diff every 3 s, so a tampered client can neither push a rewritten document at will nor make us resend the whole document in a loop.
 
 ## Teacher settings (what the student follows)
 The teacher's settings live in her LiveKit participant attributes (`lib/sync/useTeacherSettings.ts`), not in the Y.Doc: the teacher accepts full-state diffs from the student (to recover after a refresh), and those could change anything in the doc. The token route gives only teachers `canUpdateOwnMetadata`, so a student can't set attributes or change their own role. One hook publishes all keys in one `setAttributes` call whenever one changes, and on every (re)connect. Values are strings:
@@ -61,9 +62,8 @@ On a phone the student may tap between the teacher's two tabs; her choice lasts 
 - The teacher's client ignores student updates while permission is off.
 
 Details:
-- The teacher's filter drops live `update`s from the student, but always accepts full-state `diff`s, so a refreshed page can recover from the peer.
-- Dropping a Yjs update leaves later updates from that client "pending", because they depend on it. `useYjsSync` notices pending structs and asks that peer for a diff, which heals the gap. A side effect: edits made while forbidden arrive once permission is back on.
-- A tampered student client could still send a diff with board content while editing is off. Accepted (see S3 in `docs/ROADMAP.md`).
+- The teacher's filter drops live `update`s from the student; full-state `diff`s are applied only when the teacher asked for one (her own join or reconnect, or a gap), so a refreshed page can recover from the peer.
+- Dropping a Yjs update leaves later updates from that client "pending", because they depend on it. `useYjsSync` notices pending structs and asks that peer for a diff, which heals the gap. A side effect: edits made while forbidden arrive once permission is back on, and a tampered client can still get content in through that one asked-for diff. The teacher can Clear and remove the student.
 
 ## Snapshots
 - `useLessonPersistence` (teacher only) saves the whole Y.Doc as base64 into `lessons.doc_snapshot`.
@@ -72,7 +72,7 @@ Details:
 
 ## Teacher actions
 - **Muting:** `/api/mute` (teacher only, checks lesson ownership) mutes microphones through LiveKit's server API and sends a server-only data message (`lib/mute.ts`) so the student sees why. LiveKit can't switch a mic back on; the student unmutes themselves.
-- **Screen sharing:** only the teacher has the Share button (the student's bar has mic, camera and Leave).
+- **Screen sharing:** only the teacher has the Share button, and only her token may publish a screen (`canPublishSources` limits students to camera and microphone). The room watches screen tracks from the teacher only, so nothing else can open the Screen tab. Student tokens also carry a `roomConfig` of two participants and a 5-minute empty timeout.
 - **"Clear"** sits in the Text and Draw toolbars (teacher only) and clears only that tab for both (`lib/sync/clearLesson.ts`): `clearText` empties the text fragment, `clearBoard` marks whiteboard elements deleted with a higher version.
 - The old (!) nudge (`useNudge`, a one-off data message that switched the student's board) is gone since L1: the student follows the teacher's tabs instead.
 

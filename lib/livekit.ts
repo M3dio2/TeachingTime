@@ -1,3 +1,4 @@
+import "server-only";
 import { RoomServiceClient } from "livekit-server-sdk";
 
 // Server-only LiveKit helpers.
