@@ -29,6 +29,7 @@ import { useLessonPersistence } from "@/lib/sync/useLessonPersistence";
 import { type TeacherSettings, useTeacherSettings } from "@/lib/sync/useTeacherSettings";
 import { useViewSync } from "@/lib/sync/useViewSync";
 import { useFileNames } from "@/lib/room/fileCache";
+import { useLessonAudio } from "@/lib/room/useLessonAudio";
 import { useYjsSync } from "@/lib/sync/useYjsSync";
 import { PHONE_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import DesktopRoom from "./DesktopRoom";
@@ -146,6 +147,9 @@ function LessonContent({
     setTabs((t) => (sharing ? screenStarted(t) : screenStopped(t)));
   }
 
+  // A1: the teacher's audio player (its track and state); unused on the student's side.
+  const lessonAudio = useLessonAudio(teacher ? inviteSlug : undefined);
+
   const own: TeacherSettings | null = teacher
     ? {
         studentCanEdit,
@@ -154,6 +158,7 @@ function LessonContent({
         // A phone shows one tab at a time, so that's what the student sees too.
         layout: isPhone ? "single" : tabs.layout,
         justTalk: tabs.justTalk,
+        audio: lessonAudio.state,
       }
     : null;
   const followed = useTeacherSettings(own);
@@ -189,6 +194,7 @@ function LessonContent({
     inviteSlug,
     names,
     sync,
+    audio: teacher ? lessonAudio : undefined,
     actions: teacher
       ? {
           open: (id) => setTabs((t) => openTab(t, id)),

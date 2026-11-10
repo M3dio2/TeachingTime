@@ -2,6 +2,7 @@
 
 import Chip from "@/components/ui/Chip";
 import Button from "@/components/ui/Button";
+import AudioBar from "./AudioBar";
 import { BigCameras, SpotlightCameras } from "./CameraTiles";
 import { cap, type RoomModel } from "./roomModel";
 
@@ -33,6 +34,11 @@ export default function JustTalk({
           </Button>
         )}
       </div>
+      {model.view.audio && (
+        <div className="overflow-hidden rounded-panel border border-line">
+          <AudioBar model={model} phone={phone} />
+        </div>
+      )}
       {spotlight ? (
         <SpotlightCameras onMute={model.onMute} />
       ) : (

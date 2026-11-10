@@ -30,6 +30,7 @@ import {
 import { useStored } from "@/lib/useStored";
 import { cap, type RoomModel } from "./roomModel";
 import { type RoomFile, tabOf } from "./FilesPanel";
+import AudioBar from "./AudioBar";
 import TabPane from "./TabPane";
 
 const ICONS: Record<string, typeof Monitor> = {
@@ -85,6 +86,7 @@ export default function Stage({
       aria-label="Lesson"
       className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-panel border border-line bg-surface"
     >
+      <AudioBar model={model} />
       <TabStrip model={model} isSplit={isSplit} canSplit={canSplit} />
       <div
         ref={area}

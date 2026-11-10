@@ -2,6 +2,7 @@ import type * as Y from "yjs";
 import type { Layout, TabId, Where } from "@/lib/room/tabs";
 import type { TeacherSettings } from "@/lib/sync/useTeacherSettings";
 import type { ViewSync } from "@/lib/sync/useViewSync";
+import type { LessonAudio } from "@/lib/room/useLessonAudio";
 import type { OnMute } from "./CameraTiles";
 import type { RoomFile } from "./FilesPanel";
 
@@ -36,6 +37,7 @@ export type RoomModel = {
   inviteSlug?: string; // for /api/resource-url (both roles)
   names: Record<string, string>; // file tab id → file name
   sync: ViewSync; // PDF scroll positions
+  audio?: LessonAudio; // teacher only: play classroom audio for both (A1)
 };
 
 // "your student" at the start of a sentence.

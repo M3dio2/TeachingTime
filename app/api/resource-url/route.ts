@@ -3,7 +3,7 @@ import { createAdminClient } from "@/lib/supabase/server";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const URL_SECONDS = 5 * 60;
 
-// A classroom file for a lesson tab (L2a): { slug, id } → { name, kind, url }.
+// A classroom file for a lesson (L2a tabs, A1 audio): { slug, id } → { name, kind, url }.
 // Students have no login, so the invite slug is the key, as for the token route. The file must
 // belong to the lesson behind that slug (student lessons only; quick calls have no files).
 // The signed URL is short-lived: the browser downloads the file once and keeps it in memory.
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
         .eq("lesson_id", lesson.id)
         .maybeSingle()
     : { data: null };
-  if (!file || (file.kind !== "pdf" && file.kind !== "image")) {
+  if (!file) {
     return Response.json({ error: "File not found" }, { status: 404 });
   }
 

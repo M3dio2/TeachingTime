@@ -11,6 +11,7 @@ import Switch from "@/components/ui/Switch";
 import { tabLabel } from "@/lib/room/tabs";
 import { CameraRow } from "./CameraTiles";
 import { FileList, useFileOpener } from "./FilesPanel";
+import AudioBar from "./AudioBar";
 import JustTalk from "./JustTalk";
 import { MuteStudentButton, useDeviceErrorHandler } from "./RoomControls";
 import { cap, type RoomModel } from "./roomModel";
@@ -39,6 +40,7 @@ export default function PhoneLayout({
             aria-label="Lesson"
             className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-panel border border-line bg-surface"
           >
+            <AudioBar model={model} phone />
             {teacher ? <TeacherTabs model={model} /> : <StudentTabs model={model} />}
           </section>
         </>

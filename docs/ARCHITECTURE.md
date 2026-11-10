@@ -51,6 +51,8 @@ Personal sizes (camera column, files panel, split between tabs, files folded) ar
 
 On a phone the student may tap between the teacher's two tabs; her choice lasts until the teacher switches tabs or opens or closes one.
 
+**Audio (A1):** the `audio` attribute (`{ id, name, duration, startedAt, pausedAt }`, checked by `cleanAudio` in `lib/room/audio.ts`) drives both people's audio bar; the student computes the position from it. The sound itself is a separate LiveKit track from the teacher (`lib/room/useLessonAudio.ts`: an `<audio>` element → Web Audio → `MediaStreamAudioDestinationNode` → `publishTrack`, source "unknown"), so muting her microphone doesn't mute it. It's unpublished on Stop, at the end of the file and when she leaves.
+
 **PDF scroll position** (`lib/sync/useViewSync.ts`) isn't an attribute: it changes too often. The teacher sends `{ tab, pos }` (pos = page index + fraction into the page, so different widths line up) as lossy data messages on topic `view`, at most 10 a second, and everything again (reliably) when someone joins. Only messages from the teacher count. The student can scroll but jumps to the teacher's next position.
 
 ## Edit permission

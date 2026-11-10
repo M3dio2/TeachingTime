@@ -6,19 +6,20 @@ import { type FileTab, isFileTab, resourceIdOf, type TabId } from "./tabs";
 // Classroom files shown in tabs (L2a). /api/resource-url hands out a URL valid for 5 minutes,
 // so each file is downloaded once and kept for the session: PDFs as bytes, pictures as an
 // object URL. Re-opening a tab later never needs the (expired) URL again.
-export type LoadedFile = { name: string; kind: "pdf" | "image"; bytes?: ArrayBuffer; src?: string };
+export type FileKind = "pdf" | "image" | "audio";
+export type LoadedFile = { name: string; kind: FileKind; bytes?: ArrayBuffer; src?: string };
 
 const files = new Map<string, Promise<LoadedFile>>();
-const infos = new Map<string, Promise<{ name: string; kind: "pdf" | "image"; url: string }>>();
+const infos = new Map<string, Promise<{ name: string; kind: FileKind; url: string }>>();
 
-function info(slug: string, id: FileTab) {
-  const key = `${slug}/${id}`;
+function info(slug: string, resourceId: string) {
+  const key = `${slug}/${resourceId}`;
   let p = infos.get(key);
   if (!p) {
     p = fetch("/api/resource-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, id: resourceIdOf(id) }),
+      body: JSON.stringify({ slug, id: resourceId }),
     }).then(async (res) => {
       if (!res.ok) throw new Error("not found");
       return res.json();
@@ -29,11 +30,12 @@ function info(slug: string, id: FileTab) {
   return p;
 }
 
-export function loadFile(slug: string, id: FileTab): Promise<LoadedFile> {
-  const key = `${slug}/${id}`;
+// By resource id: PDFs as bytes, pictures and audio as object URLs.
+export function loadResource(slug: string, resourceId: string): Promise<LoadedFile> {
+  const key = `${slug}/${resourceId}`;
   let p = files.get(key);
   if (!p) {
-    p = info(slug, id).then(async ({ name, kind, url }) => {
+    p = info(slug, resourceId).then(async ({ name, kind, url }) => {
       const res = await fetch(url);
       if (!res.ok) throw new Error("download failed");
       if (kind === "pdf") return { name, kind, bytes: await res.arrayBuffer() };
@@ -44,6 +46,8 @@ export function loadFile(slug: string, id: FileTab): Promise<LoadedFile> {
   }
   return p;
 }
+
+export const loadFile = (slug: string, id: FileTab) => loadResource(slug, resourceIdOf(id));
 
 export function useLoadedFile(slug: string | undefined, id: FileTab) {
   const [state, setState] = useState<{ id: string; file?: LoadedFile; failed?: boolean }>({ id });
@@ -68,7 +72,7 @@ export function useFileNames(slug: string | undefined, tabs: TabId[], known?: Re
   useEffect(() => {
     if (!slug || !missing) return;
     for (const id of missing.split(",") as FileTab[]) {
-      info(slug, id).then(
+      info(slug, resourceIdOf(id)).then(
         ({ name }) => setNames((n) => ({ ...n, [id]: name })),
         () => {},
       );

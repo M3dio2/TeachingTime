@@ -140,9 +140,12 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 - **Found while testing:** moving over a drop area's own text fired `dragleave`, so the area lost its highlight; fixed. The text toolbar's lists are icons now (it wrapped in narrow panes).
 
 ## A1: Audio (replaces the old audio-library milestone)
-- [ ] Audio files from the drawer: play / pause / seek; no tab
-- [ ] Progress bar above the tabs for both (start time and length in the teacher's attributes, so the student's bar runs on its own). Design: the audio bar in `Main`, with the yellow playhead
-- [ ] Played as an extra LiveKit audio track (Web Audio), so the student hears it while the teacher's mic is muted
+**Built on `a1-audio` (on top of `l2a-file-tabs`), not merged:** waiting for the user's OK on the screenshots. Not tested on real devices: whether the teacher's microphone picks up the audio from her speakers (echo; headphones avoid it), MP3/M4A files from phones, iOS Safari playing it.
+- How: the teacher's browser plays the file through Web Audio into its own LiveKit track (`lib/room/useLessonAudio.ts`, source "unknown", name `lesson-audio`), which LiveKit's audio renderer plays on the student's side, mic muted or not. The `audio` attribute holds `{ id, name, duration, startedAt, pausedAt }` (`lib/room/audio.ts`); the student's bar computes its own position from it. Seek: click or drag the bar, arrow keys ±5 s. Audio files go through `/api/resource-url` like PDFs.
+- Tests: `e2e/a1-audio.spec.ts` (a 6 s WAV: the bar for both, a separate track reaches the student, the student's bar runs and stops on pause, Stop removes it; attribute checks).
+- [x] Audio files from the drawer: play / pause / seek; no tab
+- [x] Progress bar above the tabs for both (start time and length in the teacher's attributes, so the student's bar runs on its own). Design: the audio bar in `Main`, with the yellow playhead
+- [x] Played as an extra LiveKit audio track (Web Audio), so the student hears it while the teacher's mic is muted
 
 ## L2b: Write and draw on PDFs
 - [ ] Per-page layer: pen, highlighter, text box, eraser. Strokes are vectors in the lesson Y.Doc, synced like the board; the student draws only when "student can edit" is on

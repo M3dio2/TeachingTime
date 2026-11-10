@@ -1,6 +1,17 @@
 "use client";
 
-import { FileText, GripVertical, ImageIcon, Music, PanelRightClose, PanelRightOpen, type LucideIcon } from "lucide-react";
+import {
+  FileText,
+  GripVertical,
+  ImageIcon,
+  LoaderCircle,
+  Music,
+  PanelRightClose,
+  PanelRightOpen,
+  Pause,
+  Play,
+  type LucideIcon,
+} from "lucide-react";
 import { useRef, useState } from "react";
 import { fileTabId, type FileTab } from "@/lib/room/tabs";
 import type { RoomModel } from "./roomModel";
@@ -196,13 +207,7 @@ export function FileList({
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">{f.name}</span>
                     </>
                   );
-                  if (kind === "audio") {
-                    return (
-                      <li key={f.id} className="flex items-center gap-2.5 rounded-md p-2">
-                        {row}
-                      </li>
-                    );
-                  }
+                  if (kind === "audio") return <AudioRow key={f.id} file={f} model={model} />;
                   const status = fileStatus(model, tabOf(f)!);
                   return (
                     <li key={f.id}>
@@ -265,5 +270,38 @@ export function FilesStrip({ title, onUnfold }: { title: string; onUnfold: () =>
         </button>
       ))}
     </aside>
+  );
+}
+
+// An audio file (A1): a round play / pause button, and "Playing" while it plays for both.
+function AudioRow({ file, model }: { file: RoomFile; model: RoomModel }) {
+  const audio = model.audio;
+  const current = model.view.audio?.id === file.id ? model.view.audio : null;
+  const playing = Boolean(current && current.pausedAt === null);
+  const loading = audio?.loading === file.id;
+  const label = `${playing ? "Pause" : "Play"} ${file.name}`;
+  return (
+    <li className="flex items-center gap-2.5 rounded-md p-2">
+      <button
+        type="button"
+        aria-label={label}
+        title={label}
+        disabled={!audio || loading}
+        onClick={() => (playing ? audio?.pause() : audio?.play({ id: file.id, name: file.name }))}
+        className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+          playing ? "bg-accent text-white" : "bg-surface-2 text-accent hover:bg-line"
+        }`}
+      >
+        {loading ? (
+          <LoaderCircle size={14} aria-hidden className="animate-spin" />
+        ) : playing ? (
+          <Pause size={12} fill="currentColor" aria-hidden />
+        ) : (
+          <Play size={12} fill="currentColor" aria-hidden />
+        )}
+      </button>
+      <span className="min-w-0 flex-1 truncate text-sm font-medium">{file.name}</span>
+      {playing && <span className="shrink-0 rounded bg-marker-soft px-1.5 text-xs font-medium text-marker-ink">Playing</span>}
+    </li>
   );
 }

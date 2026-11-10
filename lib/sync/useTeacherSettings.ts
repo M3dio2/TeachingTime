@@ -3,6 +3,7 @@
 import { useRoomContext } from "@livekit/components-react";
 import { type Participant, RoomEvent } from "livekit-client";
 import { useEffect, useState } from "react";
+import { type AudioState, cleanAudio } from "@/lib/room/audio";
 import { cleanActive, cleanLayout, cleanTabs, INITIAL_TABS, type Layout, type TabId } from "@/lib/room/tabs";
 
 // The role comes from the token metadata, which only the token route sets.
@@ -21,6 +22,7 @@ export type TeacherSettings = {
   active: number;
   layout: Layout;
   justTalk: boolean;
+  audio: AudioState | null; // A1: what the teacher plays, if anything
 };
 
 export const INITIAL_SETTINGS: TeacherSettings = {
@@ -29,6 +31,7 @@ export const INITIAL_SETTINGS: TeacherSettings = {
   active: INITIAL_TABS.active,
   layout: INITIAL_TABS.layout,
   justTalk: INITIAL_TABS.justTalk,
+  audio: null,
 };
 
 // LiveKit attributes are strings.
@@ -39,6 +42,7 @@ function encode(s: TeacherSettings): Record<string, string> {
     active: String(s.active),
     layout: s.layout,
     justTalk: String(s.justTalk),
+    audio: s.audio ? JSON.stringify(s.audio) : "",
   };
 }
 
@@ -50,6 +54,7 @@ function decode(attributes: Record<string, string>): TeacherSettings {
     active: cleanActive(attributes.active, tabs.length),
     layout: cleanLayout(attributes.layout),
     justTalk: attributes.justTalk === "true",
+    audio: cleanAudio(attributes.audio),
   };
 }
 
@@ -84,7 +89,8 @@ export function useTeacherSettings(own: TeacherSettings | null): TeacherSettings
     const read = () => {
       const teacher = [...room.remoteParticipants.values()].find(isTeacher);
       setFollowed((prev) => {
-        const next = teacher ? decode(teacher.attributes) : { ...prev, studentCanEdit: false };
+        // Teacher gone: editing off and no audio, the tabs stay.
+        const next = teacher ? decode(teacher.attributes) : { ...prev, studentCanEdit: false, audio: null };
         return JSON.stringify(next) === JSON.stringify(prev) ? prev : next;
       });
     };
