@@ -8,7 +8,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# TeachingTime (repo: lesson-call)
+# TeachingTime (teachingtime.app)
 
 Instructions for every agent (Claude Code via `CLAUDE.md`, Hermes etc. directly). `next dev` only rewrites the block above.
 

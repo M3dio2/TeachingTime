@@ -1,4 +1,6 @@
-# TeachingTime (lesson-call)
+# TeachingTime
+
+Live at [teachingtime.app](https://teachingtime.app).
 
 1-on-1 online lessons: video call, screen share, a shared text pad and whiteboard, and the
 teacher's PDFs, pictures and audio. Next.js + LiveKit + Yjs + Supabase, deployed on Vercel.

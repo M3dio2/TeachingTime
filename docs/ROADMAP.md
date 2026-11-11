@@ -3,7 +3,7 @@
 Tick items off as they're done. One milestone per working session. Details of finished work are in git history.
 
 ## Done
-- M1 Scaffold (Next.js, GitHub, Vercel at lesson-call-five.vercel.app)
+- M1 Scaffold (Next.js, GitHub, Vercel; first at lesson-call-five.vercel.app, now teachingtime.app)
 - M2 Video call (LiveKit, token route) · M3 Screen share with both cameras in the sidebar
 - M4 Auth + lessons (Supabase, RLS, dashboard, student join by slug)
 - M5 Shared text pad (Tiptap + Yjs over LiveKit data streams) · M6 Whiteboard (Excalidraw)
