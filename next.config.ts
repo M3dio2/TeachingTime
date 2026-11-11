@@ -68,6 +68,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  // The first address, from before the domain: links already sent (joins, emails) keep working.
+  async redirects() {
+    return [
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "lesson-call-five.vercel.app" }],
+        destination: "https://teachingtime.app/:path*",
+        permanent: true,
+      },
+    ];
+  },
   turbopack: {
     rules: {
       "*.css": {

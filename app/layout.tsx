@@ -16,8 +16,17 @@ const bricolage = Bricolage_Grotesque({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://teachingtime.app"),
   title: "TeachingTime",
-  description: "1-on-1 English lessons with video, screen share, a shared text pad and whiteboard.",
+  description: "One-to-one online lessons: video, a shared text pad and whiteboard, and your own PDFs, Word files, pictures and audio.",
+  // The preview a link gets in WhatsApp, Mail or Messages.
+  openGraph: {
+    title: "TeachingTime",
+    description: "One-to-one online lessons in one calm room.",
+    url: "https://teachingtime.app",
+    siteName: "TeachingTime",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
