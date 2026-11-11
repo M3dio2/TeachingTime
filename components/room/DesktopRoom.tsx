@@ -3,7 +3,7 @@
 import { useRef, useState } from "react";
 import Handle from "@/components/ui/Handle";
 import { useStored, useWindowWidth } from "@/lib/useStored";
-import { CameraColumn, FloatingCameras } from "./CameraTiles";
+import { CameraColumn, CameraRow } from "./CameraTiles";
 import { FilesPanel, FilesStrip, type RoomFile } from "./FilesPanel";
 import JustTalk from "./JustTalk";
 import type { RoomModel } from "./roomModel";
@@ -12,12 +12,14 @@ import Stage from "./Stage";
 const clamp = (v: number, lo: number, hi: number) => Math.round(Math.max(lo, Math.min(hi, v)));
 const CAMERAS = { min: 160, max: 360 };
 const FILES = { min: 220, max: 400, normal: 272 };
+const CAMERA_ROW_HEIGHT = 128;
 
 // Desktop, 768 px and wider (docs/design/HANDOFF.md, "Sizes and resizing"):
 // camera column | stage | the student's files (teacher, student lessons).
 // - 1280+: column 240 px, files open 272 px
 // - 1024–1279: column 200 px, files folded
-// - 768–1023: no column, cameras float over the stage, files folded
+// - 768–1023: no column; the cameras sit in a row above the stage, like on a phone (tester
+//   feedback replaced the floating cameras of the design), files folded
 // Widths and "folded" are personal and remembered in this browser; until the files panel is
 // folded or unfolded by hand, the window width decides.
 export default function DesktopRoom({ model }: { model: RoomModel }) {
@@ -42,8 +44,8 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
   const files = model.files;
   const edge = (side: "left" | "right") => row.current?.getBoundingClientRect()[side] ?? 0;
 
-  return (
-    <div ref={row} className="flex min-h-0 flex-1 p-2">
+  const main = (
+    <div ref={row} className={`flex min-h-0 flex-1 ${showColumn ? "p-2" : "px-2 pb-2"}`}>
       {showColumn && (
         <>
           <CameraColumn width={columnW} onMute={model.onMute} />
@@ -56,7 +58,6 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
       )}
       <Stage
         model={model}
-        overlay={showColumn ? undefined : <FloatingCameras />}
         dragging={dragging}
         onDropped={() => setDragging(null)}
       />
@@ -82,6 +83,13 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
             />
           </>
         ))}
+    </div>
+  );
+  if (showColumn) return main;
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-2 pt-2">
+      <CameraRow height={CAMERA_ROW_HEIGHT} onMute={model.onMute} />
+      {main}
     </div>
   );
 }

@@ -18,7 +18,7 @@ test("token route: no token without a login or a valid link", async ({ request }
   expect(junk.status()).toBe(400);
 });
 
-test("token route: a student may publish camera and mic only; a missing client id gets its own identity", async ({
+test("token route: a student may publish camera and mic only; one student identity per lesson", async ({
   page,
 }) => {
   test.setTimeout(90_000);
@@ -31,8 +31,11 @@ test("token route: a student may publish camera and mic only; a missing client i
   const a = payload((await one.json()).token);
   const b = payload((await two.json()).token);
 
-  expect(a.sub).toMatch(/^student-[0-9a-f-]{36}$/);
-  expect(a.sub).not.toBe(b.sub); // not both "student-undefined"
+  // Same identity from any device: the newest join replaces the older one (LiveKit Cloud doesn't
+  // enforce maxParticipants, so this is what keeps a lesson to one student).
+  const lessonId = page.url().split("/").pop();
+  expect(a.sub).toBe(`student-${lessonId}`);
+  expect(b.sub).toBe(a.sub);
   expect(JSON.parse(a.metadata).role).toBe("student");
   expect(a.video.canUpdateOwnMetadata).toBeFalsy();
   expect(a.video.canPublishSources.sort()).toEqual(["camera", "microphone"]);

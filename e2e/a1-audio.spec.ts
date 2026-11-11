@@ -45,6 +45,24 @@ test("A1: the teacher plays audio, the student hears and sees it", async ({ page
     // Stop: the bar goes for both.
     await page.getByRole("button", { name: "Stop the audio" }).click();
     for (const p of [page, student]) await expect(p.getByTestId("audio-bar")).toHaveCount(0);
+
+    // Tester feedback: audio can be dragged onto the stage too; one area, "Play …".
+    // Plain mouse moves: Playwright's hover() waits forever in the middle of an HTML5 drag.
+    const row = page.locator(`[data-file-id]`).filter({ hasText: name });
+    const rowBox = (await row.boundingBox())!;
+    await page.mouse.move(rowBox.x + rowBox.width - 30, rowBox.y + rowBox.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(700, 400, { steps: 5 });
+    await expect(page.getByTestId("drop-zones")).toBeVisible();
+    await expect(page.getByTestId("drop-1")).toHaveCount(0);
+    await page.waitForTimeout(300);
+    const zone = (await page.getByTestId("drop-0").boundingBox())!;
+    await page.mouse.move(zone.x + zone.width / 2, zone.y + zone.height / 2, { steps: 5 });
+    await expect(page.getByTestId("drop-0")).toContainText("Drop to play");
+    await page.mouse.up();
+    for (const p of [page, student]) await expect(p.getByTestId("audio-bar")).toContainText(name, { timeout: 20_000 });
+    await expect(page.getByRole("tab")).toHaveText(["Text"]); // the tabs stay
+    await page.getByRole("button", { name: "Stop the audio" }).click();
     await student.context().close();
   } finally {
     const leave = page.getByRole("button", { name: "Leave the lesson" });

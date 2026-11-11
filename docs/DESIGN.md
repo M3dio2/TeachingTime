@@ -122,7 +122,7 @@ Desktop, 1280 px and wider (teacher):
 - **Sizes by window width:**
   - 1280 px and wider: camera column 240 px, files panel 272 px.
   - 1024–1279 px: camera column 200 px, files folded to icons.
-  - 768–1023 px: no camera column; small camera tiles float over the stage. They can be dragged and snap to the nearest corner (remembered per browser). The bottom bar shows icons only (each with a tooltip and label).
+  - 768–1023 px: no camera column; the two cameras sit in a row above the stage (128 px tall, 16:9, centred), like on a phone. They used to float over the stage; tester feedback (Nov 2026) found that ugly. The bottom bar shows icons only (each with a tooltip and label).
   - Each tab needs 320 px. When there isn't room for two, the stage switches to one at a time by itself.
 - **Handles:** all dividers can be dragged (cameras 160–360 px, files 220–400 px). Sizes are saved per browser.
 - **Just talk:** the two cameras fill the room side by side. Below 1024 px: the other person fills the room and your own camera floats small, draggable to any corner.

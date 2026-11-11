@@ -8,9 +8,9 @@ import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
 type Role = "teacher" | "student";
 
 // Teacher: { lessonId } plus a Supabase session; RLS makes sure the lesson is theirs.
-// Student: { slug, name, clientId } from the invite link; no account needed.
-// Identities are fixed per person (teacher account, student browser), so joining again from
-// another tab makes LiveKit drop the older one (DisconnectReason.DUPLICATE_IDENTITY).
+// Student: { slug, name } from the invite link; no account needed.
+// Identities are fixed (teacher account; one student per lesson), so joining again from another
+// tab or device makes LiveKit drop the older one (DisconnectReason.DUPLICATE_IDENTITY).
 export async function POST(request: Request) {
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
@@ -79,14 +79,11 @@ export async function POST(request: Request) {
     }
     lessonId = lesson.id;
     role = "student";
+    // One student identity per lesson: a lesson is one teacher and one student, so joining from
+    // a second device or tab makes LiveKit drop the older one (it shows "Continue here").
+    // LiveKit Cloud doesn't enforce the room's maxParticipants (tested), so this is the limit.
     // Prefixed, so a student can never take over the teacher's identity.
-    // typeof first: the regex alone accepts a missing id as the string "undefined", and every
-    // such student would then share one identity and kick each other out of the room.
-    const clientId =
-      typeof body.clientId === "string" && /^[a-z0-9-]{8,40}$/i.test(body.clientId)
-        ? body.clientId
-        : crypto.randomUUID();
-    identity = `student-${clientId}`;
+    identity = `student-${lesson.id}`;
   } else {
     return Response.json({ error: "Bad request" }, { status: 400 });
   }

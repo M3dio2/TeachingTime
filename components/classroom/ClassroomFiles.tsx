@@ -156,7 +156,7 @@ export default function ClassroomFiles({
 
       <p className="flex items-start gap-2.5 rounded-md bg-surface-2 px-3.5 py-3 text-sm leading-snug text-ink-muted">
         <Info size={16} aria-hidden className="mt-0.5 shrink-0" />
-        In a lesson, these files sit in the side panel. Click a PDF or picture to show it, or drag it onto the
+        In a lesson, these files sit in the side panel. Click a PDF or picture to show it, press play for audio, or drag any file onto the
         stage.
       </p>
     </section>
