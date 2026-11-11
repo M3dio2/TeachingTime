@@ -14,6 +14,15 @@ export async function logIn(page: Page) {
   await page.getByLabel("Password", { exact: true }).fill(password);
   await page.getByRole("button", { name: "Log in" }).click();
   await page.waitForURL("**/dashboard");
+  // A fresh test project's account has no name yet: answer the first-visit question once.
+  const welcome = page.getByRole("heading", { name: /What should your students call you/ });
+  const chip = page.getByRole("button", { name: /^Your name in lessons: / });
+  await expect(welcome.or(chip)).toBeVisible({ timeout: 30_000 });
+  if (await welcome.isVisible()) {
+    await page.getByRole("textbox", { name: "Your name in lessons" }).fill("E2E Teacher");
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(chip).toBeVisible({ timeout: 15_000 });
+  }
 }
 
 // Opens the test teacher's "Test" classroom, adding it first if it doesn't exist yet.
