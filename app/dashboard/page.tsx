@@ -17,7 +17,7 @@ import { addStudent, removeLesson, setTeacherName, signOut, startQuickCall } fro
 import { MAX_CLASSROOMS } from "@/lib/limits";
 
 // Private: never listed by search engines.
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Your classrooms", robots: { index: false, follow: false } };
 
 // Time for the teacher to get into a new quick call before it counts as empty.
 const QUICK_CALL_GRACE_MS = 2 * 60 * 1000;

@@ -132,7 +132,7 @@ export default function SignupForm() {
       </form>
       <p className="text-[15px] text-ink-muted">
         Already have an account?{" "}
-        <Link href="/" className={textLink}>
+        <Link href="/login" className={textLink}>
           Log in
         </Link>
       </p>
@@ -142,7 +142,7 @@ export default function SignupForm() {
 
 export function BackToLogin() {
   return (
-    <Link href="/" className={`${textLink} inline-flex items-center gap-1.5 self-start text-[15px]`}>
+    <Link href="/login" className={`${textLink} inline-flex items-center gap-1.5 self-start text-[15px]`}>
       <ArrowLeft size={16} aria-hidden />
       Back to login
     </Link>

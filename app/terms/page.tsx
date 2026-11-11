@@ -4,7 +4,11 @@ import { CONTACT_EMAIL, OPERATOR, OPERATOR_ADDRESS } from "@/lib/legal";
 import { MAX_CLASSROOMS, MAX_LESSON_HOURS, MONTHLY_LESSON_HOURS } from "@/lib/limits";
 import { MB, TEACHER_BYTES } from "@/lib/files/uploadResource";
 
-export const metadata: Metadata = { title: "Terms · TeachingTime" };
+export const metadata: Metadata = {
+  title: "Terms of use",
+  description: "The terms for using TeachingTime, a free online classroom for one-to-one lessons, and its limits while it is new.",
+  alternates: { canonical: "/terms" },
+};
 
 // Draft (G1 step 6): have a person check it before relying on it.
 export default function Terms() {

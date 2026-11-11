@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import LegalPage, { H2, List } from "@/components/legal/LegalPage";
 import { CONTACT_EMAIL, OPERATOR, OPERATOR_ADDRESS } from "@/lib/legal";
 
-export const metadata: Metadata = { title: "Privacy policy · TeachingTime" };
+export const metadata: Metadata = {
+  title: "Privacy policy",
+  description: "What TeachingTime stores, who helps run it, and your rights. Lessons are never recorded.",
+  alternates: { canonical: "/privacy" },
+};
 
 // Draft (G1 step 6): written from what the code does; have a person check it before relying on it.
 export default function Privacy() {

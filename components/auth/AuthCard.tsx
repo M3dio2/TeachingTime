@@ -73,11 +73,12 @@ function BrandPanel() {
 }
 
 // Decorative: two cameras and two tabs, the left one active (marker underline, accent outline).
-function RoomDrawing() {
+// Also the start page's picture (app/page.tsx).
+export function RoomDrawing() {
   return (
     <div
       aria-hidden
-      className="flex aspect-[16/10] w-full max-w-[520px] gap-2 rounded-panel border border-line bg-paper p-2.5"
+      className="flex aspect-[16/10] w-full max-w-[520px] gap-2 rounded-panel border border-line bg-paper p-2.5 shadow-soft"
     >
       <div className="flex basis-[26%] flex-col gap-2">
         {[0, 1].map((i) => (
