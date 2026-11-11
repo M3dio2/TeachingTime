@@ -38,7 +38,7 @@ export async function openTestClassroom(page: Page) {
   // The corner: on a phone-sized window the card's buttons cover its middle.
   await card.click({ position: { x: 8, y: 8 } });
   await page.waitForURL(/\/dashboard\/[0-9a-f-]+$/);
-  await expect(page.getByRole("heading", { name: "Files" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Files", exact: true })).toBeVisible({ timeout: 30_000 });
 }
 
 // Teacher: opens the "Test" classroom, reads its student link and starts the lesson.
@@ -140,4 +140,31 @@ export function testWav(seconds: number) {
   head.write("data", 36);
   head.writeUInt32LE(data.length, 40);
   return Buffer.concat([head, data]);
+}
+
+// A real Word file (.docx): one paragraph per entry, `pages` page breaks apart.
+export async function testDocx(paragraphs: string[], pages = 1) {
+  const { default: JSZip } = await import("jszip");
+  const zip = new JSZip();
+  const esc = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
+  const per = Math.ceil(paragraphs.length / pages);
+  const body = paragraphs
+    .map((p, i) => {
+      const brk = i > 0 && i % per === 0 ? '<w:r><w:br w:type="page"/></w:r>' : "";
+      return `<w:p>${brk}<w:r><w:t xml:space="preserve">${esc(p)}</w:t></w:r></w:p>`;
+    })
+    .join("");
+  zip.file(
+    "[Content_Types].xml",
+    '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>',
+  );
+  zip.file(
+    "_rels/.rels",
+    '<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>',
+  );
+  zip.file(
+    "word/document.xml",
+    `<?xml version="1.0" encoding="UTF-8"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${body}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440"/></w:sectPr></w:body></w:document>`,
+  );
+  return zip.generateAsync({ type: "nodebuffer" });
 }

@@ -1,16 +1,19 @@
 import { createClient } from "@/lib/supabase/client";
 
-export type ResourceKind = "image" | "pdf" | "audio";
+export type ResourceKind = "image" | "pdf" | "audio" | "doc";
 
-// Same limits and types as the "resources" bucket (supabase/migrations/0004–0006).
+// Same limits and types as the "resources" bucket (supabase/migrations/0004–0006, 0010, 0012).
 export const MB = 1024 * 1024;
 export const MAX_BYTES = 10 * MB; // per file
 export const TEACHER_BYTES = 50 * MB; // per teacher, all classrooms together (G1: free plan)
 export const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+// Word files (G2). Old binary .doc files aren't accepted: browsers can't read them.
+export const DOCX_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 export function kindOf(type: string): ResourceKind {
   if (type.startsWith("image/")) return "image";
   if (type === "application/pdf") return "pdf";
+  if (type === DOCX_TYPE) return "doc";
   return "audio";
 }
 
@@ -40,7 +43,7 @@ export async function uploadResource({
       error: /mime|type/i.test(stored.error.message)
         ? `${file.name}: this kind of file isn't accepted yet.`
         : /row-level security/i.test(stored.error.message)
-          ? `${file.name} doesn't fit: your files can take up 200 MB. Delete some first.`
+          ? `${file.name} doesn't fit: your files can take up ${TEACHER_BYTES / MB} MB. Delete some first.`
           : `${file.name} could not be uploaded. Please try again.`,
     };
   }

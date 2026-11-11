@@ -29,7 +29,7 @@ const csp = [
   `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' blob: data: ${supabaseHttps}`,
-  "font-src 'self' data: https://esm.sh",
+  "font-src 'self' data: blob: https://esm.sh", // blob: fonts embedded in Word files
   `media-src 'self' blob: ${supabaseHttps}`,
   `connect-src 'self' ${supabaseHttps} ${supabaseWss} https://*.livekit.cloud wss://*.livekit.cloud https://esm.sh${
     isDev ? " ws: http://localhost:*" : ""

@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { List, ListOrdered } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
 import type * as Y from "yjs";
+import { listenForText } from "@/lib/room/textInbox";
 import ClearButton from "./ClearButton";
 
 // Shared rich-text pad. The Y.Doc is synced by useYjsSync in LessonRoom.
@@ -33,6 +34,15 @@ export default function TextPad({
       attributes: { class: "tiptap min-h-full p-4 text-lg outline-none", "aria-label": "Text pad" },
     },
   });
+
+  // Text copied in from a Word file goes at the end, after an empty line.
+  useEffect(() => {
+    if (!editor) return;
+    return listenForText(doc, (html) => {
+      const end = editor.state.doc.content.size;
+      editor.chain().insertContentAt(end, html).scrollIntoView().run();
+    });
+  }, [editor, doc]);
 
   // useEditor only reads `editable` once; follow the teacher's toggle afterwards.
   useEffect(() => {

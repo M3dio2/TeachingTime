@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, ImageIcon, Info, Music, Pause, Play, Trash2, type LucideIcon } from "lucide-react";
+import { FileText, FileType2, ImageIcon, Info, Music, Pause, Play, Trash2, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { removeResource } from "@/app/dashboard/actions";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
@@ -19,6 +19,7 @@ export type Resource = {
 const SECTIONS: { kind: ResourceKind; title: string; filter: string; Icon: LucideIcon }[] = [
   { kind: "image", title: "Pictures", filter: "Pictures", Icon: ImageIcon },
   { kind: "pdf", title: "PDFs", filter: "PDFs", Icon: FileText },
+  { kind: "doc", title: "Word files", filter: "Word", Icon: FileType2 },
   { kind: "audio", title: "Audio", filter: "Audio", Icon: Music },
 ];
 
@@ -131,7 +132,7 @@ export default function ClassroomFiles({
                       </span>
                     )}
                     <div className="flex min-w-0 flex-1 flex-col">
-                      {f.url && kind === "pdf" ? (
+                      {f.url && (kind === "pdf" || kind === "doc") ? (
                         <a
                           href={f.url}
                           target="_blank"
@@ -156,7 +157,7 @@ export default function ClassroomFiles({
 
       <p className="flex items-start gap-2.5 rounded-md bg-surface-2 px-3.5 py-3 text-sm leading-snug text-ink-muted">
         <Info size={16} aria-hidden className="mt-0.5 shrink-0" />
-        In a lesson, these files sit in the side panel. Click a PDF or picture to show it, press play for audio, or drag any file onto the
+        In a lesson, these files sit in the side panel. Click a PDF, Word file or picture to show it, press play for audio, or drag any file onto the
         stage.
       </p>
     </section>

@@ -4,6 +4,7 @@ import {
   Columns2,
   Eye,
   FileText,
+  FileType2,
   ImageIcon,
   Monitor,
   Music,
@@ -39,6 +40,7 @@ const ICONS: Record<string, typeof Monitor> = {
   text: Type,
   draw: Pencil,
   pdf: FileText,
+  doc: FileType2,
   image: ImageIcon,
 };
 export const TabIcon = ({ id, size = 16 }: { id: TabId; size?: number }) => {
