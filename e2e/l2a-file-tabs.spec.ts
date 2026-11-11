@@ -32,7 +32,7 @@ test.describe("L2a file tabs", () => {
     try {
       const student = await joinAsStudent(browser, joinPath);
       const files = page.getByRole("complementary", { name: "Test's files" });
-      await expect(files.getByText("Click a PDF or picture to open it, press play for audio")).toBeVisible();
+      await expect(files.getByText("Click a PDF, Word file or picture to open it, press play for audio")).toBeVisible();
 
       // Click: the PDF opens beside Text, for both.
       await files.getByRole("button", { name: new RegExp(pdfName) }).click();

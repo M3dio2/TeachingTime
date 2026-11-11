@@ -41,7 +41,7 @@ test("G2: a Word file opens in the call; the student follows; copy into the text
     await page.getByRole("button", { name: "Copy into the text pad" }).click();
     await expect(page.getByRole("status").filter({ hasText: "Copied into the text pad" })).toBeVisible();
     for (const p of [page, student]) {
-      await expect(p.getByLabel("Text pad").getByText("Exercise line 60: fill the gap.")).toBeVisible({ timeout: 15_000 });
+      await expect(p.getByLabel("Text pad").getByText("Exercise line 60: fill the gap.").first()).toBeVisible({ timeout: 15_000 });
     }
     await student.context().close();
   } finally {
