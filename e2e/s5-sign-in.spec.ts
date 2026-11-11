@@ -40,6 +40,8 @@ test("S5 sign-in: show/hide password, error banner, links", async ({ page }) => 
 
 test("S5 sign-up: the password rules tick off; one button shows both fields", async ({ page }) => {
   await page.goto("/signup");
+  // C2: new accounts need an invite code (checked by Supabase's sign-up hook too).
+  await expect(page.getByRole("textbox", { name: "Invite code" })).toHaveAttribute("required", "");
   const rules = page.locator("#password-rules li");
   await expect(rules.filter({ hasText: "(not yet)" })).toHaveCount(2);
   await page.getByLabel("Password", { exact: true }).fill("abcdefghij1");

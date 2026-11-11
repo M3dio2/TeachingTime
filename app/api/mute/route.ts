@@ -1,21 +1,29 @@
 import { DataPacket_Kind, TrackSource } from "livekit-server-sdk";
 import { MUTED_BY_TEACHER_TOPIC } from "@/lib/mute";
 import { roomName, roomService } from "@/lib/livekit";
+import { clientIp, LIMITS, overMemoryLimit, sharedLimit, tooMany } from "@/lib/rateLimit";
 import { createClient } from "@/lib/supabase/server";
 
 // Teacher mutes a participant's microphone ({ lessonId, identity }) or everyone else's
 // ({ lessonId }). LiveKit can only mute a microphone, not switch it back on; each muted
 // participant gets a message so their app can say what happened.
 export async function POST(request: Request) {
+  const ip = clientIp(request);
+  if (overMemoryLimit(LIMITS.mute, ip)) return tooMany();
+
   const body = await request.json().catch(() => ({}));
   if (typeof body.lessonId !== "string") {
     return Response.json({ error: "Bad request" }, { status: 400 });
   }
 
   const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const [
+    withinShared,
+    {
+      data: { user },
+    },
+  ] = await Promise.all([sharedLimit(LIMITS.mute, ip), supabase.auth.getUser()]);
+  if (!withinShared) return tooMany();
   if (!user) {
     return Response.json({ error: "Please log in" }, { status: 401 });
   }

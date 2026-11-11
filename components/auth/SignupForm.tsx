@@ -22,6 +22,7 @@ export default function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
@@ -39,7 +40,9 @@ export default function SignupForm() {
       email,
       password,
       options: {
-        data: { display_name: name.trim().slice(0, 40) },
+        // invite_code is checked by Supabase Auth itself (the "before user created" hook in
+        // supabase/migrations/0008_signup_codes.sql), so skipping this form doesn't skip it.
+        data: { display_name: name.trim().slice(0, 40), invite_code: code.trim() },
         emailRedirectTo: window.location.origin,
       },
     });
@@ -100,6 +103,17 @@ export default function SignupForm() {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
+          required
+        />
+        <Field
+          label="Invite code"
+          hint="TeachingTime is invite-only for now. Ask the person who sent you here."
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          autoComplete="off"
+          spellCheck={false}
+          maxLength={100}
+          invalid={Boolean(error && /invite code/i.test(error))}
           required
         />
         <NewPasswordFields

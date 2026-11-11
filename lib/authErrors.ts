@@ -15,5 +15,9 @@ const messages: Record<string, string> = {
 };
 
 export function authErrorMessage(error: AuthError) {
+  // The sign-up hook's own message (supabase/migrations/0008_signup_codes.sql).
+  if (/invite code/i.test(error.message)) {
+    return "That invite code isn't valid (or it's used up). Check it, or ask for a new one.";
+  }
   return (error.code && messages[error.code]) || "Something went wrong. Please try again.";
 }

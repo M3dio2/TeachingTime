@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { MAX_CLASSROOMS } from "@/lib/limits";
 import { closeRoom } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
 
@@ -18,6 +19,11 @@ export async function addStudent(formData: FormData) {
   if (!title) return;
 
   const supabase = await createClient();
+  const { count } = await supabase
+    .from("lessons")
+    .select("id", { count: "exact", head: true })
+    .eq("kind", "student");
+  if ((count ?? 0) >= MAX_CLASSROOMS) return; // the dashboard says why; the database refuses too
   const { error } = await supabase.from("lessons").insert({ title, invite_slug: newSlug() });
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");

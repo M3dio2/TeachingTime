@@ -26,7 +26,7 @@ S1–S3, P1, C1, C1b, L1, L2a, L2b, A1, D5d and the S5 page redesign done (all s
 ## Stack
 - Next.js 16 App Router, React 19, TypeScript, Tailwind v4; Vercel Hobby, deploys from `main`.
 - LiveKit Cloud (`livekit-client`, `@livekit/components-react`): audio, video, screen share, and all live sync over its data channel (Yjs, whiteboard, teacher messages).
-- Supabase: teacher auth (`@supabase/ssr`, open sign-up, mail via the teacher's Gmail SMTP), `lessons` (with snapshots), `resources` + private Storage bucket. Not for live sync.
+- Supabase: teacher auth (`@supabase/ssr`, sign-up with an invite code, mail via the teacher's Gmail SMTP), `lessons` (with snapshots), `resources` + private Storage bucket. Not for live sync.
 - Text pad Tiptap + Yjs; whiteboard Excalidraw via `dynamic(..., { ssr: false })`.
 - Supabase and Vercel functions both in US East (`iad1`, `vercel.json`): keep them together. Testers in South America, later global.
 
@@ -34,6 +34,8 @@ S1–S3, P1, C1, C1b, L1, L2a, L2b, A1, D5d and the S5 page redesign done (all s
 - `npm run dev` → http://localhost:3000 (container: `npm run dev -- -H 0.0.0.0`).
 - `npm run build` must pass before every commit. Stop `npm run dev` first, or the dev server serves stale CSS until restarted with `.next/dev` deleted.
 - `npm run lint`; `npm run test:e2e` (Playwright, below).
+- GitHub Actions (`.github/workflows/check.yml`) runs lint, build and `npm audit` on every push to `main` and every PR; check it went green after pushing (the repo is public: `https://api.github.com/repos/M3dio2/lesson-call/actions/runs`).
+- New outside service in the browser (a CDN, an API)? Add its origin to the CSP in `next.config.ts`, or it's blocked; `e2e/security-csp.spec.ts` catches it.
 
 ## Secrets
 - Names in `.env.local.example`; values in `.env.local` (gitignored) and Vercel.
