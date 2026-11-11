@@ -61,7 +61,7 @@ A strict script CSP is left out (needs a nonce per request, which makes every pa
 - [x] H3: Content-Security-Policy allow-list (scripts self only, connections to Supabase / LiveKit / esm.sh only, no frames or plugins) and `Cross-Origin-Opener-Policy`; `e2e/security-csp.spec.ts`, also run against `next start`, plus Excalidraw's image export checked by hand under the production policy
 - [x] H4: rate limits on the three API routes, per instance and shared in Postgres (`0009_rate_limits.sql`); `e2e/security-rate-limit.spec.ts`
 - [x] H5: GitHub Actions gate (lint, build, audit) and Dependabot
-- **User:** run `0008_classroom_cap.sql` and `0009_rate_limits.sql`.
+- **User:** run `0008_classroom_cap.sql` and `0009_rate_limits.sql`. Who ran the first 0008 (invite codes): run `0011_remove_invite_codes.sql`, and make sure the "Before User Created" hook is off.
 - Not done on purpose: a nonce CSP (every page would become dynamic) and HttpOnly session cookies (Supabase's browser client needs to read them). Both stay under "Before going commercial".
 
 Phase 2 (before the friends test): dev Supabase + LiveKit projects for the tests; error pages; "Make a new link" per classroom; shorter email-link lifetime and sign out other sessions on password change. Phase 3 (performance): lazy-load the room on the join page; whiteboard garbage collection; targeted `listRooms` and no dashboard polling while hidden.
@@ -209,12 +209,13 @@ Order:
   - [ ] **User:** Cloudflare → Turnstile → add the site → site key into Vercel as `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, redeploy, check the widget shows; then Supabase → Authentication → Attack Protection → CAPTCHA → Turnstile → paste the secret key. Only after step 1: once it's on, the e2e login needs the dev project (Cloudflare's test secret there)
 - [x] 3. Limits per teacher (`0010_beta_limits.sql`, `lib/limits.ts`): storage 50 MB (was 200), 20 lesson-hours a month, 3 hours per lesson (LiveKit webhook → `lesson_sessions`; the token route refuses past the limits; the teacher's room warns at 2 h 50 and ends the call at 3 h). SQL checked on a local Postgres (PGlite) with Supabase stand-ins: month total, open-session cap, 31st classroom refused
   - [ ] **User:** run `0010_beta_limits.sql`; LiveKit → Settings → Webhooks → add `https://<site>/api/livekit-webhook`. Until then time isn't counted
-- [ ] 4. Email: own domain (about $10–15 a year) and Resend (free up to 3,000 emails a month) as Supabase's SMTP instead of the teacher's Gmail (Gmail: about 500 a day, spam folder, account risk). Update the Site URL, redirect URLs and email templates
+- [ ] 4. Email: own domain (user: yes, 11 Nov; teachingtime.com is taken until at least Apr 2027, free were teachingtime.app / .ch / .co / .net, getteachingtime.com) and Resend (free up to 3,000 emails a month) as Supabase's SMTP instead of the teacher's Gmail (Gmail: about 500 a day, spam folder, account risk). Update the Site URL, redirect URLs and email templates
 - [x] 5. Seeing how people react: "Feedback" in the dashboard header (`feedback` table), Vercel Analytics, error pages that report to `error_reports`, a 404 page
   - [ ] **User:** Vercel → project → Analytics → Enable. Read feedback and errors in Supabase's table editor
   - [ ] Later: an alert for errors (Sentry free plan) instead of looking at the table
 - [x] 6. `/privacy` and `/terms` drafted from what the code does (no recording, students not stored, processors, limits); linked from sign-up
-  - [ ] **User:** fill in name, country and contact email in `lib/legal.ts` (or tell the agent); have a person check the texts
+  - [x] Operator details filled in (`lib/legal.ts`); Swiss FADP + GDPR, Swiss law in the terms
+  - [ ] **User:** have a person check the texts; later swap the Gmail contact for an address on the own domain
 - [ ] 7. The user's real phone test on the live site (list in the chat of 11 Nov), then invite friends
 - [ ] 8. Friends test: collect feedback here. When strangers are invited: LiveKit Ship for a month (free plan: 5,000 participant minutes = about 40 lesson-hours a month for everyone, then lessons stop until the 1st)
 
