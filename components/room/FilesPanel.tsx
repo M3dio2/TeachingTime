@@ -2,6 +2,7 @@
 
 import {
   FileText,
+  FileType2,
   GripVertical,
   ImageIcon,
   LoaderCircle,
@@ -19,13 +20,14 @@ import type { RoomModel } from "./roomModel";
 // A classroom file, as the room's files panel lists it (app/lesson/[id]/page.tsx).
 export type RoomFile = {
   id: string;
-  kind: "image" | "pdf" | "audio";
+  kind: "image" | "pdf" | "doc" | "audio";
   name: string;
   previewUrl?: string; // pictures only
 };
 
 const SECTIONS: { kind: RoomFile["kind"]; title: string; Icon: LucideIcon }[] = [
   { kind: "pdf", title: "PDFs", Icon: FileText },
+  { kind: "doc", title: "Word files", Icon: FileType2 },
   { kind: "image", title: "Pictures", Icon: ImageIcon },
   { kind: "audio", title: "Audio", Icon: Music },
 ];
@@ -83,7 +85,7 @@ export function FilesPanel({
     ? "Two tabs are open. Close one first, or drag the file onto a tab to replace it."
     : opener.full
       ? "Two tabs are open. Drag a file onto one to replace it."
-      : "Click a PDF or picture to open it, press play for audio, or drag any file onto the stage.";
+      : "Click a PDF, Word file or picture to open it, press play for audio, or drag any file onto the stage.";
   return (
     <aside
       aria-label={title}

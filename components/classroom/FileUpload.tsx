@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import Button from "@/components/ui/Button";
 import {
+  DOCX_TYPE,
   IMAGE_TYPES,
   MAX_BYTES,
   MB,
@@ -24,6 +25,7 @@ const TYPE_BY_EXT: Record<string, string> = {
   webp: "image/webp",
   gif: "image/gif",
   pdf: "application/pdf",
+  docx: DOCX_TYPE,
   mp3: "audio/mpeg",
   m4a: "audio/mp4",
   aac: "audio/aac",
@@ -39,6 +41,7 @@ function contentTypeOf(file: File, ext: string) {
   const known =
     IMAGE_TYPES.includes(file.type) ||
     file.type === "application/pdf" ||
+    file.type === DOCX_TYPE ||
     file.type.startsWith("audio/");
   return known ? file.type : (TYPE_BY_EXT[ext] ?? null);
 }
@@ -69,8 +72,12 @@ export function useFileUpload({
     for (const file of files) {
       const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "";
       const contentType = contentTypeOf(file, ext);
+      if (ext === "doc") {
+        failed.push(`${file.name} is an old Word file. In Word, save it as .docx (or PDF), then upload that.`);
+        continue;
+      }
       if (!contentType) {
-        failed.push(`${file.name} is not a picture, PDF or audio file.`);
+        failed.push(`${file.name} is not a picture, PDF, Word or audio file.`);
         continue;
       }
       if (file.size > MAX_BYTES) {
@@ -142,7 +149,7 @@ export function useFileUpload({
           </span>
           <div className="flex flex-col gap-0.5 text-left">
             <span className="font-semibold">{over ? "Drop to upload" : "Drop files here"}</span>
-            <span className="text-[13px] text-ink-muted">Pictures, PDFs or audio, up to 10 MB each</span>
+            <span className="text-[13px] text-ink-muted">Pictures, PDFs, Word files or audio, up to 10 MB each</span>
           </div>
         </div>
         <p className="text-sm text-ink-muted" aria-live="polite">
@@ -151,7 +158,7 @@ export function useFileUpload({
         <input
           ref={input}
           type="file"
-          accept={[...IMAGE_TYPES, "application/pdf", "audio/*", ".jpg,.jpeg,.png,.webp,.gif,.pdf"].join(",")}
+          accept={[...IMAGE_TYPES, "application/pdf", DOCX_TYPE, "audio/*", ".jpg,.jpeg,.png,.webp,.gif,.pdf,.docx"].join(",")}
           multiple
           hidden
           onChange={(e) => {

@@ -3,10 +3,11 @@
 // test them without a browser. Only the teacher's client runs them; the student renders what
 // the teacher publishes (lib/sync/useTeacherSettings.ts).
 
-// Built-in tabs, plus one tab per classroom file: `pdf:<resourceId>`, `image:<resourceId>`.
+// Built-in tabs, plus one tab per classroom file: `pdf:<id>`, `image:<id>`, `doc:<id>` (Word).
 export const TAB_IDS = ["screen", "text", "draw"] as const;
 export type BuiltInTab = (typeof TAB_IDS)[number];
-export type FileTab = `pdf:${string}` | `image:${string}`;
+export type FileTab = `pdf:${string}` | `image:${string}` | `doc:${string}`;
+export type FileTabKind = "pdf" | "image" | "doc";
 export type TabId = BuiltInTab | FileTab;
 export type Layout = "split" | "single";
 
@@ -35,11 +36,13 @@ export const INITIAL_TABS: TabState = {
 const LABELS: Record<BuiltInTab, string> = { screen: "Screen", text: "Text", draw: "Draw" };
 // File tabs are labelled with the file's name; `names` maps tab id → name.
 export const tabLabel = (id: TabId, names?: Record<string, string>) =>
-  isFileTab(id) ? (names?.[id] ?? (id.startsWith("pdf:") ? "PDF" : "Picture")) : LABELS[id];
+  isFileTab(id) ? (names?.[id] ?? FILE_LABELS[fileTabKind(id)]) : LABELS[id];
+const FILE_LABELS: Record<FileTabKind, string> = { pdf: "PDF", image: "Picture", doc: "Word file" };
 
-const FILE_TAB = /^(pdf|image):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const FILE_TAB = /^(pdf|image|doc):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 export const isFileTab = (value: string): value is FileTab => FILE_TAB.test(value);
-export const fileTabId = (kind: "pdf" | "image", resourceId: string): FileTab => `${kind}:${resourceId}`;
+export const fileTabId = (kind: FileTabKind, resourceId: string): FileTab => `${kind}:${resourceId}`;
+export const fileTabKind = (id: FileTab) => id.slice(0, id.indexOf(":")) as FileTabKind;
 export const resourceIdOf = (id: FileTab) => id.slice(id.indexOf(":") + 1);
 
 export const isTabId = (value: unknown): value is TabId =>
