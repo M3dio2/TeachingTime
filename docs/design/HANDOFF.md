@@ -89,7 +89,7 @@ The room follows the window width:
 |---|---|---|---|
 | 1280 px and wider | column, 240 px | open, 272 px | |
 | 1024–1279 px | column, 200 px | folded to a 48 px icon strip | |
-| 768–1023 px | no column; two small tiles float over the stage (148 px wide, `surface` border, `shadow-soft`), draggable to any corner (user, L1) | folded | bottom bar icons only; Just talk = the other person big, you small and draggable |
+| 768–1023 px | no column; the cameras in a row above the stage, 128 px tall, 16:9, centred (tester feedback, Nov 2026; replaces the floating tiles of the design) | folded | bottom bar icons only; Just talk = the other person big, you small and draggable |
 | below 768 px | phone layout | none | see below |
 
 - **Handles** between cameras and stage, between the two tabs, and between stage and files.

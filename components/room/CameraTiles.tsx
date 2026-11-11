@@ -84,38 +84,6 @@ export function CameraColumn({ width, onMute }: { width: number; onMute?: OnMute
   );
 }
 
-// 768–1023 px: two small tiles float over the stage. They can be dragged to any corner
-// (bottom right at first); the smaller one, you, sits on the side of that corner.
-export function FloatingCameras() {
-  const { other, self } = useCameras();
-  const tile = "pointer-events-none overflow-hidden rounded-md border-2 border-surface shadow-soft";
-  return (
-    <Floating
-      storageKey="room-floating-cameras-corner"
-      label="Cameras"
-      testId="floating-cameras"
-      className="flex w-[148px] flex-col gap-1.5"
-    >
-      {(corner) => (
-        <>
-          {other && (
-            <div className={tile} style={{ aspectRatio: "4 / 3" }}>
-              <ParticipantTile trackRef={other} style={FILL} />
-            </div>
-          )}
-          {self && (
-            <div
-              className={`${tile} w-[70%] ${corner.endsWith("l") ? "self-start" : "self-end"}`}
-              style={{ aspectRatio: "4 / 3" }}
-            >
-              <ParticipantTile trackRef={self} style={FILL} />
-            </div>
-          )}
-        </>
-      )}
-    </Floating>
-  );
-}
 
 // Just talk on a tablet-sized window: the other person fills the room, your own camera
 // floats small and can be dragged to any corner.
@@ -141,19 +109,30 @@ export function SpotlightCameras({ onMute }: { onMute?: OnMute }) {
   );
 }
 
-// Phones: both cameras in a row, 16:9.
-export function CameraRow() {
+// Phones: both cameras in a row, 16:9, filling the width.
+// 768–1023 px (`height` set): the same row above the stage, each tile that tall, centred
+// (tester feedback: no floating cameras; jump straight from the column to the row).
+export function CameraRow({ height, onMute }: { height?: number; onMute?: OnMute }) {
   const { other, self } = useCameras();
+  const cams = [other, self].filter((c): c is TrackReferenceOrPlaceholder => Boolean(c));
+  if (height) {
+    return (
+      <div aria-label="Cameras" data-testid="camera-row" className="flex shrink-0 justify-center gap-2">
+        {cams.map((cam) => (
+          <div key={cam.participant.identity} style={{ height, aspectRatio: "16 / 9" }}>
+            <CameraTile trackRef={cam} onMute={onMute} />
+          </div>
+        ))}
+      </div>
+    );
+  }
   return (
     <div className="grid shrink-0 grid-cols-2 gap-2">
-      {[other, self].map(
-        (cam) =>
-          cam && (
-            <div key={cam.participant.identity} style={{ aspectRatio: "16 / 9" }}>
-              <ParticipantTile trackRef={cam} style={FILL} />
-            </div>
-          ),
-      )}
+      {cams.map((cam) => (
+        <div key={cam.participant.identity} style={{ aspectRatio: "16 / 9" }}>
+          <ParticipantTile trackRef={cam} style={FILL} />
+        </div>
+      ))}
     </div>
   );
 }

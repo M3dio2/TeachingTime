@@ -136,25 +136,16 @@ test.describe("L1 tabbed call", () => {
     await page.getByRole("button", { name: "Fold the files" }).click();
     await expect(stage(page)).toHaveAttribute("data-layout", "split");
 
-    // 768–1023: no column; the cameras float over the stage.
+    // 768–1023: no column; the cameras sit in a row above the stage (tester feedback: no
+    // floating cameras), nothing on top of the tabs.
     await page.setViewportSize({ width: 900, height: 800 });
     await expect(column).toHaveCount(0);
-    const floating = page.getByTestId("floating-cameras");
-    await expect(floating).toBeVisible();
-    await expect(floating).toHaveAttribute("data-corner", "br");
-
-    // They can be dragged; on release they snap to the nearest corner (remembered).
-    const box = (await floating.boundingBox())!;
+    const cameraRow = page.getByTestId("camera-row");
+    await expect(cameraRow).toBeVisible();
+    const rowBox = (await cameraRow.boundingBox())!;
     const area = (await stage(page).boundingBox())!;
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
-    await page.mouse.down();
-    await page.mouse.move(area.x + 100, area.y + 100, { steps: 8 });
-    await page.mouse.up();
-    await expect(floating).toHaveAttribute("data-corner", "tl");
-    // Keyboard: arrow keys pick a corner.
-    await floating.focus();
-    await page.keyboard.press("ArrowRight");
-    await expect(floating).toHaveAttribute("data-corner", "tr");
+    expect(rowBox.y + rowBox.height).toBeLessThan(area.y);
+    expect(rowBox.height).toBeLessThanOrEqual(130);
 
     // The action bar shows icons only here.
     await expect(page.getByRole("button", { name: "Leave the lesson" })).not.toContainText("Leave");

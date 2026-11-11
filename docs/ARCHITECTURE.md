@@ -6,6 +6,7 @@ Read this before touching `lib/sync/`, the room (`components/room/`) or the API 
 - The `teacher` or `student` role is put in the LiveKit token metadata by `/api/livekit-token`.
   - Teacher: must be logged in to Supabase.
   - Student: sends the lesson's `invite_slug` plus a display name, and needs no account.
+- Identities are fixed: `teacher-<user id>` and `student-<lesson id>`. A lesson has one student, so joining from a second device or tab makes LiveKit drop the older one (`DUPLICATE_IDENTITY`: "You joined this lesson somewhere else", with "Continue here"). The room's `maxParticipants: 2` is also set, but LiveKit Cloud didn't enforce it in a test, so the identity is what keeps a lesson to two people.
 - **Teacher accounts:** teachers sign up at `/signup` (name, email, password). The name goes into Supabase user metadata (`display_name`); the dashboard asks for it if it's missing, and the token route reads it with `getUser()`.
   - Email links (confirm sign-up, reset password) go to `/auth/confirm`, which calls `verifyOtp` and redirects (`next`, same-site paths only); bad or used links land on `/link-expired`. The Supabase email templates must point there (see the comment in `app/auth/confirm/route.ts`).
   - Emails are sent through custom SMTP (the teacher's Gmail for now): Supabase's built-in mailer only reaches its own team.

@@ -83,7 +83,7 @@ export function FilesPanel({
     ? "Two tabs are open. Close one first, or drag the file onto a tab to replace it."
     : opener.full
       ? "Two tabs are open. Drag a file onto one to replace it."
-      : "Click a PDF or picture to open it, or drag it onto the stage.";
+      : "Click a PDF or picture to open it, press play for audio, or drag any file onto the stage.";
   return (
     <aside
       aria-label={title}
@@ -118,8 +118,8 @@ export function FilesPanel({
   );
 }
 
-// The list, also used in the phone's Files sheet. PDFs and pictures open on click (and drag,
-// on desktop); audio comes in A1.
+// The list, also used in the phone's Files sheet. PDFs and pictures open on click, audio plays
+// with its button; on desktop all three can also be dragged onto the stage.
 export function FileList({
   files,
   model,
@@ -131,20 +131,24 @@ export function FileList({
   onOpen: (id: FileTab) => void;
   onDrag?: (file: RoomFile | null) => void;
 }) {
+  // Dragging works the same for every kind: PDFs and pictures open in a tab, audio plays.
+  const dragProps = (f: RoomFile) => ({
+    draggable: Boolean(onDrag),
+    onDragStart: (e: React.DragEvent) => {
+      e.dataTransfer.setData("text/plain", f.name);
+      e.dataTransfer.effectAllowed = "copy";
+      // After the browser has taken its drag picture, or the drop areas would be in it.
+      setTimeout(() => onDrag?.(f), 0);
+    },
+    onDragEnd: () => setTimeout(() => onDrag?.(null), 0),
+  });
   const fileProps = (f: RoomFile) => {
     const id = tabOf(f)!;
     return {
       type: "button" as const,
       title: onDrag ? "Click to open, or drag onto the stage" : `Show ${f.name}`,
       onClick: () => onOpen(id),
-      draggable: Boolean(onDrag),
-      onDragStart: (e: React.DragEvent) => {
-        e.dataTransfer.setData("text/plain", f.name);
-        e.dataTransfer.effectAllowed = "copy";
-        // After the browser has taken its drag picture, or the drop areas would be in it.
-        setTimeout(() => onDrag?.(f), 0);
-      },
-      onDragEnd: () => setTimeout(() => onDrag?.(null), 0),
+      ...dragProps(f),
     };
   };
   if (!files.length) {
@@ -207,7 +211,9 @@ export function FileList({
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">{f.name}</span>
                     </>
                   );
-                  if (kind === "audio") return <AudioRow key={f.id} file={f} model={model} />;
+                  if (kind === "audio") {
+                    return <AudioRow key={f.id} file={f} model={model} drag={onDrag ? dragProps(f) : undefined} />;
+                  }
                   const status = fileStatus(model, tabOf(f)!);
                   return (
                     <li key={f.id} data-file-id={f.id}>
@@ -274,14 +280,27 @@ export function FilesStrip({ title, onUnfold }: { title: string; onUnfold: () =>
 }
 
 // An audio file (A1): a round play / pause button, and "Playing" while it plays for both.
-function AudioRow({ file, model }: { file: RoomFile; model: RoomModel }) {
+function AudioRow({
+  file,
+  model,
+  drag,
+}: {
+  file: RoomFile;
+  model: RoomModel;
+  drag?: React.HTMLAttributes<HTMLLIElement> & { draggable?: boolean };
+}) {
   const audio = model.audio;
   const current = model.view.audio?.id === file.id ? model.view.audio : null;
   const playing = Boolean(current && current.pausedAt === null);
   const loading = audio?.loading === file.id;
   const label = `${playing ? "Pause" : "Play"} ${file.name}`;
   return (
-    <li className="flex items-center gap-2.5 rounded-md p-2">
+    <li
+      {...drag}
+      data-file-id={file.id}
+      title={drag ? "Press play, or drag onto the stage" : undefined}
+      className={`flex items-center gap-2.5 rounded-md p-2 ${drag ? "cursor-grab hover:bg-paper" : ""}`}
+    >
       <button
         type="button"
         aria-label={label}

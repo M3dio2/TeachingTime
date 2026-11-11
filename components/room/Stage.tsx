@@ -6,6 +6,7 @@ import {
   FileText,
   ImageIcon,
   Monitor,
+  Music,
   Pencil,
   Plus,
   RefreshCw,
@@ -15,7 +16,7 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Chip from "@/components/ui/Chip";
 import Handle from "@/components/ui/Handle";
 import Marker from "@/components/ui/Marker";
@@ -46,15 +47,12 @@ export const TabIcon = ({ id, size = 16 }: { id: TabId; size?: number }) => {
 };
 
 // The stage (desktop): browser-style tab bar, then one or two tabs side by side.
-// `overlay` sits over the panes (the floating cameras on narrow windows).
 export default function Stage({
   model,
-  overlay,
   dragging,
   onDropped,
 }: {
   model: RoomModel;
-  overlay?: ReactNode;
   dragging?: RoomFile | null;
   onDropped?: () => void;
 }) {
@@ -94,7 +92,6 @@ export default function Stage({
         data-layout={isSplit ? "split" : "single"}
         className={`relative flex min-h-0 flex-1 ${isSplit ? "bg-paper p-2" : "bg-surface"}`}
       >
-        {overlay}
         {dragging && model.actions && (
           <DropZones model={model} file={dragging} onDone={() => onDropped?.()} />
         )}
@@ -332,14 +329,17 @@ function AddTabMenu({ model }: { model: RoomModel }) {
 }
 
 // While a file is dragged from the panel: two drop areas over the stage. One tab open:
-// "Replace …" (left) and "Open beside …" (right); two open: "Replace …" for each. The area
-// under the pointer turns solid and shows "Drop to open".
+// "Replace …" (left) and "Open beside …" (right); two open: "Replace …" for each. Audio: one
+// area, "Play …". The area under the pointer turns solid and shows "Drop to open" / "to play".
 function DropZones({ model, file, onDone }: { model: RoomModel; file: RoomFile; onDone: () => void }) {
   const [over, setOver] = useState<number | null>(null);
   const { tabs } = model.view;
   const id = tabOf(file);
-  const zones: { where: Where; title: string; sub: string; beside: boolean }[] =
-    tabs.length < 2
+  const audio = file.kind === "audio";
+  // Audio isn't a tab: one area that plays it for both, whatever is open.
+  const zones: { where: Where | "play"; title: string; sub: string; beside: boolean }[] = audio
+    ? [{ where: "play", title: `Play ${file.name}`, sub: "You both hear it; the tabs stay as they are", beside: false }]
+    : tabs.length < 2
       ? [
           { where: 0, title: `Replace ${tabLabel(tabs[0], model.names)}`, sub: "Show it instead", beside: false },
           {
@@ -360,7 +360,7 @@ function DropZones({ model, file, onDone }: { model: RoomModel; file: RoomFile; 
     <div className="absolute inset-0 z-20 flex gap-2 bg-paper/90 p-2" data-testid="drop-zones">
       {zones.map((z, i) => {
         const hot = over === i;
-        const Icon = z.beside ? SquarePlus : RefreshCw;
+        const Icon = audio ? Music : z.beside ? SquarePlus : RefreshCw;
         return (
           <div
             key={i}
@@ -377,7 +377,8 @@ function DropZones({ model, file, onDone }: { model: RoomModel; file: RoomFile; 
             }}
             onDrop={(e) => {
               e.preventDefault();
-              if (id) model.actions?.openAt(id, z.where);
+              if (z.where === "play") model.audio?.play({ id: file.id, name: file.name });
+              else if (id) model.actions?.openAt(id, z.where);
               onDone();
             }}
             className={`flex min-w-0 flex-1 flex-col items-center justify-center gap-3 rounded-panel border-2 border-dashed p-4 text-center ${
@@ -391,9 +392,11 @@ function DropZones({ model, file, onDone }: { model: RoomModel; file: RoomFile; 
             <span className="text-[13px] text-ink-muted">{z.sub}</span>
             {hot && (
               <span className="inline-flex -rotate-2 items-center gap-2 rounded-md border border-line bg-surface px-3 py-1.5 text-[13px] font-medium shadow-soft">
-                <TabIcon id={id ?? "text"} />
+                {audio ? <Music size={14} aria-hidden /> : <TabIcon id={id ?? "text"} />}
                 {file.name}
-                <span className="rounded bg-marker-soft px-1.5 text-xs text-marker-ink">Drop to open</span>
+                <span className="rounded bg-marker-soft px-1.5 text-xs text-marker-ink">
+                  {audio ? "Drop to play" : "Drop to open"}
+                </span>
               </span>
             )}
           </div>

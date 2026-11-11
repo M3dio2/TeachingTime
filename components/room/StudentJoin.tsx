@@ -11,22 +11,8 @@ import LessonRoom from "./LessonRoom";
 import RoomMessage from "./RoomMessage";
 
 // Why the student is out of the room: they left, the teacher ended the call (the link is gone),
-// or they opened the lesson in another tab.
+// or they joined from another device or tab (one student per lesson, see the token route).
 type Exit = "left" | "ended" | "replaced";
-
-// One id per browser, so joining from a second tab replaces the first (see the token route).
-function browserId() {
-  try {
-    let id = localStorage.getItem("student-id");
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem("student-id", id);
-    }
-    return id;
-  } catch {
-    return undefined; // storage blocked: the token route picks a random id
-  }
-}
 
 export default function StudentJoin({ slug }: { slug: string }) {
   const [name, setName] = useState("");
@@ -43,7 +29,7 @@ export default function StudentJoin({ slug }: { slug: string }) {
     const res = await fetch("/api/livekit-token", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, name, clientId: browserId() }),
+      body: JSON.stringify({ slug, name }),
     });
     const data = await res.json();
     setJoining(false);
@@ -87,14 +73,15 @@ export default function StudentJoin({ slug }: { slug: string }) {
   if (exit === "replaced") {
     return (
       <RoomMessage
-        title="You joined this lesson in another tab."
+        title="You joined this lesson somewhere else."
         actions={
           <Button disabled={joining} onClick={() => join()}>
             {joining ? "Joining…" : "Continue here"}
           </Button>
         }
       >
-        Close this tab, or continue here to leave the other one.
+        This lesson is open on another device or tab. Close this page, or continue here to move the
+        lesson to this one.
       </RoomMessage>
     );
   }

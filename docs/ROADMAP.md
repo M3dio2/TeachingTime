@@ -61,7 +61,7 @@ A strict script CSP is left out (needs a nonce per request, which makes every pa
 - [x] H3: Content-Security-Policy allow-list (scripts self only, connections to Supabase / LiveKit / esm.sh only, no frames or plugins) and `Cross-Origin-Opener-Policy`; `e2e/security-csp.spec.ts`, also run against `next start`, plus Excalidraw's image export checked by hand under the production policy
 - [x] H4: rate limits on the three API routes, per instance and shared in Postgres (`0009_rate_limits.sql`); `e2e/security-rate-limit.spec.ts`
 - [x] H5: GitHub Actions gate (lint, build, audit) and Dependabot
-- **User:** run `0008_signup_codes.sql` and `0009_rate_limits.sql`; switch on the hook (Authentication → Hooks → Before User Created → Postgres → `public.hook_require_invite_code`); add an invite code (the SQL is at the top of `0008`). Until the hook is on, sign-up works without a code.
+- **User:** run `0008_signup_codes.sql` (for the 30-classroom cap) and `0009_rate_limits.sql`. The invite-code hook stays switched off: sign-up is open from G1 on, protected by Turnstile instead.
 - Not done on purpose: a nonce CSP (every page would become dynamic) and HttpOnly session cookies (Supabase's browser client needs to read them). Both stay under "Before going commercial".
 
 Phase 2 (before the friends test): dev Supabase + LiveKit projects for the tests; error pages; "Make a new link" per classroom; shorter email-link lifetime and sign out other sessions on password change. Phase 3 (performance): lazy-load the room on the join page; whiteboard garbage collection; targeted `listRooms` and no dashboard polling while hidden.
@@ -193,9 +193,25 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 - [ ] Optional (user, in Vercel): rename the project, e.g. `teachingtime.vercel.app`; then update Supabase's Site URL and redirect URLs and the docs
 - [ ] Later: own domain (see "Before going commercial")
 
-## Friends test
-- [ ] Before inviting anyone: separate dev Supabase + dev LiveKit projects (run migrations there first), Vercel Preview env vars point at dev, Production keys only in Vercel. The agent's `.env.local` gets dev keys only; agents open PRs instead of merging
-- [ ] Agree the date; invite friends; collect their feedback here
+## T1: Tester feedback, laptop + phone (Nov 2026, branch `tester-feedback`)
+- [x] One student per lesson: the student identity is now `student-<lesson id>`, so a second device or tab takes over and the first shows "You joined this lesson somewhere else" with "Continue here". (LiveKit Cloud ignored the room's `maxParticipants: 2`: tested, a second student got in.) Test: `e2e/one-student.spec.ts`
+- [x] 768–1023 px: the cameras sit in a row above the stage (128 px tall, 16:9, centred), like on a phone, instead of floating over the tabs. Just talk at that width keeps the Spotlight (your own camera small in a corner)
+- [x] Audio can be dragged onto the stage too: one drop area, "Play …", the tabs stay. The play button stays
+- [x] Join card: if the camera+mic request fails, the two are asked for one after the other (never at once: Android Chrome can drop a second prompt), the message names the device and the browser's error, and tapping the mic or camera button asks again. Test in `e2e/s5-join.spec.ts`
+- [ ] Real device: the Nothing Phone join again; if the mic is still missing, a screenshot of the red message (it now ends with the error's name)
+- Kept: the "Side by side / One at a time" switch (only shown while two tabs are open). Reason in the chat of 11 Nov: it's the only way to make one of two tabs full width without closing the other (a PDF to read, then back to the board); the student follows it
+
+## G1: Go public (open sign-up, friends first)
+Plan agreed 11 Nov 2026: open sign-up, no invite codes. Friends first on the free LiveKit plan; pay LiveKit Ship ($50/month) for a month only once strangers come. No Supabase storage purchase for now (free plan: 1 GB in total).
+Order:
+- [ ] 1. Separate test setup: dev Supabase + dev LiveKit projects (run the migrations there first), Vercel Preview env vars point at dev, Production keys only in Vercel. The agent's `.env.local` gets dev keys only, so tests never touch real teachers' data
+- [ ] 2. Open sign-up with a CAPTCHA instead of the invite code: Cloudflare Turnstile (free), switched on in Supabase (Authentication → Attack Protection), so Supabase checks it itself. Remove the invite-code field and leave the `0008` hook switched off (the 30-classroom cap in `0008` stays). Turnstile also on login and forgot password; CSP gets `challenges.cloudflare.com`
+- [ ] 3. Limits per teacher, so one account can't use up the shared free plans: storage 50 MB per teacher (was 200 MB; free plan is 1 GB for everyone), lesson time about 20 hours a month and at most 3 hours per lesson (counted in Postgres from the token route; a friendly message when reached)
+- [ ] 4. Email: own domain (about $10–15 a year) and Resend (free up to 3,000 emails a month) as Supabase's SMTP instead of the teacher's Gmail (Gmail: about 500 a day, spam folder, account risk). Update the Site URL, redirect URLs and email templates
+- [ ] 5. Seeing how people react: a "Send feedback" button (dashboard and room, stored in Supabase), Vercel Analytics (free), proper error pages and an error alert (Sentry free plan or a Vercel log drain)
+- [ ] 6. Privacy policy and terms pages (emails, names, boards, files, video through LiveKit). Drafted by the agent; the user has them checked
+- [ ] 7. The user's real phone test on the live site (list in the chat of 11 Nov), then invite friends
+- [ ] 8. Friends test: collect feedback here. When strangers are invited: LiveKit Ship for a month (free plan: 5,000 participant minutes = about 40 lesson-hours a month for everyone, then lessons stop until the 1st)
 
 # Open design work
 
@@ -225,13 +241,13 @@ Rule: a wait that takes you into or out of a lesson shows the full loading scree
 
 ## Before going commercial
 - [ ] Vercel Hobby is non-commercial only: move to Vercel Pro, or Netlify / Cloudflare Pages
-- [ ] Own domain (e.g. teachingtime.app)
-- [ ] Privacy policy and terms (GDPR: EU users, video and stored boards)
-- [ ] CAPTCHA on sign-up, login and forgot password (Supabase + Cloudflare Turnstile; needs the token passed from our forms)
+- [ ] Own domain (e.g. teachingtime.app): moved to G1 (needed for the email sender)
+- [ ] Privacy policy and terms (GDPR: EU users, video and stored boards): moved to G1
+- [ ] CAPTCHA on sign-up, login and forgot password (Supabase + Cloudflare Turnstile): moved to G1
 - [ ] Supabase Pro: switch on leaked password protection (Auth → Providers → Email)
-- [ ] Own email sender (Resend, Postmark, …) instead of the teacher's Gmail
+- [ ] Own email sender (Resend, Postmark, …) instead of the teacher's Gmail: moved to G1
 - [ ] Strict CSP for scripts (nonces) if the speed cost is acceptable; recheck LiveKit and Excalidraw
-- [ ] Rate limit the token route (invite slugs can't be guessed, but it costs nothing to limit)
-- [ ] Monitoring (Sentry or a Vercel log drain): today a broken deploy is noticed by the user; Vercel's free log retention is 1 h
+- [x] Rate limit the token route (done in the security review)
+- [ ] Monitoring (Sentry or a Vercel log drain): today a broken deploy is noticed by the user; Vercel's free log retention is 1 h. Basic error alert moved to G1
 - [ ] Re-check HSTS once the app has its own domain (Vercel sends it for `*.vercel.app`)
 - [ ] Free tiers: LiveKit's monthly participant minutes are shared by all teachers (a 1-hour lesson uses about 120); Supabase free projects pause after about a week without activity

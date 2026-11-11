@@ -9,22 +9,44 @@ import { deviceProblemMessage } from "./StatusBanner";
 // (same devices, mic/camera on or off as chosen). `null` = that device failed.
 export type PreJoinTracks = { audio: LocalAudioTrack | null; video: LocalVideoTrack | null };
 
-async function startTracks(): Promise<{ tracks: PreJoinTracks; problem: string | null }> {
+type Started = { tracks: PreJoinTracks; problem: string | null };
+
+// One device on its own. Returns the track, or the reason it failed.
+async function startOne(kind: "audio" | "video") {
+  try {
+    const [track] = await createLocalTracks({ audio: kind === "audio", video: kind === "video" });
+    return { track, error: null };
+  } catch (error) {
+    return { track: null, error };
+  }
+}
+
+function problemFor(error: unknown, kind?: MediaDeviceKind) {
+  const name = error instanceof Error ? error.name : "";
+  // The error's name helps when a tester sends a screenshot (e.g. NotAllowedError).
+  return `${deviceProblemMessage(MediaDeviceFailure.getFailure(error), kind)}${name ? ` (${name})` : ""}`;
+}
+
+async function startTracks(): Promise<Started> {
   try {
     const tracks = await createLocalTracks({ audio: true, video: true });
     return { tracks: pick(tracks), problem: null };
-  } catch (error) {
-    // One of the two may still work (e.g. no camera on this computer).
-    const [audio, video] = await Promise.allSettled([
-      createLocalTracks({ audio: true, video: false }),
-      createLocalTracks({ audio: false, video: true }),
-    ]);
-    const got = [audio, video].flatMap((r) => (r.status === "fulfilled" ? r.value : []));
-    const kind = !got.length ? undefined : audio.status === "fulfilled" ? "videoinput" : "audioinput";
-    return {
-      tracks: pick(got),
-      problem: deviceProblemMessage(MediaDeviceFailure.getFailure(error), kind),
-    };
+  } catch {
+    // One of the two may still work (e.g. no camera on this computer). One after the other,
+    // never both at once: Android Chrome can drop a second permission prompt that arrives
+    // while the first is open, and the microphone then never gets asked (tester, Nothing Phone).
+    const audio = await startOne("audio");
+    const video = await startOne("video");
+    const tracks = pick([audio.track, video.track].filter((t): t is LocalTrack => Boolean(t)));
+    const problem =
+      audio.error && video.error
+        ? problemFor(audio.error)
+        : audio.error
+          ? problemFor(audio.error, "audioinput")
+          : video.error
+            ? problemFor(video.error, "videoinput")
+            : null;
+    return { tracks, problem };
   }
 }
 
@@ -66,18 +88,35 @@ export function useCameraCheck() {
     };
   }, []);
 
+  // A device that failed can be asked for again with a tap (a tap lets the browser show its
+  // permission prompt, which it may not do on page load).
+  async function retry(kind: "audio" | "video") {
+    const { track, error } = await startOne(kind);
+    if (!track) {
+      setProblem(problemFor(error, kind === "audio" ? "audioinput" : "videoinput"));
+      return;
+    }
+    const got = pick([track]);
+    setTracks((t) => ({ audio: got.audio ?? t?.audio ?? null, video: got.video ?? t?.video ?? null }));
+    setProblem(null);
+    if (kind === "audio") setMicOn(true);
+    else setCamOn(true);
+  }
+
   return {
     tracks,
     problem,
     micOn,
     camOn,
     toggleMic: async () => {
-      if (!tracks?.audio) return;
+      if (!tracks) return;
+      if (!tracks.audio) return retry("audio");
       await (micOn ? tracks.audio.mute() : tracks.audio.unmute());
       setMicOn(!micOn);
     },
     toggleCam: async () => {
-      if (!tracks?.video) return;
+      if (!tracks) return;
+      if (!tracks.video) return retry("video");
       await (camOn ? tracks.video.mute() : tracks.video.unmute());
       setCamOn(!camOn);
     },
@@ -100,8 +139,14 @@ export function CameraPreview({ check }: { check: ReturnType<typeof useCameraChe
     };
   }, [track]);
   const showVideo = Boolean(track) && check.camOn;
-  const micLabel = check.micOn ? "Turn off your microphone" : "Turn on your microphone";
-  const camLabel = check.camOn ? "Turn off your camera" : "Turn on your camera";
+  const loaded = Boolean(check.tracks);
+  const hasMic = Boolean(check.tracks?.audio);
+  const hasCam = Boolean(check.tracks?.video);
+  // A device that didn't start shows as off; tapping it asks the browser again.
+  const micOn = hasMic && check.micOn;
+  const camOn = hasCam && check.camOn;
+  const micLabel = micOn ? "Turn off your microphone" : "Turn on your microphone";
+  const camLabel = camOn ? "Turn off your camera" : "Turn on your camera";
 
   return (
     <div className="flex flex-col gap-2">
@@ -124,11 +169,11 @@ export function CameraPreview({ check }: { check: ReturnType<typeof useCameraChe
           {check.tracks ? "Your camera" : "Starting your camera…"}
         </span>
         <div className="absolute inset-x-0 bottom-2.5 flex justify-center gap-2.5">
-          <RoundButton label={micLabel} off={!check.micOn} disabled={!check.tracks?.audio} onClick={check.toggleMic}>
-            {check.micOn ? <Mic size={18} aria-hidden /> : <MicOff size={18} aria-hidden />}
+          <RoundButton label={micLabel} off={!micOn} disabled={!loaded} onClick={check.toggleMic}>
+            {micOn ? <Mic size={18} aria-hidden /> : <MicOff size={18} aria-hidden />}
           </RoundButton>
-          <RoundButton label={camLabel} off={!check.camOn} disabled={!check.tracks?.video} onClick={check.toggleCam}>
-            {check.camOn ? <Video size={18} aria-hidden /> : <VideoOff size={18} aria-hidden />}
+          <RoundButton label={camLabel} off={!camOn} disabled={!loaded} onClick={check.toggleCam}>
+            {camOn ? <Video size={18} aria-hidden /> : <VideoOff size={18} aria-hidden />}
           </RoundButton>
         </div>
       </div>
