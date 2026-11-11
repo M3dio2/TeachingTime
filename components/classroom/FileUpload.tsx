@@ -78,7 +78,7 @@ export function useFileUpload({
         continue;
       }
       if (used + file.size > TEACHER_BYTES) {
-        failed.push(`${file.name} doesn't fit: your files can take up 200 MB. Delete some first.`);
+        failed.push(`${file.name} doesn't fit: your files can take up ${TEACHER_BYTES / MB} MB. Delete some first.`);
         continue;
       }
 
@@ -170,7 +170,7 @@ export function useFileUpload({
   };
 }
 
-// "38 MB of 200 MB" with a bar: all the teacher's classrooms together.
+// "38 MB of 50 MB" with a bar: all the teacher's classrooms together.
 export function StorageCard({ usedBytes }: { usedBytes: number }) {
   const used = Math.ceil(usedBytes / MB);
   const pct = Math.min(100, (usedBytes / TEACHER_BYTES) * 100);
@@ -178,9 +178,9 @@ export function StorageCard({ usedBytes }: { usedBytes: number }) {
     <section className="flex flex-col gap-2.5 rounded-panel border border-line bg-surface p-5">
       <div className="flex items-baseline justify-between gap-2">
         <span className="font-semibold">Storage</span>
-        <span className="text-sm text-ink-muted tabular-nums">{used} MB of 200 MB</span>
+        <span className="text-sm text-ink-muted tabular-nums">{used} MB of {TEACHER_BYTES / MB} MB</span>
       </div>
-      <div role="img" aria-label={`${used} of 200 MB used`} className="h-2 overflow-hidden rounded bg-surface-2">
+      <div role="img" aria-label={`${used} of ${TEACHER_BYTES / MB} MB used`} className="h-2 overflow-hidden rounded bg-surface-2">
         <div className="h-full rounded bg-accent" style={{ width: `${pct}%` }} />
       </div>
       <span className="text-[13px] leading-snug text-ink-muted">All your classrooms together. Up to 10 MB per file.</span>

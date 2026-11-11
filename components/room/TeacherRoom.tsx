@@ -42,7 +42,18 @@ export default function TeacherRoom({ lesson }: { lesson: SavedLesson }) {
   }, [lessonId]);
 
   if (error) {
-    return <p className="p-4 text-danger">{error}</p>;
+    return (
+      <RoomMessage
+        title="This lesson can't start"
+        actions={
+          <Link href="/dashboard" className={buttonClass("primary", "md")}>
+            Back to dashboard
+          </Link>
+        }
+      >
+        {error}
+      </RoomMessage>
+    );
   }
   if (leaving) {
     return <LoadingScreen title="Leaving the lesson" />;

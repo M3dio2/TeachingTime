@@ -110,3 +110,19 @@ export async function signOut() {
   await supabase.auth.signOut();
   redirect("/");
 }
+
+// "Send feedback" in the dashboard header (G1). Stored in Supabase (`feedback`, migration
+// 0010); the user reads it in the table editor. Returns whether it was saved.
+export async function sendFeedback(message: string, page: string) {
+  const text = message.trim().slice(0, 2000);
+  if (!text) return false;
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const teacherId = data?.claims?.sub;
+  if (!teacherId) return false;
+  const { error } = await supabase
+    .from("feedback")
+    .insert({ teacher_id: teacherId, message: text, page: page.slice(0, 200) });
+  if (error) console.error("feedback:", error.message);
+  return !error;
+}

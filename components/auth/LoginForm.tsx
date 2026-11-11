@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import AuthCard, { FormError, submitClass, textLink } from "@/components/auth/AuthCard";
+import { CAPTCHA_WAIT, CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import PasswordField from "@/components/ui/PasswordField";
@@ -18,12 +19,18 @@ export default function LoginForm() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const captcha = useCaptcha();
 
   async function logIn(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await createClient().auth.signInWithPassword({ email, password });
+    const { error } = await createClient().auth.signInWithPassword({
+      email,
+      password,
+      options: { captchaToken: captcha.token ?? undefined },
+    });
+    captcha.reset();
     if (error) {
       setLoading(false);
       setError(authErrorMessage(error));
@@ -60,9 +67,10 @@ export default function LoginForm() {
           invalid={Boolean(error)}
           required
         />
+        <CaptchaBox {...captcha.box} />
         {error && <FormError>{error}</FormError>}
-        <Button disabled={loading} className={submitClass}>
-          {loading ? "Logging in…" : "Log in"}
+        <Button disabled={loading || captcha.token === null} className={submitClass}>
+          {loading ? "Logging in…" : captcha.token === null ? CAPTCHA_WAIT : "Log in"}
         </Button>
       </form>
       <p className="text-[15px] text-ink-muted">

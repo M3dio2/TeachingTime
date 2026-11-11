@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Mail } from "lucide-react";
 import { useState } from "react";
 import AuthCard, { FormError, submitClass, textLink } from "@/components/auth/AuthCard";
+import { CAPTCHA_WAIT, CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
 import NewPasswordFields from "@/components/auth/NewPasswordFields";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
@@ -22,10 +23,10 @@ export default function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
-  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
+  const captcha = useCaptcha();
 
   async function signUp(e: React.FormEvent) {
     e.preventDefault();
@@ -40,12 +41,12 @@ export default function SignupForm() {
       email,
       password,
       options: {
-        // invite_code is checked by Supabase Auth itself (the "before user created" hook in
-        // supabase/migrations/0008_signup_codes.sql), so skipping this form doesn't skip it.
-        data: { display_name: name.trim().slice(0, 40), invite_code: code.trim() },
+        data: { display_name: name.trim().slice(0, 40) },
         emailRedirectTo: window.location.origin,
+        captchaToken: captcha.token ?? undefined,
       },
     });
+    captcha.reset();
     if (error) {
       setLoading(false);
       setError(authErrorMessage(error));
@@ -105,17 +106,6 @@ export default function SignupForm() {
           autoComplete="email"
           required
         />
-        <Field
-          label="Invite code"
-          hint="TeachingTime is invite-only for now. Ask the person who sent you here."
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          autoComplete="off"
-          spellCheck={false}
-          maxLength={100}
-          invalid={Boolean(error && /invite code/i.test(error))}
-          required
-        />
         <NewPasswordFields
           label="Password"
           password={password}
@@ -123,10 +113,22 @@ export default function SignupForm() {
           onPasswordChange={setPassword}
           onConfirmChange={setConfirm}
         />
+        <CaptchaBox {...captcha.box} />
         {error && <FormError>{error}</FormError>}
-        <Button disabled={loading} className={submitClass}>
-          {loading ? "Creating your account…" : "Create account"}
+        <Button disabled={loading || captcha.token === null} className={submitClass}>
+          {loading ? "Creating your account…" : captcha.token === null ? CAPTCHA_WAIT : "Create account"}
         </Button>
+        <p className="text-[13px] leading-snug text-ink-muted">
+          By creating an account you agree to the{" "}
+          <Link href="/terms" className={textLink}>
+            terms
+          </Link>{" "}
+          and the{" "}
+          <Link href="/privacy" className={textLink}>
+            privacy policy
+          </Link>
+          .
+        </p>
       </form>
       <p className="text-[15px] text-ink-muted">
         Already have an account?{" "}
