@@ -219,6 +219,17 @@ Order:
 - [ ] 7. The user's real phone test on the live site (list in the chat of 11 Nov), then invite friends
 - [ ] 8. Friends test: collect feedback here. When strangers are invited: LiveKit Ship for a month (free plan: 5,000 participant minutes = about 40 lesson-hours a month for everyone, then lessons stop until the 1st)
 
+## G2: Ideas from the user (11 Nov 2026), in the order agreed
+- [ ] **Word files:** upload `.docx` in the classroom; in the call it opens as a tab, rendered in the browser with its layout (tables, pictures), plus "Copy into the text pad" to work on it together. Old `.doc` files: the upload asks to save as `.docx` or PDF first. Google Docs: download as `.docx` or PDF meanwhile. About 1 day. Before the friends test (teachers' worksheets are often Word)
+- [ ] **Own domain + email** (G1 step 4): the user buys the domain; then Vercel domain, Supabase Site URL and redirects, Resend with DNS records, Turnstile hostname, LiveKit webhook URL, contact address on the legal pages. About half a day once bought
+- [ ] **Sign in with Google:** Supabase's Google provider; the user makes a Google Cloud OAuth client (basic profile and email only, so no Google review). After the domain, because Google's consent screen shows it. About half a day. Before strangers; optional for friends
+- [ ] **Quizzes** (replaces "Later: Quizzes"): made in the classroom (multiple choice, fill the gap, match pairs), stored in Supabase; in the call a Quiz tab where the student answers live and the teacher sees each answer. About 3–5 days. During the friends test, shaped by what they ask for
+- [ ] **Google Drive:** pick a file from Drive (Google Picker, `drive.file` scope: only files the teacher picks; no Google review). Docs, Sheets and Slides come in as PDF. About 2–3 days. After Google sign-in
+- [ ] **Live subtitles** (to investigate): two ways
+  - Free: the browser's speech recognition, each side transcribes its own microphone and sends the text over the data channel. Chrome and Edge only (Safari and Firefox unreliable or missing), quality varies, Google processes the audio. About 1–2 days for a test toggle
+  - Good: a LiveKit agent with a speech-to-text service joins the room and transcribes both people (all browsers, punctuation, could also translate). Costs per lesson minute (speech-to-text plus agent minutes; estimate below 1 USD per lesson-hour, to check), a paid LiveKit plan in practice, and a privacy policy update. About 1 week
+  - Decide after the friends test whether students want it
+
 # Open design work
 
 ## Redesign (Nov 2026)
@@ -240,7 +251,7 @@ Rule: a wait that takes you into or out of a lesson shows the full loading scree
 # Later
 
 ## Quizzes
-- [ ] Simple quizzes made in the classroom and used in a call. Type to decide once the classroom works (multiple choice, fill the gap, match pairs)
+- Moved to G2
 
 ## D6: Scheduling
 - [ ] Plan the next lesson per student (date and time), shown on the student card
