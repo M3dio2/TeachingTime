@@ -10,6 +10,12 @@ Read this before touching `lib/sync/`, the room (`components/room/`) or the API 
   - Email links (confirm sign-up, reset password) go to `/auth/confirm`, which calls `verifyOtp` and redirects (`next`, same-site paths only); bad or used links land on `/link-expired`. The Supabase email templates must point there (see the comment in `app/auth/confirm/route.ts`).
   - Emails are sent through custom SMTP (the teacher's Gmail for now): Supabase's built-in mailer only reaches its own team.
   - `proxy.ts`: `/`, `/signup`, `/forgot-password` are for logged-out visitors; `/dashboard`, `/lesson`, `/reset-password` need a login.
+  - **Invite codes:** sign-up sends `invite_code` in the user metadata; Supabase Auth's "Before User Created" hook (`public.hook_require_invite_code`, migration `0008_signup_codes.sql`) checks it against `signup_codes` and uses one up, so calling the Auth API directly can't skip it. Codes are added in the SQL editor, never in git. The same migration caps a teacher at 30 classrooms (trigger; `lib/limits.ts` for the UI).
+
+## Security headers and limits
+- `next.config.ts` sends a Content-Security-Policy allow-list: scripts only from the site itself, connections only to Supabase, LiveKit (`*.livekit.cloud`) and esm.sh (Excalidraw's fonts), no plugins, frames or framing. Inline scripts stay allowed: a nonce policy would make every page dynamic (no prerendering). `e2e/security-csp.spec.ts` walks the main flows on both sides and fails on any violation; run it against `next start` too, where the policy is strictest (no `unsafe-eval`).
+- Rate limits (`lib/rateLimit.ts`) on `/api/livekit-token` (30/min), `/api/resource-url` (120/min) and `/api/mute` (30/min) per IP: a count in each server instance's memory first, then a shared count in Postgres (`hit_rate_limit`, migration `0009_rate_limits.sql`) run alongside the route's own lookups. The shared count fails open if the database can't be asked. Over the limit: 429 with `Retry-After: 60`.
+- CI: `.github/workflows/check.yml` runs lint, build (with the TypeScript check) and `npm audit --omit=dev --audit-level=critical` on every push to `main` and every PR, with placeholder env vars. Dependabot (`.github/dependabot.yml`) opens weekly update PRs.
 
 ## Lessons
 - `lessons.kind` is `student` (fixed link; board kept until the next lesson) or `quick` (one-off; not saved; deleted with "End" or after 12 hours).

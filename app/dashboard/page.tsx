@@ -14,6 +14,7 @@ import { occupiedLessons } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
 import { addStudent, removeLesson, setTeacherName, signOut, startQuickCall } from "./actions";
+import { MAX_CLASSROOMS } from "@/lib/limits";
 
 // Private: never listed by search engines.
 export const metadata: Metadata = { robots: { index: false, follow: false } };
@@ -167,7 +168,13 @@ async function Dashboard() {
             />
           ))}
           <li>
-            <AddCard highlight={firstVisit || students.length === 0} />
+            {students.length < MAX_CLASSROOMS ? (
+              <AddCard highlight={firstVisit || students.length === 0} />
+            ) : (
+              <p className="flex h-full items-center rounded-panel border-[1.5px] border-dashed border-line p-4 text-sm text-ink-muted">
+                {MAX_CLASSROOMS} classrooms is the most for now. Remove one to add another.
+              </p>
+            )}
           </li>
           {students.length === 0 && (
             <li className="flex items-center gap-4 px-1 py-2">

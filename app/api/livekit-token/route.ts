@@ -1,6 +1,7 @@
 import { AccessToken, RoomConfiguration, TrackSource } from "livekit-server-sdk";
 import { after } from "next/server";
 import { roomName } from "@/lib/livekit";
+import { clientIp, LIMITS, overMemoryLimit, sharedLimit, tooMany } from "@/lib/rateLimit";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
 
@@ -16,6 +17,12 @@ export async function POST(request: Request) {
   if (!apiKey || !apiSecret) {
     return Response.json({ error: "LiveKit keys are not configured" }, { status: 500 });
   }
+
+  // Rate limit per IP (lib/rateLimit.ts): memory first; the shared count runs alongside the
+  // lookups below and is checked before a token is made.
+  const ip = clientIp(request);
+  if (overMemoryLimit(LIMITS.token, ip)) return tooMany();
+  const withinShared = sharedLimit(LIMITS.token, ip);
 
   const body = await request.json().catch(() => ({}));
   let lessonId: string;
@@ -83,6 +90,8 @@ export async function POST(request: Request) {
   } else {
     return Response.json({ error: "Bad request" }, { status: 400 });
   }
+
+  if (!(await withinShared)) return tooMany();
 
   const token = new AccessToken(apiKey, apiSecret, {
     identity,

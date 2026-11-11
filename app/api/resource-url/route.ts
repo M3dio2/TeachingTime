@@ -1,3 +1,4 @@
+import { clientIp, LIMITS, overMemoryLimit, sharedLimit, tooMany } from "@/lib/rateLimit";
 import { createAdminClient } from "@/lib/supabase/server";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -8,6 +9,9 @@ const URL_SECONDS = 5 * 60;
 // belong to the lesson behind that slug (student lessons only; quick calls have no files).
 // The signed URL is short-lived: the browser downloads the file once and keeps it in memory.
 export async function POST(request: Request) {
+  const ip = clientIp(request);
+  if (overMemoryLimit(LIMITS.resource, ip)) return tooMany();
+
   const body = await request.json().catch(() => ({}));
   const { slug, id } = body as { slug?: unknown; id?: unknown };
   if (typeof slug !== "string" || !/^[a-z0-9]{6,40}$/i.test(slug) || typeof id !== "string" || !UUID.test(id)) {
@@ -15,12 +19,11 @@ export async function POST(request: Request) {
   }
 
   const admin = createAdminClient();
-  const { data: lesson } = await admin
-    .from("lessons")
-    .select("id")
-    .eq("invite_slug", slug)
-    .eq("kind", "student")
-    .maybeSingle();
+  const [withinShared, { data: lesson }] = await Promise.all([
+    sharedLimit(LIMITS.resource, ip),
+    admin.from("lessons").select("id").eq("invite_slug", slug).eq("kind", "student").maybeSingle(),
+  ]);
+  if (!withinShared) return tooMany();
   const { data: file } = lesson
     ? await admin
         .from("resources")

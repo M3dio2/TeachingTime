@@ -1,0 +1,41 @@
+# H5 (security review): the gate runs on every push to main and every pull request, so a
+# broken or vulnerable change is caught before (or as soon as) Vercel deploys it.
+# The browser tests (npm run test:e2e) need the test account and a separate dev Supabase +
+# LiveKit project, so they don't run here yet (docs/ROADMAP.md, "Friends test").
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Placeholders: the build needs the public URLs' shape, not real projects.
+      NEXT_PUBLIC_SUPABASE_URL: https://ci-placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder
+      NEXT_PUBLIC_LIVEKIT_URL: wss://ci-placeholder.livekit.cloud
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Build (includes the TypeScript check)
+        run: npm run build
+      - name: Known vulnerabilities in what ships (fails on critical)
+        run: npm audit --omit=dev --audit-level=critical

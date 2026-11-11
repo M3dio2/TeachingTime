@@ -1,0 +1,17 @@
+# H5 (security review): weekly pull requests for dependency updates; security fixes come as
+# soon as GitHub knows about them. Small updates are grouped into one PR.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly

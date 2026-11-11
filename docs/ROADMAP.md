@@ -56,7 +56,15 @@ A strict script CSP is left out (needs a nonce per request, which makes every pa
 - [x] Tests: `e2e/security-token.spec.ts`
 - Left in `npm audit`: 9 high, all inside Excalidraw's Mermaid import (lodash-es, nanoid, langium); that UI isn't exposed. Watch for an Excalidraw release.
 
-Phase 2 (before the friends test): invite code or allow-list on sign-up; GitHub Actions gate + Dependabot; dev Supabase + LiveKit projects for the tests; rate limiting on `/api/*`; error pages; "Make a new link" per classroom; shorter email-link lifetime and sign out other sessions on password change. Phase 3 (performance): lazy-load the room on the join page; whiteboard garbage collection; targeted `listRooms` and no dashboard polling while hidden.
+### Security review, critical and high (Nov 2026, branch `security-2`)
+- [x] C2: sign-up needs an invite code, checked by a Supabase Auth hook (`0008_signup_codes.sql`); 30 classrooms per teacher at most (trigger + dashboard note)
+- [x] H3: Content-Security-Policy allow-list (scripts self only, connections to Supabase / LiveKit / esm.sh only, no frames or plugins) and `Cross-Origin-Opener-Policy`; `e2e/security-csp.spec.ts`, also run against `next start`, plus Excalidraw's image export checked by hand under the production policy
+- [x] H4: rate limits on the three API routes, per instance and shared in Postgres (`0009_rate_limits.sql`); `e2e/security-rate-limit.spec.ts`
+- [x] H5: GitHub Actions gate (lint, build, audit) and Dependabot
+- **User:** run `0008_signup_codes.sql` and `0009_rate_limits.sql`; switch on the hook (Authentication → Hooks → Before User Created → Postgres → `public.hook_require_invite_code`); add an invite code (the SQL is at the top of `0008`). Until the hook is on, sign-up works without a code.
+- Not done on purpose: a nonce CSP (every page would become dynamic) and HttpOnly session cookies (Supabase's browser client needs to read them). Both stay under "Before going commercial".
+
+Phase 2 (before the friends test): dev Supabase + LiveKit projects for the tests; error pages; "Make a new link" per classroom; shorter email-link lifetime and sign out other sessions on password change. Phase 3 (performance): lazy-load the room on the join page; whiteboard garbage collection; targeted `listRooms` and no dashboard polling while hidden.
 
 ## P1: Stronger passwords
 - [x] Sign-up and reset page: "Confirm password" field; mismatches are refused before Supabase is asked
