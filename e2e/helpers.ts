@@ -38,7 +38,7 @@ export async function openTestClassroom(page: Page) {
   // The corner: on a phone-sized window the card's buttons cover its middle.
   await card.click({ position: { x: 8, y: 8 } });
   await page.waitForURL(/\/dashboard\/[0-9a-f-]+$/);
-  await expect(page.getByRole("heading", { name: "Files" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Files", exact: true })).toBeVisible({ timeout: 30_000 });
 }
 
 // Teacher: opens the "Test" classroom, reads its student link and starts the lesson.
