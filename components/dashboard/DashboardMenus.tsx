@@ -1,9 +1,10 @@
 "use client";
 
-import { Ellipsis, Pencil, Trash2 } from "lucide-react";
+import { Check, Ellipsis, MessageSquare, Pencil, Trash2 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { removeLesson, setTeacherName } from "@/app/dashboard/actions";
-import Field from "@/components/ui/Field";
+import { removeLesson, sendFeedback, setTeacherName } from "@/app/dashboard/actions";
+import Button from "@/components/ui/Button";
+import Field, { inputClass } from "@/components/ui/Field";
 import SubmitButton, { useFormPending } from "@/components/ui/SubmitButton";
 
 // A small popover that closes on outside click and Escape.
@@ -77,6 +78,72 @@ export function NameChip({ name }: { name: string }) {
               Save
             </SubmitButton>
           </form>
+        </Popover>
+      )}
+    </div>
+  );
+}
+
+// Header: "Feedback" opens a short form (G1: seeing how people react). Icon only on phones.
+export function FeedbackButton() {
+  const { open, setOpen, wrap } = usePopover();
+  const [text, setText] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "failed">("idle");
+  return (
+    <div ref={wrap} className="relative">
+      <button
+        type="button"
+        aria-label="Send feedback"
+        title="Send feedback"
+        aria-expanded={open}
+        onClick={() => {
+          setOpen(!open);
+          if (state !== "sending") setState("idle");
+        }}
+        className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+      >
+        <MessageSquare size={16} aria-hidden />
+        <span className="hidden md:inline">Feedback</span>
+      </button>
+      {open && (
+        <Popover className="w-80 max-w-[calc(100vw-2rem)] p-3">
+          {state === "sent" ? (
+            <p className="flex items-start gap-2 p-1 text-sm">
+              <Check size={16} aria-hidden className="mt-0.5 shrink-0 text-accent" />
+              Thank you! Every message is read.
+            </p>
+          ) : (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setState("sending");
+                const ok = await sendFeedback(text, window.location.pathname);
+                setState(ok ? "sent" : "failed");
+                if (ok) setText("");
+              }}
+              className="flex flex-col gap-3"
+            >
+              <label className="flex flex-col gap-1.5 text-sm font-medium">
+                What works, what&apos;s missing, what broke?
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={5}
+                  maxLength={2000}
+                  required
+                  autoFocus
+                  placeholder="e.g. On my iPad the whiteboard…"
+                  className={`${inputClass()} h-auto resize-y py-2 font-normal`}
+                />
+              </label>
+              {state === "failed" && (
+                <p className="text-sm text-danger">It didn&apos;t send. Please try again in a moment.</p>
+              )}
+              <Button disabled={state === "sending" || !text.trim()} className="h-10">
+                {state === "sending" ? "Sending…" : "Send"}
+              </Button>
+            </form>
+          )}
         </Popover>
       )}
     </div>

@@ -15,7 +15,8 @@ const supabaseHttps = supabase ? `https://${supabase}` : "";
 const supabaseWss = supabase ? `wss://${supabase}` : "";
 
 // Content Security Policy (H3, security review). An allow-list: scripts only from this site,
-// connections only to Supabase and LiveKit (and esm.sh, where Excalidraw loads its fonts).
+// connections only to Supabase and LiveKit (and esm.sh, where Excalidraw loads its fonts);
+// Cloudflare's Turnstile script and frame on the login pages.
 // It stops injected <script src>, eval, plugins, framing, and sending data to other sites
 // with fetch/XHR/WebSocket/images.
 // Not a nonce policy: inline scripts stay allowed ('unsafe-inline'), because Next's inline
@@ -25,7 +26,7 @@ const supabaseWss = supabase ? `wss://${supabase}` : "";
 // 'unsafe-eval' (React's dev tools) and the hot-reload socket.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' blob: data: ${supabaseHttps}`,
   "font-src 'self' data: https://esm.sh",
@@ -34,7 +35,7 @@ const csp = [
     isDev ? " ws: http://localhost:*" : ""
   }`,
   "worker-src 'self' blob:",
-  "frame-src 'none'",
+  "frame-src https://challenges.cloudflare.com", // Turnstile, the sign-up check (G1)
   "manifest-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",

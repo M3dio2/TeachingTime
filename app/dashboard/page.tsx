@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } from "@/components/dashboard/DashboardBits";
-import { CardMenu, NameChip } from "@/components/dashboard/DashboardMenus";
+import { CardMenu, FeedbackButton, NameChip } from "@/components/dashboard/DashboardMenus";
 import { buttonClass } from "@/components/ui/Button";
 import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
 import Field from "@/components/ui/Field";
@@ -92,6 +92,7 @@ async function Dashboard() {
         {/* First visit: the arrow doodle is the page's marker stroke, so no underline here. */}
         <Wordmark underline={firstVisit ? "none" : "draw"} />
         <div className="flex items-center gap-2">
+          <FeedbackButton />
           <NameChip name={teacherName} />
           <form action={signOut}>
             <SubmitButton variant="ghost" size="sm" className="h-9 text-ink!" pending="Logging out…">

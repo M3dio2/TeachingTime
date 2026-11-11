@@ -57,11 +57,11 @@ A strict script CSP is left out (needs a nonce per request, which makes every pa
 - Left in `npm audit`: 9 high, all inside Excalidraw's Mermaid import (lodash-es, nanoid, langium); that UI isn't exposed. Watch for an Excalidraw release.
 
 ### Security review, critical and high (Nov 2026, branch `security-2`)
-- [x] C2: sign-up needs an invite code, checked by a Supabase Auth hook (`0008_signup_codes.sql`); 30 classrooms per teacher at most (trigger + dashboard note)
+- [x] C2: 30 classrooms per teacher at most (trigger + dashboard note, `0008_classroom_cap.sql`). An invite-code hook was built here, then replaced by open sign-up with a CAPTCHA (G1)
 - [x] H3: Content-Security-Policy allow-list (scripts self only, connections to Supabase / LiveKit / esm.sh only, no frames or plugins) and `Cross-Origin-Opener-Policy`; `e2e/security-csp.spec.ts`, also run against `next start`, plus Excalidraw's image export checked by hand under the production policy
 - [x] H4: rate limits on the three API routes, per instance and shared in Postgres (`0009_rate_limits.sql`); `e2e/security-rate-limit.spec.ts`
 - [x] H5: GitHub Actions gate (lint, build, audit) and Dependabot
-- **User:** run `0008_signup_codes.sql` (for the 30-classroom cap) and `0009_rate_limits.sql`. The invite-code hook stays switched off: sign-up is open from G1 on, protected by Turnstile instead.
+- **User:** run `0008_classroom_cap.sql` and `0009_rate_limits.sql`.
 - Not done on purpose: a nonce CSP (every page would become dynamic) and HttpOnly session cookies (Supabase's browser client needs to read them). Both stay under "Before going commercial".
 
 Phase 2 (before the friends test): dev Supabase + LiveKit projects for the tests; error pages; "Make a new link" per classroom; shorter email-link lifetime and sign out other sessions on password change. Phase 3 (performance): lazy-load the room on the join page; whiteboard garbage collection; targeted `listRooms` and no dashboard polling while hidden.
@@ -205,11 +205,16 @@ The student validates what it reads (known ids only, no duplicates, at most two,
 Plan agreed 11 Nov 2026: open sign-up, no invite codes. Friends first on the free LiveKit plan; pay LiveKit Ship ($50/month) for a month only once strangers come. No Supabase storage purchase for now (free plan: 1 GB in total).
 Order:
 - [ ] 1. Separate test setup: dev Supabase + dev LiveKit projects (run the migrations there first), Vercel Preview env vars point at dev, Production keys only in Vercel. The agent's `.env.local` gets dev keys only, so tests never touch real teachers' data
-- [ ] 2. Open sign-up with a CAPTCHA instead of the invite code: Cloudflare Turnstile (free), switched on in Supabase (Authentication → Attack Protection), so Supabase checks it itself. Remove the invite-code field and leave the `0008` hook switched off (the 30-classroom cap in `0008` stays). Turnstile also on login and forgot password; CSP gets `challenges.cloudflare.com`
-- [ ] 3. Limits per teacher, so one account can't use up the shared free plans: storage 50 MB per teacher (was 200 MB; free plan is 1 GB for everyone), lesson time about 20 hours a month and at most 3 hours per lesson (counted in Postgres from the token route; a friendly message when reached)
+- [x] 2. Open sign-up with a CAPTCHA instead of the invite code: Cloudflare Turnstile on sign-up, login and forgot password (`components/auth/Captcha.tsx`), CSP allows `challenges.cloudflare.com`; invite code removed, `0008` is now only the classroom cap. Checked with Cloudflare's test key on a production build (widget passes, no CSP violations, login works)
+  - [ ] **User:** Cloudflare → Turnstile → add the site → site key into Vercel as `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, redeploy, check the widget shows; then Supabase → Authentication → Attack Protection → CAPTCHA → Turnstile → paste the secret key. Only after step 1: once it's on, the e2e login needs the dev project (Cloudflare's test secret there)
+- [x] 3. Limits per teacher (`0010_beta_limits.sql`, `lib/limits.ts`): storage 50 MB (was 200), 20 lesson-hours a month, 3 hours per lesson (LiveKit webhook → `lesson_sessions`; the token route refuses past the limits; the teacher's room warns at 2 h 50 and ends the call at 3 h). SQL checked on a local Postgres (PGlite) with Supabase stand-ins: month total, open-session cap, 31st classroom refused
+  - [ ] **User:** run `0010_beta_limits.sql`; LiveKit → Settings → Webhooks → add `https://<site>/api/livekit-webhook`. Until then time isn't counted
 - [ ] 4. Email: own domain (about $10–15 a year) and Resend (free up to 3,000 emails a month) as Supabase's SMTP instead of the teacher's Gmail (Gmail: about 500 a day, spam folder, account risk). Update the Site URL, redirect URLs and email templates
-- [ ] 5. Seeing how people react: a "Send feedback" button (dashboard and room, stored in Supabase), Vercel Analytics (free), proper error pages and an error alert (Sentry free plan or a Vercel log drain)
-- [ ] 6. Privacy policy and terms pages (emails, names, boards, files, video through LiveKit). Drafted by the agent; the user has them checked
+- [x] 5. Seeing how people react: "Feedback" in the dashboard header (`feedback` table), Vercel Analytics, error pages that report to `error_reports`, a 404 page
+  - [ ] **User:** Vercel → project → Analytics → Enable. Read feedback and errors in Supabase's table editor
+  - [ ] Later: an alert for errors (Sentry free plan) instead of looking at the table
+- [x] 6. `/privacy` and `/terms` drafted from what the code does (no recording, students not stored, processors, limits); linked from sign-up
+  - [ ] **User:** fill in name, country and contact email in `lib/legal.ts` (or tell the agent); have a person check the texts
 - [ ] 7. The user's real phone test on the live site (list in the chat of 11 Nov), then invite friends
 - [ ] 8. Friends test: collect feedback here. When strangers are invited: LiveKit Ship for a month (free plan: 5,000 participant minutes = about 40 lesson-hours a month for everyone, then lessons stop until the 1st)
 

@@ -1,6 +1,7 @@
 import { AccessToken, RoomConfiguration, TrackSource } from "livekit-server-sdk";
 import { after } from "next/server";
-import { roomName } from "@/lib/livekit";
+import { MAX_LESSON_HOURS, MONTHLY_LESSON_HOURS } from "@/lib/limits";
+import { closeRoom, roomName } from "@/lib/livekit";
 import { clientIp, LIMITS, overMemoryLimit, sharedLimit, tooMany } from "@/lib/rateLimit";
 import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
   let role: Role;
   let name: string;
   let identity: string;
+  let teacherId: string;
 
   if (typeof body.lessonId === "string") {
     const supabase = await createClient();
@@ -62,6 +64,7 @@ export async function POST(request: Request) {
     });
     name = user.user_metadata.display_name || "Teacher";
     identity = `teacher-${user.id}`;
+    teacherId = user.id;
   } else if (typeof body.slug === "string") {
     name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "";
     if (!name) {
@@ -69,7 +72,7 @@ export async function POST(request: Request) {
     }
     const { data: lesson } = await createAdminClient()
       .from("lessons")
-      .select("id, kind, created_at")
+      .select("id, kind, created_at, teacher_id")
       .eq("invite_slug", body.slug)
       .maybeSingle();
     // A quick call's link stops working after 12 hours, even before the dashboard removes it.
@@ -84,11 +87,37 @@ export async function POST(request: Request) {
     // LiveKit Cloud doesn't enforce the room's maxParticipants (tested), so this is the limit.
     // Prefixed, so a student can never take over the teacher's identity.
     identity = `student-${lesson.id}`;
+    teacherId = lesson.teacher_id;
   } else {
     return Response.json({ error: "Bad request" }, { status: 400 });
   }
 
   if (!(await withinShared)) return tooMany();
+
+  const time = await lessonTime(teacherId, lessonId);
+  if (time && time.month_seconds >= MONTHLY_LESSON_HOURS * 3600) {
+    return Response.json(
+      {
+        error:
+          role === "teacher"
+            ? `You've used this month's ${MONTHLY_LESSON_HOURS} hours of lessons (TeachingTime is free while it's new). They come back on the 1st.`
+            : "Your teacher's lesson time for this month is used up. Please ask them.",
+        code: "month_limit",
+      },
+      { status: 403 },
+    );
+  }
+  if (time && time.open_seconds >= MAX_LESSON_HOURS * 3600) {
+    // A lesson that kept going past 3 hours (e.g. the teacher's tab was closed): end it.
+    await closeRoom(lessonId);
+    return Response.json(
+      {
+        error: `This lesson ran for ${MAX_LESSON_HOURS} hours, the most for one lesson, so it ended. Start it again to continue.`,
+        code: "lesson_limit",
+      },
+      { status: 403 },
+    );
+  }
 
   const token = new AccessToken(apiKey, apiSecret, {
     identity,
@@ -113,4 +142,13 @@ export async function POST(request: Request) {
   token.roomConfig = new RoomConfiguration({ maxParticipants: 2, emptyTimeout: 5 * 60 });
 
   return Response.json({ token: await token.toJwt() });
+}
+
+// This month's lesson time for the teacher and how long this lesson's room has been open
+// (supabase/migrations/0010_beta_limits.sql). null if it can't be asked (e.g. the migration
+// hasn't been run): then nobody is refused for time.
+async function lessonTime(teacherId: string, lessonId: string) {
+  const { data, error } = await createAdminClient().rpc("lesson_time", { p_teacher: teacherId, p_lesson: lessonId });
+  if (error || !data) return null;
+  return data as { month_seconds: number; open_seconds: number };
 }

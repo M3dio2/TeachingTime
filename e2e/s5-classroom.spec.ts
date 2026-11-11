@@ -12,7 +12,7 @@ test("S5 classroom: link, storage, filters, drop to upload", async ({ page }) =>
 
   await expect(page.getByRole("heading", { name: TEST_CLASSROOM, level: 1 })).toBeVisible();
   await expect(page.getByRole("textbox", { name: `${TEST_CLASSROOM}'s link` })).toHaveValue(/\/join\/[a-z0-9]+$/);
-  await expect(page.getByText(/^\d+ MB of 200 MB$/)).toBeVisible();
+  await expect(page.getByText(/^\d+ MB of 50 MB$/)).toBeVisible();
   await expect(page.getByRole("button", { name: "Remove this classroom" })).toBeVisible();
 
   await uploadToClassroom(page, "e2e-filter.pdf", "application/pdf", testPdf(1));

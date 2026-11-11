@@ -13,7 +13,7 @@ function pdf(bytes: number) {
 }
 
 async function usedMB(page: Page) {
-  const line = page.getByText(/^\d+ MB of 200 MB$/);
+  const line = page.getByText(/^\d+ MB of 50 MB$/);
   const text = (await line.textContent()) ?? "";
   return Number(text.match(/^(\d+) MB/)?.[1]);
 }

@@ -3,6 +3,7 @@
 import { Mail } from "lucide-react";
 import { useState } from "react";
 import AuthCard, { FormError, submitClass } from "@/components/auth/AuthCard";
+import { CAPTCHA_WAIT, CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
 import { BackToLogin } from "@/components/auth/SignupForm";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
@@ -17,6 +18,7 @@ export default function ForgotPasswordForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const captcha = useCaptcha();
 
   async function sendLink(e: React.FormEvent) {
     e.preventDefault();
@@ -24,7 +26,9 @@ export default function ForgotPasswordForm() {
     setError(null);
     const { error } = await createClient().auth.resetPasswordForEmail(email, {
       redirectTo: window.location.origin,
+      captchaToken: captcha.token ?? undefined,
     });
+    captcha.reset();
     setLoading(false);
     if (error) {
       setError(authErrorMessage(error));
@@ -68,9 +72,10 @@ export default function ForgotPasswordForm() {
           autoComplete="email"
           required
         />
+        <CaptchaBox {...captcha.box} />
         {error && <FormError>{error}</FormError>}
-        <Button disabled={loading} className={submitClass}>
-          {loading ? "Sending…" : "Send link"}
+        <Button disabled={loading || captcha.token === null} className={submitClass}>
+          {loading ? "Sending…" : captcha.token === null ? CAPTCHA_WAIT : "Send link"}
         </Button>
       </form>
       <BackToLogin />

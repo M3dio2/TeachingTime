@@ -5,7 +5,7 @@ export type ResourceKind = "image" | "pdf" | "audio";
 // Same limits and types as the "resources" bucket (supabase/migrations/0004–0006).
 export const MB = 1024 * 1024;
 export const MAX_BYTES = 10 * MB; // per file
-export const TEACHER_BYTES = 200 * MB; // per teacher, all classrooms together
+export const TEACHER_BYTES = 50 * MB; // per teacher, all classrooms together (G1: free plan)
 export const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 export function kindOf(type: string): ResourceKind {

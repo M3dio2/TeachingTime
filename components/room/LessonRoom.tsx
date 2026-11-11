@@ -37,6 +37,7 @@ import type { PreJoinTracks } from "./CameraCheck";
 import DesktopRoom from "./DesktopRoom";
 import type { RoomFile } from "./FilesPanel";
 import JoinToast from "./JoinToast";
+import LessonTimer from "./LessonTimer";
 import LoadingScreen from "./LoadingScreen";
 import PhoneLayout from "./PhoneLayout";
 import RoomControls from "./RoomControls";
@@ -110,6 +111,7 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
       <ConnectingScreen />
       <RoomAudioRenderer />
       {tracks && <PublishTracks tracks={tracks} />}
+      {role === "teacher" && lesson && <LessonTimer lessonId={lesson.id} onProblem={setProblem} />}
     </LiveKitRoom>
   );
 }

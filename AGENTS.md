@@ -26,7 +26,7 @@ S1–S3, P1, C1, C1b, L1, L2a, L2b, A1, D5d and the S5 page redesign done (all s
 ## Stack
 - Next.js 16 App Router, React 19, TypeScript, Tailwind v4; Vercel Hobby, deploys from `main`.
 - LiveKit Cloud (`livekit-client`, `@livekit/components-react`): audio, video, screen share, and all live sync over its data channel (Yjs, whiteboard, teacher messages).
-- Supabase: teacher auth (`@supabase/ssr`, sign-up with an invite code, mail via the teacher's Gmail SMTP), `lessons` (with snapshots), `resources` + private Storage bucket. Not for live sync.
+- Supabase: teacher auth (`@supabase/ssr`, open sign-up with Turnstile, mail via the teacher's Gmail SMTP), `lessons` (with snapshots), `resources` + private Storage bucket. Not for live sync.
 - Text pad Tiptap + Yjs; whiteboard Excalidraw via `dynamic(..., { ssr: false })`.
 - Supabase and Vercel functions both in US East (`iad1`, `vercel.json`): keep them together. Testers in South America, later global.
 
