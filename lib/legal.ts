@@ -1,6 +1,6 @@
 // Who runs TeachingTime, for the privacy policy and terms (app/privacy, app/terms).
-// FILL IN before inviting people outside friends (docs/ROADMAP.md, G1 step 6).
-export const OPERATOR = "[Your full name]";
-export const OPERATOR_COUNTRY = "[Country]";
-export const CONTACT_EMAIL = "[contact email]";
+export const OPERATOR = "Melvin Eberle";
+export const OPERATOR_ADDRESS = ["Rosenstrasse 2", "9032 Engelburg", "Switzerland"];
+export const OPERATOR_COUNTRY = "Switzerland";
+export const CONTACT_EMAIL = "melvineberle@gmail.com";
 export const LEGAL_UPDATED = "11 November 2026";

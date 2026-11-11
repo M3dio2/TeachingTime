@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import LegalPage, { H2, List } from "@/components/legal/LegalPage";
-import { CONTACT_EMAIL, OPERATOR } from "@/lib/legal";
+import { CONTACT_EMAIL, OPERATOR, OPERATOR_ADDRESS } from "@/lib/legal";
 import { MAX_CLASSROOMS, MAX_LESSON_HOURS, MONTHLY_LESSON_HOURS } from "@/lib/limits";
 import { MB, TEACHER_BYTES } from "@/lib/files/uploadResource";
 
@@ -51,8 +51,21 @@ export default function Terms() {
       </List>
       <p>We may close accounts that do this.</p>
 
+      <H2>Law</H2>
+      <p>Swiss law applies, as far as the law of your country allows.</p>
+
       <H2>Contact</H2>
-      <p>{CONTACT_EMAIL}</p>
+      <address className="not-italic">
+        {OPERATOR}
+        {OPERATOR_ADDRESS.map((line) => (
+          <span key={line} className="block">
+            {line}
+          </span>
+        ))}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-2">
+          {CONTACT_EMAIL}
+        </a>
+      </address>
     </LegalPage>
   );
 }

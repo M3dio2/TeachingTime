@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import LegalPage, { H2, List } from "@/components/legal/LegalPage";
-import { CONTACT_EMAIL, OPERATOR, OPERATOR_COUNTRY } from "@/lib/legal";
+import { CONTACT_EMAIL, OPERATOR, OPERATOR_ADDRESS } from "@/lib/legal";
 
 export const metadata: Metadata = { title: "Privacy policy · TeachingTime" };
 
@@ -9,8 +9,22 @@ export default function Privacy() {
   return (
     <LegalPage title="Privacy policy">
       <p>
-        TeachingTime is a tool for one-to-one online lessons. It is run by {OPERATOR} ({OPERATOR_COUNTRY}), who is
-        responsible for your data. Questions or requests: {CONTACT_EMAIL}.
+        TeachingTime is a tool for one-to-one online lessons. It is run by {OPERATOR}, who is responsible for your
+        data:
+      </p>
+      <address className="not-italic">
+        {OPERATOR}
+        {OPERATOR_ADDRESS.map((line) => (
+          <span key={line} className="block">
+            {line}
+          </span>
+        ))}
+        <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-2">
+          {CONTACT_EMAIL}
+        </a>
+      </address>
+      <p>
+        This policy follows the Swiss Federal Act on Data Protection (FADP) and, for people in the EU, the GDPR.
       </p>
 
       <H2>What we store</H2>
@@ -51,7 +65,8 @@ export default function Privacy() {
         <li>Cloudflare Turnstile (checks that sign-ups and logins aren&apos;t bots)</li>
         <li>An email provider, to send sign-up and password emails</li>
       </List>
-      <p>They process data only to provide their service to us. Some of them are outside your country.</p>
+      <p>They process data only to provide their service to us. Some of them are outside Switzerland and the EU (mainly
+        in the USA); we rely on their standard contractual clauses or data privacy frameworks for this.</p>
 
       <H2>Cookies</H2>
       <p>
@@ -67,8 +82,8 @@ export default function Privacy() {
 
       <H2>Your rights</H2>
       <p>
-        You can ask to see, correct, export or delete your data, and you can complain to your data protection
-        authority. Write to {CONTACT_EMAIL}.
+        You can ask to see, correct, export or delete your data, and you can complain to a data protection
+        authority (in Switzerland the FDPIC, in the EU the one where you live). Write to {CONTACT_EMAIL}.
       </p>
 
       <H2>Students under 16</H2>
