@@ -230,6 +230,27 @@ Order:
   - Good: a LiveKit agent with a speech-to-text service joins the room and transcribes both people (all browsers, punctuation, could also translate). Costs per lesson minute (speech-to-text plus agent minutes; estimate below 1 USD per lesson-hour, to check), a paid LiveKit plan in practice, and a privacy policy update. About 1 week
   - Decide after the friends test whether students want it
 
+## G3: SEO and promotion (user's to-do, added 12 Nov 2026)
+Done in code (branch `seo-landing`): start page at `/` (features, steps, FAQ, structured data), login at `/login`, titles and descriptions per page, canonical links, `robots.txt`, `sitemap.xml`, manifest, home-screen icon, share image, join-link preview. Lighthouse: SEO 100, accessibility 100, best practices 96, speed 89.
+
+SEO (user):
+- [ ] Google Search Console: Add property → Domain → `teachingtime.app` (Cloudflare verifies it), then Sitemaps → `sitemap.xml`
+- [ ] Bing Webmaster Tools: "Import from Google Search Console" (also covers DuckDuckGo and Yahoo)
+- [ ] Check the preview with `teachingtime.app/?v=2` in WhatsApp (old chats keep the cached one)
+
+SEO (agent, later):
+- [ ] A real screenshot or 30–60 s video of a lesson on the start page (instead of the drawing)
+- [ ] A demo room anyone can try without signing up (Show HN expects it; helps everywhere)
+- [ ] A few helpful articles that match searches, e.g. "Zoom alternative for tutors", "how to teach one-to-one online", "online whiteboard for language lessons"
+- [ ] German start page (`/de`) once German-speaking teachers are a target
+
+Promotion (user; details, rules and links in `docs/PROMOTION.md`):
+- [ ] Today: create a Product Hunt account (new accounts wait a week); list on AlternativeTo (alternative to Zoom, Google Meet, Lessonspace, Pencil Spaces) and SaaSHub
+- [ ] Week 1: "I built this, feedback welcome" on r/ESL_Teachers; monthly promo threads on r/edtech and r/Tutoring; modmail r/OnlineESLTeaching first; Facebook tutor groups after asking the admin; r/SideProject + LinkedIn with a short video
+- [ ] Week 2: Product Hunt launch (Tue–Thu, not Thanksgiving week); Indie Hackers story; free directories (Uneed, Peerlist, Microlaunch, TinyLaunch, Launching Next, Fazier); Show HN once the demo room exists
+- [ ] Then: German-speaking groups and Swiss startup directories; pitch newsletters (Nik Peachey, Larry Ferlazzo, Free Technology for Teachers, Russell Stannard) and tutor podcasts
+- Avoid: r/TEFL, r/Teachers, r/teaching, r/languagelearning, r/PreplyTutors (promotion banned)
+
 # Open design work
 
 ## Redesign (Nov 2026)
