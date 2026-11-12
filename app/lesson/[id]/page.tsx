@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isWithin } from "@/lib/time";
 
 // Private: never listed by search engines.
-export const metadata: Metadata = { robots: { index: false, follow: false } };
+export const metadata: Metadata = { title: "Lesson", robots: { index: false, follow: false } };
 
 // After this long without activity, the next start is a new lesson with a clean board.
 const NEW_LESSON_AFTER_MS = 3 * 60 * 60 * 1000;

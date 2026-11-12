@@ -1,8 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Pages only for logged-out visitors: login, sign-up, forgot password.
-const loggedOutPages = ["/", "/signup", "/forgot-password"];
+// Pages only for logged-out visitors: the start page, login, sign-up, forgot password.
+// (A logged-in teacher who opens teachingtime.app goes straight to her classrooms.)
+const loggedOutPages = ["/", "/login", "/signup", "/forgot-password"];
 
 // Refreshes the Supabase session cookie, sends logged-out visitors from teacher
 // pages to the login page, and logged-in teachers from the login pages to the dashboard.
@@ -38,12 +39,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
   if (!loggedIn && !onLoggedOutPage) {
-    return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return response;
 }
 
 export const config = {
-  matcher: ["/", "/signup", "/forgot-password", "/reset-password", "/dashboard/:path*", "/lesson/:path*"],
+  matcher: ["/", "/login", "/signup", "/forgot-password", "/reset-password", "/dashboard/:path*", "/lesson/:path*"],
 };

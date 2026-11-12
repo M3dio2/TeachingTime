@@ -4,7 +4,7 @@ import { expect, test } from "@playwright/test";
 
 test("S5 sign-in: two columns on desktop, form only on phones", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
-  await page.goto("/");
+  await page.goto("/login");
   await expect(page.getByRole("heading", { name: "Teacher login" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Every lesson in one calm room." })).toBeVisible();
   await expect(page.getByText("Are you a student?")).toBeVisible();
@@ -15,7 +15,7 @@ test("S5 sign-in: two columns on desktop, form only on phones", async ({ page })
 });
 
 test("S5 sign-in: show/hide password, error banner, links", async ({ page }) => {
-  await page.goto("/");
+  await page.goto("/login");
   const password = page.getByLabel("Password", { exact: true });
   await password.fill("not-the-password-1");
   await expect(password).toHaveAttribute("type", "password");

@@ -2,7 +2,7 @@ import Link from "next/link";
 import RoomMessage from "@/components/room/RoomMessage";
 import { buttonClass } from "@/components/ui/Button";
 
-export const metadata = { title: "Page not found · TeachingTime" };
+export const metadata = { title: "Page not found", robots: { index: false } };
 
 // A link that leads nowhere (G1).
 export default function NotFound() {

@@ -108,7 +108,7 @@ export async function setTeacherName(formData: FormData) {
 export async function signOut() {
   const supabase = await createClient();
   await supabase.auth.signOut();
-  redirect("/");
+  redirect("/login");
 }
 
 // "Send feedback" in the dashboard header (G1). Stored in Supabase (`feedback`, migration
