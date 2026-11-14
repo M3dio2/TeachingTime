@@ -1,10 +1,13 @@
 "use client";
 
-import { FileText, FileType2, ImageIcon, Info, Music, Pause, Play, Trash2, type LucideIcon } from "lucide-react";
+import { FileText, FileType2, ImageIcon, Info, Link2, Music, Pause, Play, SquarePlay, Trash2, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { removeResource } from "@/app/dashboard/actions";
+import { addLink, removeResource } from "@/app/dashboard/actions";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
+import Button from "@/components/ui/Button";
+import { inputClass } from "@/components/ui/Field";
 import { useFormPending } from "@/components/ui/SubmitButton";
+import { linkLabel, youtubeId } from "@/lib/room/links";
 import { type ResourceKind, useFileUpload } from "./FileUpload";
 
 export type Resource = {
@@ -21,6 +24,7 @@ const SECTIONS: { kind: ResourceKind; title: string; filter: string; Icon: Lucid
   { kind: "pdf", title: "PDFs", filter: "PDFs", Icon: FileText },
   { kind: "doc", title: "Word files", filter: "Word", Icon: FileType2 },
   { kind: "audio", title: "Audio", filter: "Audio", Icon: Music },
+  { kind: "link", title: "Links", filter: "Links", Icon: Link2 },
 ];
 
 export function formatSize(bytes: number) {
@@ -89,6 +93,7 @@ export default function ClassroomFiles({
         return (
           <div key={kind} className="flex flex-col gap-2.5">
             <h3 className="text-[15px] font-semibold">{title}</h3>
+            {kind === "link" && <AddLink lessonId={lessonId} />}
             {list.length === 0 ? (
               <p className="text-sm text-ink-muted">No {title.toLowerCase()} yet.</p>
             ) : kind === "image" ? (
@@ -128,11 +133,15 @@ export default function ClassroomFiles({
                       <Listen file={f} />
                     ) : (
                       <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2 text-accent">
-                        <Icon size={16} aria-hidden />
+                        {kind === "link" && f.url && youtubeId(f.url) ? (
+                          <SquarePlay size={16} aria-hidden />
+                        ) : (
+                          <Icon size={16} aria-hidden />
+                        )}
                       </span>
                     )}
                     <div className="flex min-w-0 flex-1 flex-col">
-                      {f.url && (kind === "pdf" || kind === "doc") ? (
+                      {f.url && (kind === "pdf" || kind === "doc" || kind === "link") ? (
                         <a
                           href={f.url}
                           target="_blank"
@@ -157,18 +166,60 @@ export default function ClassroomFiles({
 
       <p className="flex items-start gap-2.5 rounded-md bg-surface-2 px-3.5 py-3 text-sm leading-snug text-ink-muted">
         <Info size={16} aria-hidden className="mt-0.5 shrink-0" />
-        In a lesson, these files sit in the side panel. Click a PDF, Word file or picture to show it, press play for audio, or drag any file onto the
-        stage.
+        In a lesson, these files sit in the side panel. Click a PDF, Word file, picture or link to show it (YouTube
+        videos play for both of you), press play for audio, or drag any file onto the stage.
       </p>
     </section>
   );
 }
 
 function Meta({ file }: { file: Resource }) {
+  const what =
+    file.kind === "link" ? (file.url && youtubeId(file.url) ? "YouTube video" : linkLabel(file.url ?? "").split("/")[0]) : formatSize(file.size);
   return (
-    <span className="text-[13px] text-ink-muted">
-      {formatSize(file.size)} · <LocalDate iso={file.created_at} />
+    <span className="truncate text-[13px] text-ink-muted">
+      {what} · <LocalDate iso={file.created_at} />
     </span>
+  );
+}
+
+// "Add a link": paste a YouTube video or any web page. YouTube links are named after the video.
+function AddLink({ lessonId }: { lessonId: string }) {
+  const [url, setUrl] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  return (
+    <form
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setSaving(true);
+        setError(null);
+        const problem = await addLink(lessonId, url, "");
+        setSaving(false);
+        if (problem) setError(problem);
+        else setUrl("");
+      }}
+      className="flex flex-col gap-1.5"
+    >
+      <div className="flex gap-2">
+        <input
+          type="text"
+          inputMode="url"
+          aria-label="Link to add"
+          placeholder="Paste a YouTube video or any link"
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          maxLength={2000}
+          required
+          aria-invalid={Boolean(error) || undefined}
+          className={`${inputClass(Boolean(error))} min-w-0 flex-1`}
+        />
+        <Button variant="secondary" disabled={saving || !url.trim()} className="h-11 shrink-0 px-4">
+          {saving ? "Adding…" : "Add link"}
+        </Button>
+      </div>
+      {error && <p className="text-sm text-danger">{error}</p>}
+    </form>
   );
 }
 

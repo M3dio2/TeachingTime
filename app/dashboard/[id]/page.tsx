@@ -51,23 +51,25 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
       .maybeSingle(),
     supabase
       .from("resources")
-      .select("id, kind, name, path, size, created_at")
+      .select("id, kind, name, path, url, size, created_at")
       .eq("lesson_id", id)
       .order("created_at", { ascending: false }),
     supabase.rpc("resources_used_bytes"),
   ]);
   if (!student || !auth.user) notFound();
 
-  const resources = (files ?? []) as (Resource & { path: string })[];
-  // "Open" links and picture previews for the teacher, valid for an hour.
-  const { data: signed } = resources.length
+  const resources = (files ?? []) as (Omit<Resource, "url"> & { path: string | null; url: string | null })[];
+  // "Open" links and picture previews for the teacher, valid for an hour. Links have no file:
+  // their url is the link itself.
+  const stored = resources.filter((r) => r.path);
+  const { data: signed } = stored.length
     ? await supabase.storage.from("resources").createSignedUrls(
-        resources.map((r) => r.path),
+        stored.map((r) => r.path!),
         60 * 60,
       )
     : { data: [] };
   const urls = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
-  for (const r of resources) r.url = urls.get(r.path) ?? undefined;
+  for (const r of resources) r.url = r.path ? (urls.get(r.path) ?? null) : r.url;
 
   return (
     <>
@@ -100,7 +102,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
         <RemoveClassroom id={student.id} name={student.title} className="hidden md:flex" />
       </aside>
       <ClassroomFiles
-        files={resources.map((r) => ({ id: r.id, kind: r.kind, name: r.name, size: r.size, created_at: r.created_at, url: r.url }))}
+        files={resources.map((r) => ({ id: r.id, kind: r.kind, name: r.name, size: r.size, created_at: r.created_at, url: r.url ?? undefined }))}
         teacherId={auth.user.id}
         lessonId={student.id}
         usedBytes={Number(usedBytes ?? 0)}

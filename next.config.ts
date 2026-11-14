@@ -26,7 +26,7 @@ const supabaseWss = supabase ? `wss://${supabase}` : "";
 // 'unsafe-eval' (React's dev tools) and the hot-reload socket.
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com${isDev ? " 'unsafe-eval'" : ""}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com https://www.youtube.com${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' blob: data: ${supabaseHttps}`,
   "font-src 'self' data: blob: https://esm.sh", // blob: fonts embedded in Word files
@@ -35,7 +35,8 @@ const csp = [
     isDev ? " ws: http://localhost:*" : ""
   }`,
   "worker-src 'self' blob:",
-  "frame-src https://challenges.cloudflare.com", // Turnstile, the sign-up check (G1)
+  // Turnstile (the sign-up check) and YouTube videos in the call (G2, privacy-enhanced mode).
+  "frame-src https://challenges.cloudflare.com https://www.youtube-nocookie.com https://www.youtube.com",
   "manifest-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",

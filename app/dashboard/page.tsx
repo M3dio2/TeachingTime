@@ -196,10 +196,10 @@ async function Dashboard() {
 
 // "3 pictures · 2 PDFs · 2 audio" per classroom.
 function countFiles(rows: { lesson_id: string; kind: string }[]) {
-  const byLesson = new Map<string, { image: number; pdf: number; doc: number; audio: number }>();
+  const byLesson = new Map<string, { image: number; pdf: number; doc: number; audio: number; link: number }>();
   for (const r of rows) {
-    const c = byLesson.get(r.lesson_id) ?? { image: 0, pdf: 0, doc: 0, audio: 0 };
-    if (r.kind === "image" || r.kind === "pdf" || r.kind === "doc" || r.kind === "audio") c[r.kind]++;
+    const c = byLesson.get(r.lesson_id) ?? { image: 0, pdf: 0, doc: 0, audio: 0, link: 0 };
+    if (r.kind === "image" || r.kind === "pdf" || r.kind === "doc" || r.kind === "audio" || r.kind === "link") c[r.kind]++;
     byLesson.set(r.lesson_id, c);
   }
   const text = new Map<string, string>();
@@ -209,6 +209,7 @@ function countFiles(rows: { lesson_id: string; kind: string }[]) {
       c.pdf && `${c.pdf} ${c.pdf === 1 ? "PDF" : "PDFs"}`,
       c.doc && `${c.doc} Word ${c.doc === 1 ? "file" : "files"}`,
       c.audio && `${c.audio} audio`,
+      c.link && `${c.link} ${c.link === 1 ? "link" : "links"}`,
     ].filter(Boolean);
     if (parts.length) text.set(id, parts.join(" · "));
   }

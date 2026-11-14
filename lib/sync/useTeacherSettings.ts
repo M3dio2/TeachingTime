@@ -4,6 +4,7 @@ import { useRoomContext } from "@livekit/components-react";
 import { type Participant, RoomEvent } from "livekit-client";
 import { useEffect, useState } from "react";
 import { type AudioState, cleanAudio } from "@/lib/room/audio";
+import { cleanVideo, type VideoState } from "@/lib/room/links";
 import { cleanActive, cleanLayout, cleanTabs, INITIAL_TABS, type Layout, type TabId } from "@/lib/room/tabs";
 
 // The role comes from the token metadata, which only the token route sets.
@@ -23,6 +24,7 @@ export type TeacherSettings = {
   layout: Layout;
   justTalk: boolean;
   audio: AudioState | null; // A1: what the teacher plays, if anything
+  video: VideoState | null; // G2: the teacher's YouTube player, if a video tab is open
 };
 
 export const INITIAL_SETTINGS: TeacherSettings = {
@@ -32,6 +34,7 @@ export const INITIAL_SETTINGS: TeacherSettings = {
   layout: INITIAL_TABS.layout,
   justTalk: INITIAL_TABS.justTalk,
   audio: null,
+  video: null,
 };
 
 // LiveKit attributes are strings.
@@ -43,6 +46,7 @@ function encode(s: TeacherSettings): Record<string, string> {
     layout: s.layout,
     justTalk: String(s.justTalk),
     audio: s.audio ? JSON.stringify(s.audio) : "",
+    video: s.video ? JSON.stringify(s.video) : "",
   };
 }
 
@@ -55,6 +59,7 @@ function decode(attributes: Record<string, string>): TeacherSettings {
     layout: cleanLayout(attributes.layout),
     justTalk: attributes.justTalk === "true",
     audio: cleanAudio(attributes.audio),
+    video: cleanVideo(attributes.video),
   };
 }
 

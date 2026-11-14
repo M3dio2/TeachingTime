@@ -23,8 +23,10 @@ import {
   screenStopped,
   setJustTalk,
   setLayout,
+  type TabId,
   type TabState,
 } from "@/lib/room/tabs";
+import type { VideoState } from "@/lib/room/links";
 import { fromBase64 } from "@/lib/sync/base64";
 import { useLessonPersistence } from "@/lib/sync/useLessonPersistence";
 import { isTeacher, type TeacherSettings, useTeacherSettings } from "@/lib/sync/useTeacherSettings";
@@ -144,6 +146,8 @@ function LessonContent({
   // Teacher only: her tabs and "student can edit". Every join starts from the defaults.
   const [tabs, setTabs] = useState<TabState>(INITIAL_TABS);
   const [studentCanEdit, setStudentCanEdit] = useState(false);
+  // G2: the teacher's YouTube player (play, pause, position), followed by the student.
+  const [video, setVideo] = useState<VideoState | null>(null);
 
   // A screen share opens the Screen tab and closing it gives the replaced tab back
   // (lib/room/tabs.ts). Adjusted while rendering, React's way to follow a changing value.
@@ -170,6 +174,8 @@ function LessonContent({
         layout: isPhone ? "single" : tabs.layout,
         justTalk: tabs.justTalk,
         audio: lessonAudio.state,
+        // Only while that video's tab is open.
+        video: video && tabs.tabs.includes(video.tab as TabId) ? video : null,
       }
     : null;
   const followed = useTeacherSettings(own);
@@ -209,6 +215,7 @@ function LessonContent({
     names,
     sync,
     audio: teacher ? lessonAudio : undefined,
+    setVideo: teacher ? setVideo : undefined,
     actions: teacher
       ? {
           open: (id) => setTabs((t) => openTab(t, id)),

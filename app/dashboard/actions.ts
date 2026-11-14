@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { MAX_CLASSROOMS } from "@/lib/limits";
+import { linkLabel, normalizeUrl, youtubeId } from "@/lib/room/links";
 import { closeRoom } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
 
@@ -82,8 +83,10 @@ export async function removeResource(formData: FormData) {
     .maybeSingle();
   if (!file) return;
 
-  const { error } = await supabase.storage.from("resources").remove([file.path]);
-  if (error) throw new Error(error.message);
+  if (file.path) {
+    const { error } = await supabase.storage.from("resources").remove([file.path]);
+    if (error) throw new Error(error.message);
+  }
   await supabase.from("resources").delete().eq("id", file.id);
   revalidatePath(`/dashboard/${file.lesson_id}`);
 }
@@ -125,4 +128,39 @@ export async function sendFeedback(message: string, page: string) {
     .insert({ teacher_id: teacherId, message: text, page: page.slice(0, 200) });
   if (error) console.error("feedback:", error.message);
   return !error;
+}
+
+// G2: a link in the classroom (a YouTube video or any web page). A YouTube link gets the
+// video's title from YouTube; anything else is named after the site unless a name is given.
+// Returns a message for the teacher when it can't be added.
+export async function addLink(lessonId: string, rawUrl: string, rawName: string): Promise<string | null> {
+  const url = normalizeUrl(rawUrl);
+  if (!url) return "That doesn't look like a web address. Paste a link starting with https://";
+  let name = rawName.trim().slice(0, 200);
+  if (!name && youtubeId(url)) name = (await youtubeTitle(url)) ?? "";
+  if (!name) name = linkLabel(url);
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("resources")
+    .insert({ lesson_id: lessonId, kind: "link", name, url, size: 0 });
+  if (error) {
+    console.error("addLink:", error.message);
+    return "The link could not be saved. Please try again.";
+  }
+  revalidatePath(`/dashboard/${lessonId}`);
+  return null;
+}
+
+async function youtubeTitle(url: string) {
+  try {
+    const res = await fetch(`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url)}`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!res.ok) return null;
+    const { title } = (await res.json()) as { title?: unknown };
+    return typeof title === "string" ? title.slice(0, 200) : null;
+  } catch {
+    return null;
+  }
 }

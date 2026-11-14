@@ -55,19 +55,25 @@ async function Lesson({ params }: Pick<PageProps<"/lesson/[id]">, "params">) {
 async function loadFiles(supabase: Awaited<ReturnType<typeof createClient>>, lessonId: string) {
   const { data } = await supabase
     .from("resources")
-    .select("id, kind, name, path")
+    .select("id, kind, name, path, url")
     .eq("lesson_id", lessonId)
     .order("created_at", { ascending: false });
-  const rows = (data ?? []) as { id: string; kind: RoomFile["kind"]; name: string; path: string }[];
-  const pictures = rows.filter((r) => r.kind === "image");
+  const rows = (data ?? []) as { id: string; kind: RoomFile["kind"]; name: string; path: string | null; url: string | null }[];
+  const pictures = rows.filter((r) => r.kind === "image" && r.path);
   const { data: signed } = pictures.length
     ? await supabase.storage.from("resources").createSignedUrls(
-        pictures.map((r) => r.path),
+        pictures.map((r) => r.path!),
         4 * 60 * 60,
       )
     : { data: [] };
   const urls = new Map((signed ?? []).map((s) => [s.path, s.signedUrl]));
   return rows.map(
-    (r): RoomFile => ({ id: r.id, kind: r.kind, name: r.name, previewUrl: urls.get(r.path) ?? undefined }),
+    (r): RoomFile => ({
+      id: r.id,
+      kind: r.kind,
+      name: r.name,
+      previewUrl: r.path ? (urls.get(r.path) ?? undefined) : undefined,
+      url: r.kind === "link" ? (r.url ?? undefined) : undefined,
+    }),
   );
 }

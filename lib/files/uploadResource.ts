@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 
-export type ResourceKind = "image" | "pdf" | "audio" | "doc";
+export type ResourceKind = "image" | "pdf" | "audio" | "doc" | "link";
 
 // Same limits and types as the "resources" bucket (supabase/migrations/0004–0006, 0010, 0012).
 export const MB = 1024 * 1024;

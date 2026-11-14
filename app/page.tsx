@@ -84,7 +84,7 @@ const FAQ = [
   },
   {
     q: "Which files can I use?",
-    a: "PDFs, Word files (.docx), pictures (JPG, PNG, WebP, GIF) and audio (MP3, M4A, WAV and more), up to 10 MB each.",
+    a: "PDFs, Word files (.docx), pictures (JPG, PNG, WebP, GIF) and audio (MP3, M4A, WAV and more), up to 10 MB each. Plus links: YouTube videos play for both of you, in sync.",
   },
   {
     q: "Are lessons recorded?",
