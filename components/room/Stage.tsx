@@ -78,6 +78,22 @@ export default function Stage({
   const canSplit = width === 0 || width >= SPLIT_MIN_PX;
   const isSplit = tabs.length === 2 && layout === "split" && canSplit;
 
+  // Teacher: tell the room whether two tabs fit here, so a narrow window publishes "one at a
+  // time" and the student sees the same single tab instead of both.
+  const reportFits = model.reportStageFits;
+  useEffect(() => {
+    reportFits?.(canSplit);
+  }, [reportFits, canSplit]);
+
+  // Student whose window is too narrow for the teacher's two tabs: she sees the teacher's
+  // active tab and may click the other one; her choice lasts until the teacher switches tabs,
+  // opens or closes one (as on phones).
+  const followKey = `${tabs.join(",")}|${active}`;
+  const [peek, setPeek] = useState({ key: followKey, index: active });
+  if (peek.key !== followKey) setPeek({ key: followKey, index: active });
+  const studentPicks = !model.actions && tabs.length === 2 && !isSplit;
+  const shown = studentPicks && peek.key === followKey ? peek.index : active;
+
   const dragSplit = (x: number) => {
     const r = area.current?.getBoundingClientRect();
     if (!r) return;
@@ -91,7 +107,13 @@ export default function Stage({
       className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-panel border border-line bg-surface"
     >
       <AudioBar model={model} />
-      <TabStrip model={model} isSplit={isSplit} canSplit={canSplit} />
+      <TabStrip
+        model={model}
+        isSplit={isSplit}
+        canSplit={canSplit}
+        shown={shown}
+        onStudentPick={studentPicks ? (i) => setPeek({ key: followKey, index: i }) : undefined}
+      />
       <div
         ref={area}
         data-testid="stage"
@@ -102,7 +124,7 @@ export default function Stage({
           <DropZones model={model} file={dragging} onDone={() => onDropped?.()} />
         )}
         {tabs.map((id, i) => {
-          const visible = isSplit || i === active;
+          const visible = isSplit || i === shown;
           // The whiteboard mounts only while visible (Excalidraw can't measure a hidden
           // canvas); the text pad stays mounted while its tab is open.
           if (!visible && id !== "text") return null;
@@ -139,8 +161,21 @@ export default function Stage({
   );
 }
 
-function TabStrip({ model, isSplit, canSplit }: { model: RoomModel; isSplit: boolean; canSplit: boolean }) {
-  const { tabs, active } = model.view;
+function TabStrip({
+  model,
+  isSplit,
+  canSplit,
+  shown,
+  onStudentPick,
+}: {
+  model: RoomModel;
+  isSplit: boolean;
+  canSplit: boolean;
+  shown: number;
+  onStudentPick?: (index: number) => void;
+}) {
+  const { tabs } = model.view;
+  const active = shown;
   const { actions } = model;
   const teacher = Boolean(actions);
 
@@ -161,11 +196,11 @@ function TabStrip({ model, isSplit, canSplit }: { model: RoomModel; isSplit: boo
                 type="button"
                 role="tab"
                 aria-selected={marked}
-                disabled={!teacher}
-                onClick={() => actions?.pick(i)}
+                disabled={!teacher && !onStudentPick}
+                onClick={() => (teacher ? actions?.pick(i) : onStudentPick?.(i))}
                 className={`flex h-9 min-w-0 items-center gap-2 px-3 text-sm whitespace-nowrap focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
                   shown ? "text-ink" : "text-ink-muted"
-                } ${marked ? "font-semibold" : "font-medium"} ${teacher ? "" : "cursor-default"}`}
+                } ${marked ? "font-semibold" : "font-medium"} ${teacher || onStudentPick ? "" : "cursor-default"}`}
               >
                 <TabIcon id={id} />
                 <span className="truncate">{tabLabel(id, model.names)}</span>

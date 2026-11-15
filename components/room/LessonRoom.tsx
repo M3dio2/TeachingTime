@@ -148,6 +148,8 @@ function LessonContent({
   const [studentCanEdit, setStudentCanEdit] = useState(false);
   // G2: the teacher's YouTube player (play, pause, position), followed by the student.
   const [video, setVideo] = useState<VideoState | null>(null);
+  // Teacher: whether her stage is wide enough for two tabs (Stage reports it).
+  const [stageFits, setStageFits] = useState(true);
 
   // A screen share opens the Screen tab and closing it gives the replaced tab back
   // (lib/room/tabs.ts). Adjusted while rendering, React's way to follow a changing value.
@@ -170,8 +172,9 @@ function LessonContent({
         studentCanEdit,
         tabs: tabs.tabs,
         active: tabs.active,
-        // A phone shows one tab at a time, so that's what the student sees too.
-        layout: isPhone ? "single" : tabs.layout,
+        // A phone, or a window too narrow for two tabs, shows one tab at a time, so that's
+        // what the student sees too.
+        layout: isPhone || !stageFits ? "single" : tabs.layout,
         justTalk: tabs.justTalk,
         audio: lessonAudio.state,
         // Only while that video's tab is open.
@@ -216,6 +219,7 @@ function LessonContent({
     sync,
     audio: teacher ? lessonAudio : undefined,
     setVideo: teacher ? setVideo : undefined,
+    reportStageFits: teacher ? setStageFits : undefined,
     actions: teacher
       ? {
           open: (id) => setTabs((t) => openTab(t, id)),
