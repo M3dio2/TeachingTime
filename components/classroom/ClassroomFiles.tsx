@@ -95,7 +95,7 @@ export default function ClassroomFiles({
             <h3 className="text-[15px] font-semibold">{title}</h3>
             {kind === "link" && <AddLink lessonId={lessonId} />}
             {list.length === 0 ? (
-              <p className="text-sm text-ink-muted">No {title.toLowerCase()} yet.</p>
+              <p className="text-sm text-ink-muted">No {title === "PDFs" ? title : title.toLowerCase()} yet.</p>
             ) : kind === "image" ? (
               <ul className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
                 {list.map((f) => (

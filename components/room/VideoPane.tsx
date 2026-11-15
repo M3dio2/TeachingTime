@@ -1,6 +1,6 @@
 "use client";
 
-import { Volume2 } from "lucide-react";
+import { ExternalLink, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useLoadedFile } from "@/lib/room/fileCache";
 import { videoPosition, type VideoState, youtubeId, youtubeStart } from "@/lib/room/links";
@@ -115,7 +115,10 @@ export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel
                 publish();
               }
             },
-            onError: () => !gone && setBroken(true),
+            onError: (e: { data: number }) => {
+              console.warn("YouTube error", e.data);
+              if (!gone) setBroken(true);
+            },
           },
         });
       })
@@ -179,7 +182,23 @@ export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel
   }, [teacher, ready, followed]);
 
   if (failed || broken || (file && !videoId)) {
-    return <p className="flex h-full items-center justify-center bg-video p-4 text-sm text-surface-2">This video couldn&apos;t be played.</p>;
+    // E.g. the owner doesn't allow the video on other sites (YouTube error 101/150).
+    return (
+      <div className="flex h-full flex-col items-center justify-center gap-3 bg-video p-4 text-center text-sm text-surface-2">
+        <p>This video can&apos;t be played inside the lesson.</p>
+        {file?.url && (
+          <a
+            href={file.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-surface px-4 font-medium text-ink"
+          >
+            Watch on YouTube
+            <ExternalLink size={16} aria-hidden />
+          </a>
+        )}
+      </div>
+    );
   }
 
   const note = teacher
