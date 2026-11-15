@@ -71,6 +71,7 @@ export default function Privacy() {
           privacy-enhanced mode, and YouTube sees the viewer&apos;s IP address
         </li>
         <li>Cloudflare Turnstile (checks that sign-ups and logins aren&apos;t bots)</li>
+        <li>Google, only if you choose &quot;Continue with Google&quot;: we receive your name, email and profile picture address</li>
         <li>An email provider, to send sign-up and password emails</li>
       </List>
       <p>They process data only to provide their service to us. Some of them are outside Switzerland and the EU (mainly
