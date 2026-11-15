@@ -3,6 +3,7 @@ import type { Layout, TabId, Where } from "@/lib/room/tabs";
 import type { TeacherSettings } from "@/lib/sync/useTeacherSettings";
 import type { ViewSync } from "@/lib/sync/useViewSync";
 import type { LessonAudio } from "@/lib/room/useLessonAudio";
+import type { VideoState } from "@/lib/room/links";
 import type { OnMute } from "./CameraTiles";
 import type { RoomFile } from "./FilesPanel";
 
@@ -39,6 +40,7 @@ export type RoomModel = {
   names: Record<string, string>; // file tab id → file name
   sync: ViewSync; // PDF scroll positions
   audio?: LessonAudio; // teacher only: play classroom audio for both (A1)
+  setVideo?: (state: VideoState) => void; // teacher only: publish her YouTube player (G2)
 };
 
 // "your student" at the start of a sentence.

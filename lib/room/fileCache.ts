@@ -6,8 +6,8 @@ import { type FileTab, isFileTab, resourceIdOf, type TabId } from "./tabs";
 // Classroom files shown in tabs (L2a). /api/resource-url hands out a URL valid for 5 minutes,
 // so each file is downloaded once and kept for the session: PDFs as bytes, pictures as an
 // object URL. Re-opening a tab later never needs the (expired) URL again.
-export type FileKind = "pdf" | "image" | "audio" | "doc";
-export type LoadedFile = { name: string; kind: FileKind; bytes?: ArrayBuffer; src?: string };
+export type FileKind = "pdf" | "image" | "audio" | "doc" | "link";
+export type LoadedFile = { name: string; kind: FileKind; bytes?: ArrayBuffer; src?: string; url?: string };
 
 const files = new Map<string, Promise<LoadedFile>>();
 const infos = new Map<string, Promise<{ name: string; kind: FileKind; url: string }>>();
@@ -36,6 +36,7 @@ export function loadResource(slug: string, resourceId: string): Promise<LoadedFi
   let p = files.get(key);
   if (!p) {
     p = info(slug, resourceId).then(async ({ name, kind, url }) => {
+      if (kind === "link") return { name, kind, url }; // nothing to download
       const res = await fetch(url);
       if (!res.ok) throw new Error("download failed");
       if (kind === "pdf" || kind === "doc") return { name, kind, bytes: await res.arrayBuffer() };

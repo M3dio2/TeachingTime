@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   const { data: file } = lesson
     ? await admin
         .from("resources")
-        .select("name, kind, path")
+        .select("name, kind, path, url")
         .eq("id", id)
         .eq("lesson_id", lesson.id)
         .maybeSingle()
@@ -36,6 +36,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "File not found" }, { status: 404 });
   }
 
+  // A link (G2): nothing stored, the address is the link itself.
+  if (file.kind === "link") {
+    return Response.json({ name: file.name, kind: file.kind, url: file.url }, { headers: { "Cache-Control": "no-store" } });
+  }
   const { data: signed } = await admin.storage.from("resources").createSignedUrl(file.path, URL_SECONDS);
   if (!signed) {
     return Response.json({ error: "Could not open the file" }, { status: 500 });

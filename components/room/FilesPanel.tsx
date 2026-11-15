@@ -5,24 +5,28 @@ import {
   FileType2,
   GripVertical,
   ImageIcon,
+  Link2,
   LoaderCircle,
   Music,
   PanelRightClose,
   PanelRightOpen,
   Pause,
   Play,
+  SquarePlay,
   type LucideIcon,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { youtubeId } from "@/lib/room/links";
 import { fileTabId, type FileTab } from "@/lib/room/tabs";
 import type { RoomModel } from "./roomModel";
 
 // A classroom file, as the room's files panel lists it (app/lesson/[id]/page.tsx).
 export type RoomFile = {
   id: string;
-  kind: "image" | "pdf" | "doc" | "audio";
+  kind: "image" | "pdf" | "doc" | "audio" | "link";
   name: string;
   previewUrl?: string; // pictures only
+  url?: string; // links only
 };
 
 const SECTIONS: { kind: RoomFile["kind"]; title: string; Icon: LucideIcon }[] = [
@@ -30,9 +34,15 @@ const SECTIONS: { kind: RoomFile["kind"]; title: string; Icon: LucideIcon }[] = 
   { kind: "doc", title: "Word files", Icon: FileType2 },
   { kind: "image", title: "Pictures", Icon: ImageIcon },
   { kind: "audio", title: "Audio", Icon: Music },
+  { kind: "link", title: "Links", Icon: Link2 },
 ];
 
-export const tabOf = (f: RoomFile): FileTab | null => (f.kind === "audio" ? null : fileTabId(f.kind, f.id));
+export const tabOf = (f: RoomFile): FileTab | null =>
+  f.kind === "audio"
+    ? null
+    : f.kind === "link"
+      ? fileTabId(f.url && youtubeId(f.url) ? "video" : "link", f.id)
+      : fileTabId(f.kind, f.id);
 
 // Opening a file from the panel or the phone sheet (docs/design/HANDOFF.md, "Opening files"):
 // already open → it becomes active; one tab open → it opens beside; two open → nothing changes
@@ -85,7 +95,7 @@ export function FilesPanel({
     ? "Two tabs are open. Close one first, or drag the file onto a tab to replace it."
     : opener.full
       ? "Two tabs are open. Drag a file onto one to replace it."
-      : "Click a PDF, Word file or picture to open it, press play for audio, or drag any file onto the stage.";
+      : "Click a file or link to open it, press play for audio, or drag anything onto the stage.";
   return (
     <aside
       aria-label={title}
@@ -205,10 +215,11 @@ export function FileList({
             ) : (
               <ul className="flex flex-col">
                 {items.map((f) => {
+                  const RowIcon = f.kind === "link" && f.url && youtubeId(f.url) ? SquarePlay : Icon;
                   const row = (
                     <>
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-accent">
-                        <Icon size={16} aria-hidden />
+                        <RowIcon size={16} aria-hidden />
                       </span>
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">{f.name}</span>
                     </>

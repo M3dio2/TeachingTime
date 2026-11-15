@@ -66,6 +66,10 @@ export default function Privacy() {
         <li>Vercel (website hosting, and anonymous page-view counts without cookies), USA</li>
         <li>Supabase (accounts, database and file storage), USA</li>
         <li>LiveKit (video calls), servers worldwide, nearest to each person</li>
+        <li>
+          YouTube (Google), only when a teacher shows a YouTube video in a lesson: the video loads from YouTube in its
+          privacy-enhanced mode, and YouTube sees the viewer&apos;s IP address
+        </li>
         <li>Cloudflare Turnstile (checks that sign-ups and logins aren&apos;t bots)</li>
         <li>An email provider, to send sign-up and password emails</li>
       </List>
