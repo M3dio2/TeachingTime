@@ -41,6 +41,7 @@ export type RoomModel = {
   sync: ViewSync; // PDF scroll positions
   audio?: LessonAudio; // teacher only: play classroom audio for both (A1)
   setVideo?: (state: VideoState) => void; // teacher only: publish her YouTube player (G2)
+  reportStageFits?: (fits: boolean) => void; // teacher only: do two tabs fit side by side here
 };
 
 // "your student" at the start of a sentence.
