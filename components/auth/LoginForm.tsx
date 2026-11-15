@@ -3,9 +3,10 @@
 import { Link2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import AuthCard, { FormError, submitClass, textLink } from "@/components/auth/AuthCard";
 import { CAPTCHA_WAIT, CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
+import GoogleButton from "@/components/auth/GoogleButton";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import PasswordField from "@/components/ui/PasswordField";
@@ -42,6 +43,8 @@ export default function LoginForm() {
 
   return (
     <AuthCard title="Teacher login" intro="Welcome back. Log in to see your classrooms.">
+      <GoogleFailed />
+      <GoogleButton />
       <form onSubmit={logIn} className="flex flex-col gap-4">
         <Field
           label="Email"
@@ -90,4 +93,14 @@ export default function LoginForm() {
       </div>
     </AuthCard>
   );
+}
+
+// Back from Google without a session (cancelled, or the link was used twice).
+function GoogleFailed() {
+  const failed = useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).get("google") === "failed",
+    () => false,
+  );
+  return failed ? <FormError>Google sign-in didn&apos;t finish. Please try again, or log in with email.</FormError> : null;
 }

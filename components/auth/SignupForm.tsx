@@ -6,6 +6,7 @@ import { ArrowLeft, Mail } from "lucide-react";
 import { useState } from "react";
 import AuthCard, { FormError, submitClass, textLink } from "@/components/auth/AuthCard";
 import { CAPTCHA_WAIT, CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
+import GoogleButton from "@/components/auth/GoogleButton";
 import NewPasswordFields from "@/components/auth/NewPasswordFields";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
@@ -86,6 +87,7 @@ export default function SignupForm() {
       title="Create a teacher account"
       intro="Set up a classroom for each student and invite them with a link."
     >
+      <GoogleButton />
       <form onSubmit={signUp} className="flex flex-col gap-4">
         <Field
           label="Your name"

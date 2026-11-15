@@ -103,7 +103,7 @@ async function Dashboard() {
       </header>
 
       <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-7 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
-        {firstVisit && <Welcome />}
+        {firstVisit && <Welcome suggested={auth.user?.user_metadata.given_name ?? auth.user?.user_metadata.full_name ?? ""} />}
 
         {quickCalls.map((call) => (
           <section
@@ -217,7 +217,8 @@ function countFiles(rows: { lesson_id: string; kind: string }[]) {
 }
 
 // First visit: the name students see, asked first thing. Afterwards it's in the header chip.
-function Welcome() {
+// `suggested`: the first name from Google, for teachers who signed up with Google.
+function Welcome({ suggested }: { suggested: string }) {
   return (
     <section className="flex flex-wrap items-end gap-x-8 gap-y-5 rounded-panel border border-accent bg-surface p-6">
       <div className="flex flex-[1_1_340px] flex-col gap-1.5">
@@ -231,6 +232,7 @@ function Welcome() {
           label="Your name in lessons"
           name="name"
           placeholder="e.g. Ms Smith"
+          defaultValue={String(suggested).slice(0, 40)}
           maxLength={40}
           required
           className="min-w-0 flex-1"
