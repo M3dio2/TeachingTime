@@ -12,6 +12,7 @@ import {
 import { ConnectionState, type DisconnectReason, MediaDeviceFailure, Track } from "livekit-client";
 import { useEffect, useRef, useState } from "react";
 import * as Y from "yjs";
+import { useT } from "@/lib/i18n/client";
 import { muteMicrophones } from "@/lib/mute";
 import {
   closeTab,
@@ -69,6 +70,7 @@ type Props = {
 };
 
 export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, tracks }: Props) {
+  const t = useT();
   const [problem, setProblem] = useState<string | null>(null);
   const isPhone = useMediaQuery(PHONE_QUERY);
 
@@ -80,14 +82,14 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
       video={!tracks}
       audio={!tracks}
       onDisconnected={onLeave}
-      onMediaDeviceFailure={(failure, kind) => setProblem(deviceProblemMessage(failure, kind))}
+      onMediaDeviceFailure={(failure, kind) => setProblem(deviceProblemMessage(t, failure, kind))}
       // Camera/mic failures also arrive here (e.g. "Permission denied by system" on macOS).
       onError={(error) => {
         const failure = MediaDeviceFailure.getFailure(error);
         setProblem(
           failure
-            ? deviceProblemMessage(failure)
-            : "Something went wrong with the connection. Check your internet and reload.",
+            ? deviceProblemMessage(t, failure)
+            : t.room.connectionError,
         );
       }}
       data-lk-theme="default"
@@ -136,6 +138,7 @@ function LessonContent({
   isPhone: boolean;
   onProblem: (message: string) => void;
 }) {
+  const t = useT();
   const teacher = role === "teacher";
   const [doc] = useState(() => {
     const doc = new Y.Doc();
@@ -201,7 +204,7 @@ function LessonContent({
   const other = useRemoteParticipants()[0];
   const studentLesson = Boolean(lesson?.saveBoard);
   const otherName =
-    other?.name || (teacher ? (studentLesson && lesson?.title) || "your student" : "your teacher");
+    other?.name || (teacher ? (studentLesson && lesson?.title) || t.room.yourStudent : t.room.yourTeacher);
 
   const model: RoomModel = {
     role,
@@ -212,7 +215,7 @@ function LessonContent({
     otherName,
     files: studentLesson ? files : undefined,
     addFile: (f) => setFiles((list) => [...list, f]),
-    filesTitle: `${lesson?.title ?? ""}'s files`,
+    filesTitle: t.room.filesTitle(lesson?.title ?? ""),
     lessonId: lesson?.id,
     inviteSlug,
     names,
@@ -236,7 +239,7 @@ function LessonContent({
       teacher && lesson
         ? (identity) =>
             muteMicrophones(lesson.id, identity).catch(() =>
-              onProblem("Muting didn't work. Please try again."),
+              onProblem(t.room.muteFailed),
             )
         : undefined,
   };
@@ -256,7 +259,7 @@ function LessonContent({
 function ConnectingScreen() {
   const connection = useConnectionState();
   return connection === ConnectionState.Connecting ? (
-    <LoadingScreen title="Getting your lesson ready" />
+    <LoadingScreen />
   ) : null;
 }
 

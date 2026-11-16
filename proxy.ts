@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isLocale, LOCALE_COOKIE } from "@/lib/i18n/locales";
 
 // Pages only for logged-out visitors: the start page, login, sign-up, forgot password.
 // (A logged-in teacher who opens teachingtime.app goes straight to her classrooms.)
@@ -34,6 +35,17 @@ export async function proxy(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const loggedIn = Boolean(data?.claims);
   const onLoggedOutPage = loggedOutPages.includes(request.nextUrl.pathname);
+
+  // The language the teacher chose in the dashboard (saved in her account), on a device that
+  // has no language cookie yet (I1).
+  const accountLocale = data?.claims?.user_metadata?.locale;
+  if (isLocale(accountLocale) && !request.cookies.has(LOCALE_COOKIE)) {
+    request.cookies.set(LOCALE_COOKIE, accountLocale);
+    const cookiesSoFar = response.cookies.getAll();
+    response = NextResponse.next({ request });
+    cookiesSoFar.forEach((c) => response.cookies.set(c));
+    response.cookies.set(LOCALE_COOKIE, accountLocale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  }
 
   if (loggedIn && onLoggedOutPage) {
     return NextResponse.redirect(new URL("/dashboard", request.url));

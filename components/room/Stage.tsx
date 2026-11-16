@@ -31,6 +31,7 @@ import {
   type TabId,
   type Where,
 } from "@/lib/room/tabs";
+import { useT } from "@/lib/i18n/client";
 import { useStored } from "@/lib/useStored";
 import { cap, type RoomModel } from "./roomModel";
 import { type RoomFile, tabOf } from "./FilesPanel";
@@ -62,6 +63,7 @@ export default function Stage({
   dragging?: RoomFile | null;
   onDropped?: () => void;
 }) {
+  const t = useT();
   const { tabs, active, layout } = model.view;
   const area = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
@@ -103,7 +105,7 @@ export default function Stage({
 
   return (
     <section
-      aria-label="Lesson"
+      aria-label={t.stage.lesson}
       className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-panel border border-line bg-surface"
     >
       <AudioBar model={model} />
@@ -150,7 +152,7 @@ export default function Stage({
           <div className="flex" style={{ order: 1 }}>
             <Handle
               wide
-              label="Resize the two tabs"
+              label={t.stage.resizeTabs}
               onDrag={dragSplit}
               onStep={(d) => setRatio(Math.max(0.25, Math.min(0.75, ratio + d * 0.05)))}
             />
@@ -174,6 +176,8 @@ function TabStrip({
   shown: number;
   onStudentPick?: (index: number) => void;
 }) {
+  const t = useT();
+  const label = (id: TabId) => tabLabel(id, model.names, t.stage.tabs);
   const { tabs } = model.view;
   const active = shown;
   const { actions } = model;
@@ -181,7 +185,7 @@ function TabStrip({
 
   return (
     <div className="flex shrink-0 items-end gap-2 border-b border-line bg-surface-2 px-2 pt-1.5">
-      <div role="tablist" aria-label="Open tabs" className="flex min-w-0 items-end gap-0.5 overflow-x-auto">
+      <div role="tablist" aria-label={t.stage.openTabs} className="flex min-w-0 items-end gap-0.5 overflow-x-auto">
         {tabs.map((id, i) => {
           const marked = i === active;
           const shown = isSplit || marked;
@@ -203,13 +207,13 @@ function TabStrip({
                 } ${marked ? "font-semibold" : "font-medium"} ${teacher || onStudentPick ? "" : "cursor-default"}`}
               >
                 <TabIcon id={id} />
-                <span className="truncate">{tabLabel(id, model.names)}</span>
+                <span className="truncate">{label(id)}</span>
               </button>
               {teacher && tabs.length > 1 && (
                 <button
                   type="button"
-                  aria-label={`Close ${tabLabel(id, model.names)}`}
-                  title={`Close ${tabLabel(id, model.names)}`}
+                  aria-label={t.stage.closeTab(label(id))}
+                  title={t.stage.closeTab(label(id))}
                   onClick={() => actions?.close(i)}
                   className="mr-1.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
                 >
@@ -235,7 +239,7 @@ function TabStrip({
       <div className="flex shrink-0 items-center gap-2 px-1 pb-1.5">
         <Chip tone="marker">
           <Eye size={14} aria-hidden />
-          {teacher ? `${cap(model.otherName)} sees what you see` : `Following ${model.otherName}`}
+          {teacher ? t.stage.seesWhatYouSee(cap(model.otherName)) : t.stage.following(model.otherName)}
         </Chip>
         {teacher && tabs.length === 2 && (
           <LayoutSwitch isSplit={isSplit} canSplit={canSplit} onChange={(l) => actions?.setLayout(l)} />
@@ -244,11 +248,11 @@ function TabStrip({
           <button
             type="button"
             onClick={() => actions?.setJustTalk(true)}
-            title="Fold the tabs away for both of you"
+            title={t.stage.justTalkTitle}
             className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-surface px-2.5 text-sm font-medium whitespace-nowrap hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           >
             <Users size={16} aria-hidden />
-            Just talk
+            {t.stage.justTalk}
           </button>
         )}
       </div>
@@ -265,6 +269,7 @@ function LayoutSwitch({
   canSplit: boolean;
   onChange: (layout: "split" | "single") => void;
 }) {
+  const t = useT();
   const button = (on: boolean) =>
     `inline-flex h-[26px] w-[30px] items-center justify-center rounded disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
       on ? "bg-surface-2 text-accent" : "text-ink-muted hover:text-ink"
@@ -274,8 +279,8 @@ function LayoutSwitch({
       <button
         type="button"
         aria-pressed={isSplit}
-        aria-label="Side by side"
-        title={canSplit ? "Side by side" : "Side by side needs a wider window"}
+        aria-label={t.stage.sideBySide}
+        title={canSplit ? t.stage.sideBySide : t.stage.sideBySideNeedsWider}
         disabled={!canSplit}
         onClick={() => onChange("split")}
         className={button(isSplit)}
@@ -285,8 +290,8 @@ function LayoutSwitch({
       <button
         type="button"
         aria-pressed={!isSplit}
-        aria-label="One at a time"
-        title="One at a time"
+        aria-label={t.stage.oneAtATime}
+        title={t.stage.oneAtATime}
         onClick={() => onChange("single")}
         className={button(!isSplit)}
       >
@@ -298,6 +303,8 @@ function LayoutSwitch({
 
 // + (teacher, only while one tab is open): Screen (while someone shares), Text, Draw.
 function AddTabMenu({ model }: { model: RoomModel }) {
+  const t = useT();
+  const label = (id: TabId) => tabLabel(id, model.names, t.stage.tabs);
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   const { tabs, active } = model.view;
@@ -324,8 +331,8 @@ function AddTabMenu({ model }: { model: RoomModel }) {
     <div ref={wrap} className="relative flex h-9 shrink-0 items-center self-end">
       <button
         type="button"
-        aria-label="Open a tab"
-        title="Open a tab"
+        aria-label={t.stage.openATab}
+        title={t.stage.openATab}
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen(!open)}
@@ -338,10 +345,10 @@ function AddTabMenu({ model }: { model: RoomModel }) {
       {open && (
         <div
           role="menu"
-          aria-label="Open a tab"
+          aria-label={t.stage.openATab}
           className="absolute top-full left-0 z-30 mt-1 flex w-72 flex-col gap-0.5 rounded-panel border border-line bg-surface p-1.5 shadow-soft"
         >
-          <div className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-ink-muted">Open a tab</div>
+          <div className="px-2.5 pt-1.5 pb-1 text-xs font-semibold text-ink-muted">{t.stage.openATab}</div>
           {items.map((id) => (
             <button
               key={id}
@@ -354,14 +361,14 @@ function AddTabMenu({ model }: { model: RoomModel }) {
               className="flex h-10 items-center gap-2.5 rounded-md px-2.5 text-left text-sm font-medium hover:bg-paper focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
             >
               <TabIcon id={id} />
-              <span className="flex-1">{tabLabel(id, model.names)}</span>
+              <span className="flex-1">{label(id)}</span>
               <span className="truncate text-xs font-normal text-ink-muted">
-                Opens beside {tabLabel(tabs[active], model.names)}
+                {t.stage.opensBeside(label(tabs[active]))}
               </span>
             </button>
           ))}
           {!items.length && (
-            <div className="px-2.5 py-2 text-[13px] text-ink-muted">Text and Draw are already open.</div>
+            <div className="px-2.5 py-2 text-[13px] text-ink-muted">{t.stage.textAndDrawOpen}</div>
           )}
         </div>
       )}
@@ -373,27 +380,30 @@ function AddTabMenu({ model }: { model: RoomModel }) {
 // "Replace …" (left) and "Open beside …" (right); two open: "Replace …" for each. Audio: one
 // area, "Play …". The area under the pointer turns solid and shows "Drop to open" / "to play".
 function DropZones({ model, file, onDone }: { model: RoomModel; file: RoomFile; onDone: () => void }) {
+  const t = useT();
+  const d = t.stage.drop;
+  const label = (tab: TabId) => tabLabel(tab, model.names, t.stage.tabs);
   const [over, setOver] = useState<number | null>(null);
   const { tabs } = model.view;
   const id = tabOf(file);
   const audio = file.kind === "audio";
   // Audio isn't a tab: one area that plays it for both, whatever is open.
   const zones: { where: Where | "play"; title: string; sub: string; beside: boolean }[] = audio
-    ? [{ where: "play", title: `Play ${file.name}`, sub: "You both hear it; the tabs stay as they are", beside: false }]
+    ? [{ where: "play", title: d.play(file.name), sub: d.playSub, beside: false }]
     : tabs.length < 2
       ? [
-          { where: 0, title: `Replace ${tabLabel(tabs[0], model.names)}`, sub: "Show it instead", beside: false },
+          { where: 0, title: d.replace(label(tabs[0])), sub: d.replaceSub, beside: false },
           {
             where: "beside",
-            title: `Open beside ${tabLabel(tabs[0], model.names)}`,
-            sub: "Show both side by side",
+            title: d.openBeside(label(tabs[0])),
+            sub: d.besideSub,
             beside: true,
           },
         ]
-      : tabs.map((t, i) => ({
+      : tabs.map((tab, i) => ({
           where: i,
-          title: `Replace ${tabLabel(t, model.names)}`,
-          sub: "Two tabs is the most",
+          title: d.replace(label(tab)),
+          sub: d.twoIsMost,
           beside: false,
         }));
 
@@ -436,7 +446,7 @@ function DropZones({ model, file, onDone }: { model: RoomModel; file: RoomFile; 
                 {audio ? <Music size={14} aria-hidden /> : <TabIcon id={id ?? "text"} />}
                 {file.name}
                 <span className="rounded bg-marker-soft px-1.5 text-xs text-marker-ink">
-                  {audio ? "Drop to play" : "Drop to open"}
+                  {audio ? d.dropToPlay : d.dropToOpen}
                 </span>
               </span>
             )}

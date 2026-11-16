@@ -1,15 +1,20 @@
+"use client";
+
 import { Trash2 } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 // Teacher only, in the Text and Draw toolbars: clears that tab for both people, after a confirm.
 export default function ClearButton({ what, onClear }: { what: "text" | "drawing"; onClear: () => void }) {
-  const label = `Clear the ${what} for both of you`;
+  const t = useT();
+  const label = what === "text" ? t.stage.clear.text : t.stage.clear.drawing;
+  const ask = what === "text" ? t.stage.clear.textConfirm : t.stage.clear.drawingConfirm;
   return (
     <button
       type="button"
       title={label}
       aria-label={label}
       onClick={() => {
-        if (confirm(`Clear the ${what} for both of you?`)) onClear();
+        if (confirm(ask)) onClear();
       }}
       className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-danger transition-colors hover:bg-danger hover:text-white focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
     >

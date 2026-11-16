@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } from "@/components/dashboard/DashboardBits";
-import { CardMenu, FeedbackButton, NameChip } from "@/components/dashboard/DashboardMenus";
+import { CardMenu, FeedbackButton, LanguageMenu, NameChip } from "@/components/dashboard/DashboardMenus";
 import { buttonClass } from "@/components/ui/Button";
 import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
 import Field from "@/components/ui/Field";
@@ -15,6 +15,10 @@ import { createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
 import { addStudent, removeLesson, setTeacherName, signOut, startQuickCall } from "./actions";
 import { MAX_CLASSROOMS } from "@/lib/limits";
+import { getT } from "@/lib/i18n/server";
+import type { Messages } from "@/lib/i18n/messages";
+
+type T = Messages["dashboard"];
 
 // Private: never listed by search engines.
 export const metadata: Metadata = { title: "Your classrooms", robots: { index: false, follow: false } };
@@ -43,7 +47,7 @@ type Lesson = {
 };
 
 async function Dashboard() {
-  const supabase = await createClient();
+  const [supabase, { dashboard: t, common }] = await Promise.all([createClient(), getT()]);
 
   // Each call is a round trip to Supabase or LiveKit (0.3–0.7 s), so they run side by side.
   const [{ data: auth }, { data }, { data: fileRows }, occupiedOrUnknown] = await Promise.all([
@@ -82,7 +86,7 @@ async function Dashboard() {
   const quickCalls = lessons.filter((l) => l.kind === "quick");
   const students = lessons.filter((l) => l.kind === "student");
   const firstVisit = !teacherName;
-  const counts = countFiles((fileRows ?? []) as { lesson_id: string; kind: string }[]);
+  const counts = countFiles((fileRows ?? []) as { lesson_id: string; kind: string }[], t);
 
   return (
     <div className="flex min-h-dvh flex-1 flex-col">
@@ -92,46 +96,47 @@ async function Dashboard() {
         {/* First visit: the arrow doodle is the page's marker stroke, so no underline here. */}
         <Wordmark underline={firstVisit ? "none" : "draw"} />
         <div className="flex items-center gap-2">
+          <LanguageMenu />
           <FeedbackButton />
           <NameChip name={teacherName} />
           <form action={signOut}>
-            <SubmitButton variant="ghost" size="sm" className="h-9 text-ink!" pending="Logging out…">
-              Log out
+            <SubmitButton variant="ghost" size="sm" className="h-9 text-ink!" pending={t.loggingOut}>
+              {t.logOut}
             </SubmitButton>
           </form>
         </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-7 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
-        {firstVisit && <Welcome suggested={auth.user?.user_metadata.given_name ?? auth.user?.user_metadata.full_name ?? ""} />}
+        {firstVisit && <Welcome t={t} common={common} suggested={auth.user?.user_metadata.given_name ?? auth.user?.user_metadata.full_name ?? ""} />}
 
         {quickCalls.map((call) => (
           <section
             key={call.id}
-            aria-label="Quick call in progress"
+            aria-label={t.quickCallInProgress}
             className="flex flex-wrap items-center gap-x-4 gap-y-3 rounded-panel border border-accent bg-surface px-5 py-4"
           >
             <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-surface-2 text-accent">
               <Video size={18} aria-hidden />
             </span>
             <div className="flex min-w-0 flex-[1_1_220px] flex-col gap-0.5">
-              <span className="font-semibold">Quick call in progress</span>
+              <span className="font-semibold">{t.quickCallInProgress}</span>
               <span className="text-sm text-ink-muted">
-                {occupied.has(call.id) ? "Your student is waiting." : "Nobody is in the call."}
+                {occupied.has(call.id) ? t.studentWaiting : t.nobodyInCall}
               </span>
             </div>
             <div className="flex flex-wrap gap-2">
               <CopyLinkButton slug={call.invite_slug} icon />
               <Link href={`/lesson/${call.id}`} className={buttonClass("primary", "sm", "h-9 font-semibold")}>
-                Rejoin
+                {t.rejoin}
               </Link>
               <form action={removeLesson}>
                 <input type="hidden" name="id" value={call.id} />
                 <ConfirmSubmit
-                  message="End this quick call? The student link will stop working."
-                  pending={<span className="text-danger">Ending…</span>}
+                  message={t.endQuickCallConfirm}
+                  pending={<span className="text-danger">{t.ending}</span>}
                 >
-                  <span className="text-danger">End call</span>
+                  <span className="text-danger">{t.endCall}</span>
                 </ConfirmSubmit>
               </form>
             </div>
@@ -140,21 +145,19 @@ async function Dashboard() {
 
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
           <div className="flex flex-[1_1_360px] flex-col gap-1.5">
-            <h1 className="text-[30px] leading-[1.1] tracking-[-0.02em] md:text-4xl">Your classrooms</h1>
+            <h1 className="text-[30px] leading-[1.1] tracking-[-0.02em] md:text-4xl">{t.yourClassrooms}</h1>
             <p className="max-w-[560px] text-ink-muted">
-              One classroom per student: their files, and a link that stays the same every week.
+              {t.classroomsIntro}
             </p>
           </div>
           <form action={startQuickCall} className="flex w-full flex-col items-stretch gap-1.5 md:w-auto md:items-end">
             <LessonStartScreen />
-            <SubmitButton className="h-12 px-[18px] font-semibold md:h-11" pending="Starting…">
+            <SubmitButton className="h-12 px-[18px] font-semibold md:h-11" pending={t.starting}>
               <Video size={16} aria-hidden />
-              {quickCalls.length ? "Start a new quick call" : "Start a quick call"}
+              {quickCalls.length ? t.startNewQuickCall : t.startQuickCall}
             </SubmitButton>
             <span className="text-[13px] text-ink-muted">
-              {quickCalls.length
-                ? "Ends the call above and starts a fresh one."
-                : "A one-off call with a new link. Nothing is saved."}
+              {quickCalls.length ? t.newQuickCallHint : t.quickCallHint}
             </span>
           </form>
         </div>
@@ -163,6 +166,7 @@ async function Dashboard() {
           {students.map((student) => (
             <StudentCard
               key={student.id}
+              t={t}
               student={student}
               waiting={occupied.has(student.id)}
               files={counts.get(student.id)}
@@ -170,10 +174,10 @@ async function Dashboard() {
           ))}
           <li>
             {students.length < MAX_CLASSROOMS ? (
-              <AddCard highlight={firstVisit || students.length === 0} />
+              <AddCard t={t} highlight={firstVisit || students.length === 0} />
             ) : (
               <p className="flex h-full items-center rounded-panel border-[1.5px] border-dashed border-line p-4 text-sm text-ink-muted">
-                {MAX_CLASSROOMS} classrooms is the most for now. Remove one to add another.
+                {t.classroomLimit(MAX_CLASSROOMS)}
               </p>
             )}
           </li>
@@ -181,9 +185,9 @@ async function Dashboard() {
             <li className="flex items-center gap-4 px-1 py-2">
               <ArrowDoodle />
               <div className="flex flex-col gap-1">
-                <span className="font-semibold">Start with your first student</span>
+                <span className="font-semibold">{t.firstStudentTitle}</span>
                 <span className="text-sm leading-snug text-ink-muted">
-                  Type their name and press Add. You get a classroom for their files and a link to send them.
+                  {t.firstStudentText}
                 </span>
               </div>
             </li>
@@ -195,7 +199,7 @@ async function Dashboard() {
 }
 
 // "3 pictures · 2 PDFs · 2 audio" per classroom.
-function countFiles(rows: { lesson_id: string; kind: string }[]) {
+function countFiles(rows: { lesson_id: string; kind: string }[], t: T) {
   const byLesson = new Map<string, { image: number; pdf: number; doc: number; audio: number; link: number }>();
   for (const r of rows) {
     const c = byLesson.get(r.lesson_id) ?? { image: 0, pdf: 0, doc: 0, audio: 0, link: 0 };
@@ -205,11 +209,11 @@ function countFiles(rows: { lesson_id: string; kind: string }[]) {
   const text = new Map<string, string>();
   for (const [id, c] of byLesson) {
     const parts = [
-      c.image && `${c.image} ${c.image === 1 ? "picture" : "pictures"}`,
-      c.pdf && `${c.pdf} ${c.pdf === 1 ? "PDF" : "PDFs"}`,
-      c.doc && `${c.doc} Word ${c.doc === 1 ? "file" : "files"}`,
-      c.audio && `${c.audio} audio`,
-      c.link && `${c.link} ${c.link === 1 ? "link" : "links"}`,
+      c.image && t.countPictures(c.image),
+      c.pdf && t.countPdfs(c.pdf),
+      c.doc && t.countWord(c.doc),
+      c.audio && t.countAudio(c.audio),
+      c.link && t.countLinks(c.link),
     ].filter(Boolean);
     if (parts.length) text.set(id, parts.join(" · "));
   }
@@ -218,27 +222,27 @@ function countFiles(rows: { lesson_id: string; kind: string }[]) {
 
 // First visit: the name students see, asked first thing. Afterwards it's in the header chip.
 // `suggested`: the first name from Google, for teachers who signed up with Google.
-function Welcome({ suggested }: { suggested: string }) {
+function Welcome({ t, common, suggested }: { t: T; common: Messages["common"]; suggested: string }) {
   return (
     <section className="flex flex-wrap items-end gap-x-8 gap-y-5 rounded-panel border border-accent bg-surface p-6">
       <div className="flex flex-[1_1_340px] flex-col gap-1.5">
         <h2 className="font-display text-[26px] leading-[1.15] font-extrabold tracking-[-0.01em]">
-          Welcome! What should your students call you?
+          {t.welcomeTitle}
         </h2>
-        <p className="text-ink-muted">This name is shown on your camera in every lesson. You can change it later.</p>
+        <p className="text-ink-muted">{t.welcomeText}</p>
       </div>
       <form action={setTeacherName} className="flex flex-[1_1_340px] items-end gap-2">
         <Field
-          label="Your name in lessons"
+          label={t.nameInLessons}
           name="name"
-          placeholder="e.g. Ms Smith"
+          placeholder={t.namePlaceholder}
           defaultValue={String(suggested).slice(0, 40)}
           maxLength={40}
           required
           className="min-w-0 flex-1"
         />
-        <SubmitButton className="h-11 px-5 font-semibold" pending="Saving…">
-          Save
+        <SubmitButton className="h-11 px-5 font-semibold" pending={common.saving}>
+          {common.save}
         </SubmitButton>
       </form>
     </section>
@@ -246,7 +250,7 @@ function Welcome({ suggested }: { suggested: string }) {
 }
 
 // The last card: a dashed border, a name field and Add.
-function AddCard({ highlight }: { highlight: boolean }) {
+function AddCard({ t, highlight }: { t: T; highlight: boolean }) {
   return (
     <form
       action={addStudent}
@@ -259,20 +263,20 @@ function AddCard({ highlight }: { highlight: boolean }) {
           +
         </span>
         <div className="flex flex-col gap-0.5">
-          <span className="text-[17px] font-semibold">Add a classroom</span>
-          <span className="text-sm text-ink-muted">For a new student</span>
+          <span className="text-[17px] font-semibold">{t.addClassroom}</span>
+          <span className="text-sm text-ink-muted">{t.forNewStudent}</span>
         </div>
       </div>
       <div className="flex gap-2 border-t border-line pt-3">
         <input
           name="title"
-          aria-label="Student's name"
-          placeholder="Student's name, e.g. Anna"
+          aria-label={t.studentName}
+          placeholder={t.studentNamePlaceholder}
           required
           className="h-9 min-w-0 flex-1 rounded-md border border-line bg-surface px-2.5 text-[15px] text-ink placeholder:text-ink-muted focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none"
         />
-        <SubmitButton variant="secondary" size="sm" className="h-9 px-3.5 font-semibold" pending="Adding…">
-          Add
+        <SubmitButton variant="secondary" size="sm" className="h-9 px-3.5 font-semibold" pending={t.adding}>
+          {t.add}
         </SubmitButton>
       </div>
     </form>
@@ -309,7 +313,7 @@ function ArrowDoodle() {
 
 // A classroom card. The whole card opens the classroom; the buttons sit above that link.
 // A waiting student: ink border, yellow offset shadow, "Waiting" circled, Start lesson primary.
-function StudentCard({ student, waiting, files }: { student: Lesson; waiting: boolean; files?: string }) {
+function StudentCard({ t, student, waiting, files }: { t: T; student: Lesson; waiting: boolean; files?: string }) {
   return (
     <li
       className={`relative flex flex-col gap-3.5 rounded-panel border bg-surface p-4 transition hover:border-ink hover:shadow-[3px_3px_0_var(--color-marker)] motion-safe:hover:-translate-y-0.5 ${
@@ -323,7 +327,7 @@ function StudentCard({ student, waiting, files }: { student: Lesson; waiting: bo
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
           <Link
             href={`/dashboard/${student.id}`}
-            aria-label={`Open ${student.title}'s classroom`}
+            aria-label={t.openClassroom(student.title)}
             className="truncate text-[17px] font-semibold text-ink after:absolute after:inset-0 after:rounded-panel focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-accent"
           >
             {student.title}
@@ -331,17 +335,17 @@ function StudentCard({ student, waiting, files }: { student: Lesson; waiting: bo
           <span className="text-sm text-ink-muted">
             {student.last_active_at ? (
               <>
-                Last lesson: <LocalDate iso={student.last_active_at} />
+                {t.lastLesson} <LocalDate iso={student.last_active_at} />
               </>
             ) : (
-              "No lessons yet"
+              t.noLessonsYet
             )}
           </span>
         </div>
         {waiting && (
           // Circled by the marker when the student arrives (it mounts then; refreshes keep it).
           <span className="relative rounded-full bg-marker-soft px-2.5 py-0.5 text-xs font-semibold text-marker-ink">
-            Waiting
+            {t.waiting}
             <Marker
               shape="circle"
               width={2.2}
@@ -353,17 +357,17 @@ function StudentCard({ student, waiting, files }: { student: Lesson; waiting: bo
       </div>
       <p className="flex items-center gap-1.5 text-[13px] text-ink-muted">
         <Paperclip />
-        {files ?? "No files yet"}
+        {files ?? t.noFilesYet}
       </p>
       <div className="relative z-10 flex items-center gap-1.5 border-t border-line pt-3">
         <Link
           href={`/lesson/${student.id}`}
-          className={buttonClass(waiting ? "primary" : "secondary", "sm", "h-9 font-semibold")}
+          className={buttonClass(waiting ? "primary" : "secondary", "sm", "h-9 font-semibold whitespace-nowrap")}
         >
           <Video size={16} aria-hidden />
-          Start lesson
+          {t.startLessonShort}
         </Link>
-        <CopyLinkButton slug={student.invite_slug} label="Copy link" name={student.title} variant="ghost" icon />
+        <CopyLinkButton slug={student.invite_slug} label={t.copyLink} name={student.title} variant="ghost" icon />
         <span className="flex-1" />
         <CardMenu id={student.id} name={student.title} />
       </div>

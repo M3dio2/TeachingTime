@@ -1,11 +1,14 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { MAX_CLASSROOMS } from "@/lib/limits";
 import { linkLabel, normalizeUrl, youtubeId } from "@/lib/room/links";
 import { closeRoom } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
+import { isLocale, LOCALE_COOKIE } from "@/lib/i18n/locales";
+import { getT } from "@/lib/i18n/server";
 
 // Short, unguessable invite code for the student link.
 function newSlug() {
@@ -135,7 +138,7 @@ export async function sendFeedback(message: string, page: string) {
 // Returns a message for the teacher when it can't be added.
 export async function addLink(lessonId: string, rawUrl: string, rawName: string): Promise<string | null> {
   const url = normalizeUrl(rawUrl);
-  if (!url) return "That doesn't look like a web address. Paste a link starting with https://";
+  if (!url) return (await getT()).dashboard.badLink;
   let name = rawName.trim().slice(0, 200);
   if (!name && youtubeId(url)) name = (await youtubeTitle(url)) ?? "";
   if (!name) name = linkLabel(url);
@@ -146,7 +149,7 @@ export async function addLink(lessonId: string, rawUrl: string, rawName: string)
     .insert({ lesson_id: lessonId, kind: "link", name, url, size: 0 });
   if (error) {
     console.error("addLink:", error.message);
-    return "The link could not be saved. Please try again.";
+    return (await getT()).dashboard.linkNotSaved;
   }
   revalidatePath(`/dashboard/${lessonId}`);
   return null;
@@ -163,4 +166,14 @@ async function youtubeTitle(url: string) {
   } catch {
     return null;
   }
+}
+
+// The language menu in the dashboard header (I1): a cookie for this browser, and the teacher's
+// account (user_metadata.locale), so proxy.ts sets it on her other devices too.
+export async function setLanguage(locale: string) {
+  if (!isLocale(locale)) return;
+  (await cookies()).set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  const supabase = await createClient();
+  await supabase.auth.updateUser({ data: { locale } });
+  revalidatePath("/", "layout");
 }

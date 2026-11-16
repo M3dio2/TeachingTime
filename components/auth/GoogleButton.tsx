@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
 // "Continue with Google" on the login and sign-up pages (works for both: a new Google account
@@ -9,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 export const GOOGLE_ON = process.env.NEXT_PUBLIC_GOOGLE_SIGNIN === "on";
 
 export default function GoogleButton() {
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   if (!GOOGLE_ON) return null;
@@ -26,18 +28,18 @@ export default function GoogleButton() {
           });
           if (error) {
             setBusy(false);
-            setError("Google sign-in didn't start. Please try again.");
+            setError(t.auth.googleStartFailed);
           }
         }}
         className="inline-flex h-11 w-full items-center justify-center gap-2.5 rounded-md border border-line bg-surface font-semibold text-ink hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
       >
         <GoogleLogo />
-        {busy ? "Opening Google…" : "Continue with Google"}
+        {busy ? t.auth.googleOpening : t.auth.googleContinue}
       </button>
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex items-center gap-3 text-sm text-ink-muted" aria-hidden>
         <span className="h-px flex-1 bg-line" />
-        or with email
+        {t.auth.orWithEmail}
         <span className="h-px flex-1 bg-line" />
       </div>
     </div>

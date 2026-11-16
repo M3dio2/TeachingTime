@@ -1,10 +1,28 @@
 "use client";
 
-import { Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { useSyncExternalStore } from "react";
+import { buttonClass } from "@/components/ui/Button";
 import { useFormPending } from "@/components/ui/SubmitButton";
+import { useT } from "@/lib/i18n/client";
 
 const noop = () => () => {};
+
+// The header's way back (outside the page's <Suspense>, so the texts come from the client).
+export function BackToClassrooms() {
+  const t = useT();
+  return (
+    <Link href="/dashboard" className={buttonClass("ghost", "sm", "h-9 text-ink!")}>
+      <ArrowLeft size={16} aria-hidden />
+      {t.dashboard.yourClassrooms}
+    </Link>
+  );
+}
+
+export function ClassroomLoading() {
+  return <p className="text-ink-muted">{useT().common.loading}</p>;
+}
 
 // The student link, shown in full (read-only, selects on focus).
 export function LinkField({ slug, label }: { slug: string; label: string }) {
@@ -23,17 +41,18 @@ export function LinkField({ slug, label }: { slug: string; label: string }) {
 // "Remove this classroom", away from Start lesson, with today's confirm.
 export function RemoveButton({ name }: { name: string }) {
   const pending = useFormPending();
+  const t = useT();
   return (
     <button
       disabled={pending}
       aria-busy={pending || undefined}
       onClick={(e) => {
-        if (!confirm(`Remove ${name}? Their link will stop working and their files are deleted.`)) e.preventDefault();
+        if (!confirm(t.dashboard.removeConfirm(name))) e.preventDefault();
       }}
       className="-ml-2 inline-flex h-9 items-center gap-1.5 self-start rounded-md px-2 text-sm font-medium text-danger hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
     >
       <Trash2 size={16} aria-hidden />
-      {pending ? "Removing…" : "Remove this classroom"}
+      {pending ? t.common.removing : t.dashboard.removeClassroom}
     </button>
   );
 }

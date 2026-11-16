@@ -2,6 +2,7 @@
 
 import { ClipboardCopy } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { useLoadedFile } from "@/lib/room/fileCache";
 import { type FileTab, tabLabel } from "@/lib/room/tabs";
 import { sendToTextPad } from "@/lib/room/textInbox";
@@ -20,6 +21,7 @@ function Message({ children }: { children: string }) {
 // height, lib/sync/useViewSync.ts) lands on the same place for the student.
 // The teacher can copy the text into the shared text pad to work on it together.
 export default function DocPane({ id, model }: { id: FileTab; model: RoomModel }) {
+  const t = useT();
   const { file, failed } = useLoadedFile(model.inviteSlug, id);
   const scroller = useRef<HTMLDivElement>(null);
   const content = useRef<HTMLDivElement>(null);
@@ -28,6 +30,7 @@ export default function DocPane({ id, model }: { id: FileTab; model: RoomModel }
   const [natural, setNatural] = useState({ w: 0, h: 0 });
   const [paneW, setPaneW] = useState(0);
   const [page, setPage] = useState({ at: 1, of: 1 });
+  const [copying, setCopying] = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
   const teacher = model.role === "teacher";
   const followed = teacher ? undefined : model.sync.positionOf(id);
@@ -120,7 +123,8 @@ export default function DocPane({ id, model }: { id: FileTab; model: RoomModel }
 
   async function copyToTextPad() {
     if (!file?.bytes) return;
-    setCopied("Copying…");
+    setCopying(true);
+    setCopied(null);
     try {
       const mammoth = await import("mammoth");
       const { value } = await mammoth.convertToHtml({ arrayBuffer: file.bytes.slice(0) });
@@ -133,21 +137,23 @@ export default function DocPane({ id, model }: { id: FileTab; model: RoomModel }
       if (textAt !== -1) model.actions?.pick(textAt);
       else if (tabs.length < 2) model.actions?.open("text");
       else {
-        const other = tabs.findIndex((t) => t !== id);
-        replaced = tabLabel(tabs[other], model.names);
+        const other = tabs.findIndex((tab) => tab !== id);
+        replaced = tabLabel(tabs[other], model.names, t.stage.tabs);
         model.actions?.openAt("text", other);
       }
-      setCopied(
-        `Copied into the text pad${replaced ? `, which took ${replaced}'s place` : ""}. Pictures stay in the Word file.`,
-      );
+      setCopied(t.stage.doc.copied(replaced));
     } catch {
-      setCopied("The text couldn't be copied from this file.");
+      setCopied(t.stage.doc.copyFailed);
+    } finally {
+      setCopying(false);
     }
   }
 
-  if (failed || broken) return <Message>This Word file couldn&apos;t be opened.</Message>;
+  if (failed || broken) return <Message>{t.stage.doc.failed}</Message>;
 
-  const note = teacher ? `${cap(model.otherName)} sees page ${page.at}` : `${cap(model.otherName)} chooses the page`;
+  const note = teacher
+    ? t.stage.pdf.seesPage(cap(model.otherName), page.at)
+    : t.stage.pdf.choosesPage(cap(model.otherName));
 
   return (
     <div
@@ -161,25 +167,23 @@ export default function DocPane({ id, model }: { id: FileTab; model: RoomModel }
       }}
     >
       <div className="sticky top-0 z-10 flex min-h-11 flex-wrap items-center gap-2 border-b border-line bg-surface px-3 py-1.5 text-[13px] text-ink-muted">
-        <span>
-          Page {page.at} of {page.of}
-        </span>
+        <span>{t.stage.pdf.pageOf(page.at, page.of)}</span>
         <span className="flex-1" />
         <span>{note}</span>
         {teacher && (
           <button
             type="button"
-            disabled={!file?.bytes || copied === "Copying…"}
+            disabled={!file?.bytes || copying}
             onClick={copyToTextPad}
-            title="Put the text into the text pad, where you can both work on it"
+            title={t.stage.doc.copyTitle}
             className="inline-flex h-8 items-center gap-1.5 rounded-md border border-line bg-surface px-2.5 text-sm font-medium text-ink hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-50"
           >
             <ClipboardCopy size={16} aria-hidden />
-            Copy into the text pad
+            {t.stage.doc.copy}
           </button>
         )}
       </div>
-      {!ready && <Message>Opening the Word file…</Message>}
+      {!ready && <Message>{t.stage.doc.opening}</Message>}
       {/* The pages at their own size, scaled to the pane (the box below takes the scaled size). */}
       <div className="mx-auto overflow-hidden" style={{ width: natural.w * scale || undefined, height: height || undefined }}>
         <div
@@ -189,7 +193,7 @@ export default function DocPane({ id, model }: { id: FileTab; model: RoomModel }
           style={{ transform: scale ? `scale(${scale})` : undefined, visibility: ready ? "visible" : "hidden" }}
         />
       </div>
-      {copied && copied !== "Copying…" && (
+      {copied && (
         <p
           role="status"
           onAnimationEnd={() => setCopied(null)}

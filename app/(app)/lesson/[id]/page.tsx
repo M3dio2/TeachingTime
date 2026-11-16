@@ -15,7 +15,7 @@ const NEW_LESSON_AFTER_MS = 3 * 60 * 60 * 1000;
 
 export default function LessonPage({ params }: PageProps<"/lesson/[id]">) {
   return (
-    <Suspense fallback={<LoadingScreen title="Getting your lesson ready" />}>
+    <Suspense fallback={<LoadingScreen />}>
       <Lesson params={params} />
     </Suspense>
   );

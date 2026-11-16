@@ -1,5 +1,6 @@
 import { AccessToken, RoomConfiguration, TrackSource } from "livekit-server-sdk";
 import { after } from "next/server";
+import { getT } from "@/lib/i18n/server";
 import { MAX_LESSON_HOURS, MONTHLY_LESSON_HOURS } from "@/lib/limits";
 import { closeRoom, roomName } from "@/lib/livekit";
 import { clientIp, LIMITS, overMemoryLimit, sharedLimit, tooMany } from "@/lib/rateLimit";
@@ -13,10 +14,12 @@ type Role = "teacher" | "student";
 // Identities are fixed (teacher account; one student per lesson), so joining again from another
 // tab or device makes LiveKit drop the older one (DisconnectReason.DUPLICATE_IDENTITY).
 export async function POST(request: Request) {
+  // Error messages are shown to the teacher or student, so in their language.
+  const { room: t } = await getT();
   const apiKey = process.env.LIVEKIT_API_KEY;
   const apiSecret = process.env.LIVEKIT_API_SECRET;
   if (!apiKey || !apiSecret) {
-    return Response.json({ error: "LiveKit keys are not configured" }, { status: 500 });
+    return Response.json({ error: t.errors.notConfigured }, { status: 500 });
   }
 
   // Rate limit per IP (lib/rateLimit.ts): memory first; the shared count runs alongside the
@@ -47,10 +50,10 @@ export async function POST(request: Request) {
       supabase.from("lessons").select("id").eq("id", body.lessonId).maybeSingle(),
     ]);
     if (!user) {
-      return Response.json({ error: "Please log in" }, { status: 401 });
+      return Response.json({ error: t.errors.logIn }, { status: 401 });
     }
     if (!lesson) {
-      return Response.json({ error: "Lesson not found" }, { status: 404 });
+      return Response.json({ error: t.errors.lessonNotFound }, { status: 404 });
     }
     lessonId = lesson.id;
     role = "teacher";
@@ -68,7 +71,7 @@ export async function POST(request: Request) {
   } else if (typeof body.slug === "string") {
     name = typeof body.name === "string" ? body.name.trim().slice(0, 40) : "";
     if (!name) {
-      return Response.json({ error: "Name is required" }, { status: 400 });
+      return Response.json({ error: t.errors.nameRequired }, { status: 400 });
     }
     const { data: lesson } = await createAdminClient()
       .from("lessons")
@@ -78,7 +81,7 @@ export async function POST(request: Request) {
     // A quick call's link stops working after 12 hours, even before the dashboard removes it.
     const expired = lesson?.kind === "quick" && !isWithin(lesson.created_at, QUICK_CALL_MAX_AGE_MS);
     if (!lesson || expired) {
-      return Response.json({ error: "This invite link is not valid" }, { status: 404 });
+      return Response.json({ error: t.errors.invalidInvite }, { status: 404 });
     }
     lessonId = lesson.id;
     role = "student";
@@ -89,7 +92,7 @@ export async function POST(request: Request) {
     identity = `student-${lesson.id}`;
     teacherId = lesson.teacher_id;
   } else {
-    return Response.json({ error: "Bad request" }, { status: 400 });
+    return Response.json({ error: t.errors.badRequest }, { status: 400 });
   }
 
   if (!(await withinShared)) return tooMany();
@@ -100,8 +103,8 @@ export async function POST(request: Request) {
       {
         error:
           role === "teacher"
-            ? `You've used this month's ${MONTHLY_LESSON_HOURS} hours of lessons (TeachingTime is free while it's new). They come back on the 1st.`
-            : "Your teacher's lesson time for this month is used up. Please ask them.",
+            ? t.errors.monthLimitTeacher(MONTHLY_LESSON_HOURS)
+            : t.errors.monthLimitStudent,
         code: "month_limit",
       },
       { status: 403 },
@@ -112,7 +115,7 @@ export async function POST(request: Request) {
     await closeRoom(lessonId);
     return Response.json(
       {
-        error: `This lesson ran for ${MAX_LESSON_HOURS} hours, the most for one lesson, so it ended. Start it again to continue.`,
+        error: t.errors.lessonLimit(MAX_LESSON_HOURS),
         code: "lesson_limit",
       },
       { status: 403 },

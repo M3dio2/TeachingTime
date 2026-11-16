@@ -2,6 +2,7 @@
 
 import { ExternalLink, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { useLoadedFile } from "@/lib/room/fileCache";
 import { videoPosition, type VideoState, youtubeId, youtubeStart } from "@/lib/room/links";
 import type { FileTab } from "@/lib/room/tabs";
@@ -58,6 +59,7 @@ function loadApi() {
 const DRIFT = 1.5; // seconds the student may be off before a jump
 
 export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel }) {
+  const t = useT();
   const { file, failed } = useLoadedFile(model.inviteSlug, id);
   const box = useRef<HTMLDivElement>(null);
   const player = useRef<Player | null>(null);
@@ -185,7 +187,7 @@ export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel
     // E.g. the owner doesn't allow the video on other sites (YouTube error 101/150).
     return (
       <div className="flex h-full flex-col items-center justify-center gap-3 bg-video p-4 text-center text-sm text-surface-2">
-        <p>This video can&apos;t be played inside the lesson.</p>
+        <p>{t.stage.video.cantPlay}</p>
         {file?.url && (
           <a
             href={file.url}
@@ -193,7 +195,7 @@ export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel
             rel="noopener noreferrer"
             className="inline-flex h-10 items-center gap-2 rounded-md bg-surface px-4 font-medium text-ink"
           >
-            Watch on YouTube
+            {t.stage.video.watchOnYouTube}
             <ExternalLink size={16} aria-hidden />
           </a>
         )}
@@ -202,8 +204,8 @@ export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel
   }
 
   const note = teacher
-    ? `${cap(model.otherName)} watches along: play, pause or jump, it follows you`
-    : `${cap(model.otherName)} controls the video`;
+    ? t.stage.video.teacherNote(cap(model.otherName))
+    : t.stage.video.studentNote(cap(model.otherName));
 
   return (
     <div className="flex h-full flex-col gap-3 bg-video p-3 text-surface-2">
@@ -211,7 +213,7 @@ export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel
         <div ref={box} data-testid="video-player" data-following={followed ? (followed.playing ? "playing" : "paused") : "none"} className="absolute inset-0 [&_iframe]:h-full [&_iframe]:w-full" />
         {/* The student can't click the player (it follows the teacher). */}
         {!teacher && <div className="absolute inset-0" aria-hidden />}
-        {!ready && <p className="absolute inset-0 flex items-center justify-center text-sm">Opening the video…</p>}
+        {!ready && <p className="absolute inset-0 flex items-center justify-center text-sm">{t.stage.video.opening}</p>}
         {needsTap && (
           <button
             type="button"
@@ -222,7 +224,7 @@ export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel
             className="absolute bottom-3 left-1/2 inline-flex h-11 -translate-x-1/2 items-center gap-2 rounded-md bg-marker px-4 font-semibold text-ink shadow-soft"
           >
             <Volume2 size={18} aria-hidden />
-            Tap to hear the video
+            {t.stage.video.tapToHear}
           </button>
         )}
       </div>

@@ -16,25 +16,22 @@ import {
 import { useEffect, useState } from "react";
 import { MUTED_BY_TEACHER_TOPIC } from "@/lib/mute";
 import CopyLinkButton from "@/components/CopyLinkButton";
+import { useT } from "@/lib/i18n/client";
+import type { Messages } from "@/lib/i18n/messages";
 import type { Role } from "./LessonRoom";
 
 // Turns a camera/microphone failure into advice the teacher or student can act on.
-export function deviceProblemMessage(failure?: MediaDeviceFailure, kind?: MediaDeviceKind) {
-  const device =
-    kind === "videoinput"
-      ? "camera"
-      : kind === "audioinput"
-        ? "microphone"
-        : "camera or microphone";
+export function deviceProblemMessage(t: Messages, failure?: MediaDeviceFailure, kind?: MediaDeviceKind) {
+  const device = kind === "videoinput" ? "camera" : kind === "audioinput" ? "microphone" : "either";
   switch (failure) {
     case MediaDeviceFailure.PermissionDenied:
-      return `Your browser blocked the ${device}. Click the icon at the left of the address bar, allow the ${device}, then reload the page. If it is already allowed there, allow your browser in your computer's privacy settings (Mac: System Settings → Privacy & Security → Camera / Microphone).`;
+      return t.room.device.blocked(device);
     case MediaDeviceFailure.NotFound:
-      return `No ${device} was found. Check that it is connected, then reload the page.`;
+      return t.room.device.notFound(device);
     case MediaDeviceFailure.DeviceInUse:
-      return `Your ${device} is being used by another app (for example Zoom or Teams). Close that app, then reload the page.`;
+      return t.room.device.inUse(device);
     default:
-      return `Your ${device} could not be started. Reload the page to try again.`;
+      return t.room.device.failed(device);
   }
 }
 
@@ -81,6 +78,7 @@ export default function StatusBanner({
   problem: string | null;
   onDismissProblem: () => void;
 }) {
+  const t = useT();
   const connection = useConnectionState();
   const others = useRemoteParticipants();
   const [mutedByTeacher, dismissMuted] = useMutedByTeacher(role === "student");
@@ -89,7 +87,7 @@ export default function StatusBanner({
     connection === ConnectionState.Reconnecting ||
     connection === ConnectionState.SignalReconnecting
   ) {
-    return <Banner tone="warning">Connection lost. Reconnecting…</Banner>;
+    return <Banner tone="warning">{t.room.reconnecting}</Banner>;
   }
   if (problem) {
     return (
@@ -101,7 +99,7 @@ export default function StatusBanner({
   if (mutedByTeacher) {
     return (
       <Banner tone="info" onDismiss={dismissMuted}>
-        Your teacher muted your microphone. Click the microphone button to speak again.
+        {t.room.mutedByTeacher}
       </Banner>
     );
   }
@@ -112,8 +110,8 @@ export default function StatusBanner({
         action={role === "teacher" && inviteSlug ? <CopyLinkButton slug={inviteSlug} /> : undefined}
       >
         {role === "teacher"
-          ? "Waiting for your student to join. Send them the student link."
-          : "Waiting for your teacher to join…"}
+          ? t.room.waitingForStudent
+          : t.room.waitingForTeacher}
       </Banner>
     );
   }
@@ -136,6 +134,7 @@ function Banner({
     warning: "border-warn/30 bg-warn-soft text-warn",
     error: "border-danger/30 bg-danger-soft text-danger",
   }[tone];
+  const t = useT();
 
   return (
     <div
@@ -144,7 +143,7 @@ function Banner({
       <p className="flex-1 self-center">{children}</p>
       {action}
       {onDismiss && (
-        <button onClick={onDismiss} aria-label="Dismiss" className="opacity-70 hover:opacity-100">
+        <button onClick={onDismiss} aria-label={t.room.dismiss} className="opacity-70 hover:opacity-100">
           ✕
         </button>
       )}

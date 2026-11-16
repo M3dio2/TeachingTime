@@ -14,13 +14,15 @@ import {
   removeInk,
   TEXT_SIZE,
 } from "@/lib/room/pdfInk";
+import { useT } from "@/lib/i18n/client";
 
-const TOOLS: { id: PickedTool; label: string; Icon: typeof Hand }[] = [
-  { id: "scroll", label: "Scroll", Icon: Hand },
-  { id: "pen", label: "Pen", Icon: PenLine },
-  { id: "highlighter", label: "Highlighter", Icon: Highlighter },
-  { id: "text", label: "Text", Icon: Type },
-  { id: "eraser", label: "Eraser", Icon: Eraser },
+// Labels in t.stage.pdf.tools, by id.
+const TOOLS: { id: PickedTool; Icon: typeof Hand }[] = [
+  { id: "scroll", Icon: Hand },
+  { id: "pen", Icon: PenLine },
+  { id: "highlighter", Icon: Highlighter },
+  { id: "text", Icon: Type },
+  { id: "eraser", Icon: Eraser },
 ];
 
 // The PDF tab's toolbar (docs/mockups/pdf-drawing.html), sticky at the top of the pages.
@@ -39,20 +41,23 @@ export function InkToolbar({
   onSave?: () => void; // teacher in a student lesson
   saving?: boolean;
 }) {
+  const t = useT();
+  const p = t.stage.pdf;
   return (
     <div
       role="toolbar"
-      aria-label="Write on the PDF"
+      aria-label={p.toolbar}
       className="sticky top-2 z-10 flex h-[42px] shrink-0 items-center gap-0.5 self-center rounded-panel border border-line bg-surface p-1 shadow-soft"
     >
-      {TOOLS.map(({ id, label, Icon }) => {
+      {TOOLS.map(({ id, Icon }) => {
+        const label = p.tools[id];
         const on = canEdit && tool === id;
         return (
           <button
             key={id}
             type="button"
             aria-label={label}
-            title={canEdit ? label : `${label} (your teacher hasn't let you write)`}
+            title={canEdit ? label : p.notAllowed(label)}
             aria-pressed={on}
             disabled={!canEdit}
             onClick={() => onTool(id)}
@@ -69,10 +74,10 @@ export function InkToolbar({
           <span className="mx-1 h-5 w-px bg-line" aria-hidden />
           <button
             type="button"
-            aria-label="Clear the writing on this PDF for both of you"
-            title="Clear the writing on this PDF for both of you"
+            aria-label={p.clear}
+            title={p.clear}
             onClick={() => {
-              if (confirm("Clear the writing on this PDF for both of you?")) onClear();
+              if (confirm(p.clearConfirm)) onClear();
             }}
             className="inline-flex h-8 w-8 items-center justify-center rounded-md text-danger transition-colors hover:bg-danger hover:text-white focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           >
@@ -87,12 +92,12 @@ export function InkToolbar({
             type="button"
             onClick={onSave}
             disabled={saving}
-            title="Save a copy with the writing in the classroom"
+            title={p.saveTitle}
             className="inline-flex h-8 items-center gap-1.5 rounded-md px-2.5 text-sm font-semibold text-ink hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
           >
             <Download size={16} aria-hidden />
-            <span className="hidden @[420px]:inline">{saving ? "Saving…" : "Save as new PDF"}</span>
-            <span className="sr-only @[420px]:hidden">{saving ? "Saving…" : "Save as new PDF"}</span>
+            <span className="hidden @[420px]:inline">{saving ? t.common.saving : p.saveAsNew}</span>
+            <span className="sr-only @[420px]:hidden">{saving ? t.common.saving : p.saveAsNew}</span>
           </button>
         </>
       )}
@@ -148,6 +153,7 @@ export function InkLayer({
   width: number;
   height: number;
 }) {
+  const t = useT();
   const svg = useRef<SVGSVGElement>(null);
   const drawing = useRef<number[] | null>(null);
   const [live, setLive] = useState<number[] | null>(null);
@@ -174,8 +180,8 @@ export function InkLayer({
     text = (
       <input
         autoFocus
-        aria-label="Text on the PDF"
-        placeholder="Type, then Enter"
+        aria-label={t.stage.pdf.textLabel}
+        placeholder={t.stage.pdf.textPlaceholder}
         onKeyDown={(e) => {
           if (e.key === "Enter") commit(e.currentTarget.value);
           if (e.key === "Escape") setTyping(null);

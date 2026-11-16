@@ -2,19 +2,23 @@
 // minimum length 10, "letters and digits"), so a form that skips this still can't save a weak one.
 export const PASSWORD_MIN_LENGTH = 10;
 
+import type { Messages } from "@/lib/i18n/messages";
+
+// Labels come from the dictionary (t.auth), so they follow the page's language.
 export const passwordRules = [
   {
-    label: `${PASSWORD_MIN_LENGTH} characters or more`,
+    id: "length",
+    label: (t: Messages) => t.auth.ruleLength(PASSWORD_MIN_LENGTH),
     test: (p: string) => p.length >= PASSWORD_MIN_LENGTH,
   },
-  { label: "Letters and numbers", test: (p: string) => /\p{L}/u.test(p) && /\d/.test(p) },
+  { id: "mix", label: (t: Messages) => t.auth.ruleMix, test: (p: string) => /\p{L}/u.test(p) && /\d/.test(p) },
 ];
 
 // What's wrong, in plain words, or null when the password can be saved.
-export function passwordProblem(password: string, confirm: string) {
+export function passwordProblem(password: string, confirm: string, t: Messages) {
   if (!passwordRules.every((rule) => rule.test(password))) {
-    return `Please use at least ${PASSWORD_MIN_LENGTH} characters, with letters and numbers.`;
+    return t.auth.passwordTooWeak(PASSWORD_MIN_LENGTH);
   }
-  if (password !== confirm) return "The two passwords don't match.";
+  if (password !== confirm) return t.auth.passwordsDontMatch;
   return null;
 }

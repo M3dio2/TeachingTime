@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { youtubeId } from "@/lib/room/links";
 import { fileTabId, type FileTab } from "@/lib/room/tabs";
 import type { RoomModel } from "./roomModel";
@@ -29,12 +30,17 @@ export type RoomFile = {
   url?: string; // links only
 };
 
-const SECTIONS: { kind: RoomFile["kind"]; title: string; Icon: LucideIcon }[] = [
-  { kind: "pdf", title: "PDFs", Icon: FileText },
-  { kind: "doc", title: "Word files", Icon: FileType2 },
-  { kind: "image", title: "Pictures", Icon: ImageIcon },
-  { kind: "audio", title: "Audio", Icon: Music },
-  { kind: "link", title: "Links", Icon: Link2 },
+// `title` names the heading in t.stage.files.
+const SECTIONS: {
+  kind: RoomFile["kind"];
+  title: "pdfs" | "docs" | "pictures" | "audio" | "links";
+  Icon: LucideIcon;
+}[] = [
+  { kind: "pdf", title: "pdfs", Icon: FileText },
+  { kind: "doc", title: "docs", Icon: FileType2 },
+  { kind: "image", title: "pictures", Icon: ImageIcon },
+  { kind: "audio", title: "audio", Icon: Music },
+  { kind: "link", title: "links", Icon: Link2 },
 ];
 
 export const tabOf = (f: RoomFile): FileTab | null =>
@@ -90,12 +96,13 @@ export function FilesPanel({
   model: RoomModel;
   onDrag: (file: RoomFile | null) => void;
 }) {
+  const t = useT();
   const opener = useFileOpener(model);
   const hint = opener.fullHint
-    ? "Two tabs are open. Close one first, or drag the file onto a tab to replace it."
+    ? t.stage.files.hintFullClicked
     : opener.full
-      ? "Two tabs are open. Drag a file onto one to replace it."
-      : "Click a file or link to open it, press play for audio, or drag anything onto the stage.";
+      ? t.stage.files.hintFull
+      : t.stage.files.hint;
   return (
     <aside
       aria-label={title}
@@ -106,8 +113,8 @@ export function FilesPanel({
         <span className="truncate text-[15px] font-semibold">{title}</span>
         <button
           type="button"
-          aria-label="Fold the files"
-          title="Fold the files"
+          aria-label={t.stage.files.fold}
+          title={t.stage.files.fold}
           onClick={onFold}
           className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
         >
@@ -143,6 +150,8 @@ export function FileList({
   onOpen: (id: FileTab) => void;
   onDrag?: (file: RoomFile | null) => void;
 }) {
+  const t = useT();
+  const ft = t.stage.files;
   // Dragging works the same for every kind: PDFs and pictures open in a tab, audio plays.
   const dragProps = (f: RoomFile) => ({
     draggable: Boolean(onDrag),
@@ -158,21 +167,20 @@ export function FileList({
     const id = tabOf(f)!;
     return {
       type: "button" as const,
-      title: onDrag ? "Click to open, or drag onto the stage" : `Show ${f.name}`,
+      title: onDrag ? ft.clickOrDrag : ft.show(f.name),
       onClick: () => onOpen(id),
       ...dragProps(f),
     };
   };
   if (!files.length) {
     return (
-      <p className="p-4 text-sm text-ink-muted">
-        No files yet. Upload pictures, PDFs and audio in the classroom.
-      </p>
+      <p className="p-4 text-sm text-ink-muted">{ft.empty}</p>
     );
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-2 py-3">
-      {SECTIONS.map(({ kind, title, Icon }) => {
+      {SECTIONS.map(({ kind, title: key, Icon }) => {
+        const title = ft[key];
         const items = files.filter((f) => f.kind === kind);
         if (!items.length) return null;
         return (
@@ -186,7 +194,7 @@ export function FileList({
                     <li key={f.id} className="min-w-0">
                       <button
                         {...fileProps(f)}
-                        aria-label={`Open ${f.name}`}
+                        aria-label={ft.open(f.name)}
                         className="block w-full min-w-0 cursor-grab rounded-md text-left focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
                       >
                         <span className="relative flex aspect-square items-center justify-center overflow-hidden rounded-md bg-surface-2 text-ink-muted">
@@ -202,7 +210,7 @@ export function FileList({
                                 status === "on" ? "bg-marker-soft text-marker-ink" : "bg-surface-2 text-ink-muted"
                               }`}
                             >
-                              {status === "on" ? "On screen" : "In a tab"}
+                              {status === "on" ? ft.onScreen : ft.inATab}
                             </span>
                           )}
                         </span>
@@ -241,7 +249,7 @@ export function FileList({
                               status === "on" ? "bg-marker-soft text-marker-ink" : "bg-surface-2 text-ink-muted"
                             }`}
                           >
-                            {status === "on" ? "On screen" : "In a tab"}
+                            {status === "on" ? ft.onScreen : ft.inATab}
                           </span>
                         )}
                       </button>
@@ -259,29 +267,30 @@ export function FileList({
 
 // The folded panel: a 48 px strip of icons; each one unfolds it.
 export function FilesStrip({ title, onUnfold }: { title: string; onUnfold: () => void }) {
+  const t = useT();
   const button =
     "inline-flex h-9 w-9 items-center justify-center rounded-md hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none";
   return (
     <aside
-      aria-label={`${title}, folded`}
+      aria-label={t.stage.files.folded(title)}
       className="flex w-12 shrink-0 flex-col items-center gap-1 rounded-panel border border-line bg-surface py-1.5"
     >
       <button
         type="button"
-        aria-label={`Show ${title}`}
-        title={`Show ${title}`}
+        aria-label={t.stage.files.show(title)}
+        title={t.stage.files.show(title)}
         onClick={onUnfold}
         className={`${button} text-ink-muted`}
       >
         <PanelRightOpen size={16} aria-hidden />
       </button>
       <span aria-hidden className="my-1 h-px w-6 bg-line" />
-      {SECTIONS.map(({ kind, title: label, Icon }) => (
+      {SECTIONS.map(({ kind, title: key, Icon }) => (
         <button
           key={kind}
           type="button"
-          aria-label={label}
-          title={label}
+          aria-label={t.stage.files[key]}
+          title={t.stage.files[key]}
           onClick={onUnfold}
           className={`${button} text-accent`}
         >
@@ -306,12 +315,13 @@ function AudioRow({
   const current = model.view.audio?.id === file.id ? model.view.audio : null;
   const playing = Boolean(current && current.pausedAt === null);
   const loading = audio?.loading === file.id;
-  const label = `${playing ? "Pause" : "Play"} ${file.name}`;
+  const t = useT();
+  const label = playing ? t.stage.files.pause(file.name) : t.stage.files.play(file.name);
   return (
     <li
       {...drag}
       data-file-id={file.id}
-      title={drag ? "Press play, or drag onto the stage" : undefined}
+      title={drag ? t.stage.files.playOrDrag : undefined}
       className={`flex items-center gap-2.5 rounded-md p-2 ${drag ? "cursor-grab hover:bg-paper" : ""}`}
     >
       <button
@@ -333,7 +343,7 @@ function AudioRow({
         )}
       </button>
       <span className="min-w-0 flex-1 truncate text-sm font-medium">{file.name}</span>
-      {playing && <span className="shrink-0 rounded bg-marker-soft px-1.5 text-xs font-medium text-marker-ink">Playing</span>}
+      {playing && <span className="shrink-0 rounded bg-marker-soft px-1.5 text-xs font-medium text-marker-ink">{t.stage.files.playing}</span>}
     </li>
   );
 }

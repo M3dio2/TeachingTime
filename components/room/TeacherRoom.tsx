@@ -4,9 +4,10 @@ import { DisconnectReason } from "livekit-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { leaveQuickCall } from "@/app/dashboard/actions";
+import { leaveQuickCall } from "@/app/(app)/dashboard/actions";
 import { markLeavingLesson } from "@/components/dashboard/DashboardBits";
 import Button, { buttonClass } from "@/components/ui/Button";
+import { useT } from "@/lib/i18n/client";
 import LessonRoom, { type SavedLesson } from "./LessonRoom";
 import LoadingScreen from "./LoadingScreen";
 import RoomMessage from "./RoomMessage";
@@ -14,6 +15,8 @@ import RoomMessage from "./RoomMessage";
 export default function TeacherRoom({ lesson }: { lesson: SavedLesson }) {
   const lessonId = lesson.id;
   const router = useRouter();
+  const t = useT();
+  const couldNotStart = t.room.couldNotStart;
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [replaced, setReplaced] = useState(false); // the lesson was opened in another tab
@@ -28,9 +31,9 @@ export default function TeacherRoom({ lesson }: { lesson: SavedLesson }) {
       .then(async (res) => {
         const data = await res.json();
         if (res.ok) setToken(data.token);
-        else setError(data.error ?? "Could not start the lesson");
+        else setError(data.error ?? couldNotStart);
       })
-      .catch(() => setError("Could not start the lesson"));
+      .catch(() => setError(couldNotStart));
     // Next keeps a left page alive but hidden (and re-runs this effect when you come back), so
     // start fresh: otherwise "Start lesson" for the same lesson showed "Leaving the lesson" forever.
     return () => {
@@ -39,15 +42,15 @@ export default function TeacherRoom({ lesson }: { lesson: SavedLesson }) {
       setReplaced(false);
       setError(null);
     };
-  }, [lessonId]);
+  }, [lessonId, couldNotStart]);
 
   if (error) {
     return (
       <RoomMessage
-        title="This lesson can't start"
+        title={t.room.cantStartTitle}
         actions={
           <Link href="/dashboard" className={buttonClass("primary", "md")}>
-            Back to dashboard
+            {t.room.backToDashboard}
           </Link>
         }
       >
@@ -56,28 +59,28 @@ export default function TeacherRoom({ lesson }: { lesson: SavedLesson }) {
     );
   }
   if (leaving) {
-    return <LoadingScreen title="Leaving the lesson" />;
+    return <LoadingScreen title={t.room.leavingLesson} />;
   }
   if (replaced) {
     return (
       <RoomMessage
-        title="You joined this lesson in another tab."
+        title={t.room.replacedTabTitle}
         actions={
           <>
             {/* A reload loads the latest saved board before joining again. */}
-            <Button onClick={() => window.location.reload()}>Continue here</Button>
+            <Button onClick={() => window.location.reload()}>{t.room.continueHere}</Button>
             <Link href="/dashboard" className={buttonClass("secondary", "md")}>
-              Back to dashboard
+              {t.room.backToDashboard}
             </Link>
           </>
         }
       >
-        Close this tab, or continue here to leave the other one.
+        {t.room.replacedTabText}
       </RoomMessage>
     );
   }
   if (!token) {
-    return <LoadingScreen title="Getting your lesson ready" />;
+    return <LoadingScreen />;
   }
   return (
     <LessonRoom

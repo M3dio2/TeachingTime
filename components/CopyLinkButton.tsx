@@ -3,12 +3,13 @@
 import { Link2 } from "lucide-react";
 import { useState } from "react";
 import Button from "@/components/ui/Button";
+import { useT } from "@/lib/i18n/client";
 
 // Copies the student link (/join/<slug>). `label` is the visible text; `name` (optional) makes
 // the accessible name say whose link it is ("Copy Anna's student link").
 export default function CopyLinkButton({
   slug,
-  label = "Copy student link",
+  label,
   name,
   variant = "secondary",
   icon = false,
@@ -20,6 +21,7 @@ export default function CopyLinkButton({
   icon?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
+  const t = useT();
 
   async function copy() {
     await navigator.clipboard.writeText(`${window.location.origin}/join/${slug}`);
@@ -33,11 +35,11 @@ export default function CopyLinkButton({
       variant={variant}
       size="sm"
       onClick={copy}
-      aria-label={name ? `Copy ${name}'s student link` : undefined}
-      className={variant === "ghost" ? "text-ink!" : ""}
+      aria-label={name ? t.dashboard.copyNamesLink(name) : undefined}
+      className={variant === "ghost" ? "whitespace-nowrap text-ink!" : "whitespace-nowrap"}
     >
       {icon && <Link2 size={16} aria-hidden />}
-      {copied ? "Copied!" : label}
+      {copied ? t.dashboard.copied : (label ?? t.dashboard.copyStudentLink)}
     </Button>
   );
 }

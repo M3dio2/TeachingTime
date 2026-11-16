@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useSyncExternalStore } from "react";
 import LoadingScreen from "@/components/room/LoadingScreen";
 import SubmitButton from "@/components/ui/SubmitButton";
+import { useLocale, useT } from "@/lib/i18n/client";
 
 // Re-fetches the dashboard every 15 s so "Waiting" badges appear without reloading.
 export function AutoRefresh({ seconds = 15 }: { seconds?: number }) {
@@ -17,10 +18,11 @@ export function AutoRefresh({ seconds = 15 }: { seconds?: number }) {
 
 // Formats a date in the viewer's own time zone (the server runs in UTC).
 export function LocalDate({ iso }: { iso: string }) {
+  const locale = useLocale();
   const date = new Date(iso);
   return (
     <time dateTime={iso} suppressHydrationWarning>
-      {date.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" })}
+      {date.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short" })}
     </time>
   );
 }
@@ -52,6 +54,7 @@ export function markLeavingLesson() {
 }
 const noop = () => () => {};
 export function DashboardLoading() {
+  const t = useT();
   const leaving = useSyncExternalStore(
     noop,
     () => {
@@ -63,7 +66,7 @@ export function DashboardLoading() {
     },
     () => false,
   );
-  return <LoadingScreen title={leaving ? "Leaving the lesson" : "Loading your classrooms"} />;
+  return <LoadingScreen title={leaving ? t.dashboard.leavingLesson : t.dashboard.loadingClassrooms} />;
 }
 // Rendered with the classrooms: the wait is over.
 export function DoneLeaving() {

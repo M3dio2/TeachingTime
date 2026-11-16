@@ -2,6 +2,7 @@
 
 import { Music, Pause, Play, X } from "lucide-react";
 import { type KeyboardEvent, type PointerEvent, useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { audioPosition, formatTime } from "@/lib/room/audio";
 import type { RoomModel } from "./roomModel";
 
@@ -20,6 +21,7 @@ function useTicker(active: boolean) {
 // time, stop. Student: a music icon, title, progress and time; her bar runs on its own from the
 // teacher's attributes.
 export default function AudioBar({ model, phone = false }: { model: RoomModel; phone?: boolean }) {
+  const t = useT();
   const audio = model.view.audio;
   const controls = model.audio;
   const playing = Boolean(audio && audio.pausedAt === null);
@@ -62,8 +64,8 @@ export default function AudioBar({ model, phone = false }: { model: RoomModel; p
       {teacher ? (
         <button
           type="button"
-          aria-label={playing ? "Pause the audio" : "Play the audio"}
-          title={playing ? "Pause the audio" : "Play the audio"}
+          aria-label={playing ? t.stage.audio.pause : t.stage.audio.play}
+          title={playing ? t.stage.audio.pause : t.stage.audio.play}
           onClick={() => (playing ? controls?.pause() : controls?.play({ id: audio.id, name: audio.name }))}
           className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-white hover:bg-accent-hover focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:outline-none"
         >
@@ -77,11 +79,11 @@ export default function AudioBar({ model, phone = false }: { model: RoomModel; p
         ref={track}
         role="slider"
         tabIndex={teacher ? 0 : -1}
-        aria-label="Audio position"
+        aria-label={t.stage.audio.position}
         aria-valuemin={0}
         aria-valuemax={Math.round(audio.duration)}
         aria-valuenow={Math.round(pos)}
-        aria-valuetext={`${formatTime(pos)} of ${formatTime(audio.duration)}`}
+        aria-valuetext={t.stage.audio.timeOf(formatTime(pos), formatTime(audio.duration))}
         aria-readonly={!teacher}
         onPointerDown={startSeek}
         onKeyDown={key}
@@ -104,8 +106,8 @@ export default function AudioBar({ model, phone = false }: { model: RoomModel; p
       {teacher && (
         <button
           type="button"
-          aria-label="Stop the audio"
-          title="Stop the audio"
+          aria-label={t.stage.audio.stop}
+          title={t.stage.audio.stop}
           onClick={() => controls?.stop()}
           className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
         >

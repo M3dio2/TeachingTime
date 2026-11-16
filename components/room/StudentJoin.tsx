@@ -6,6 +6,7 @@ import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import Marker from "@/components/ui/Marker";
 import Wordmark from "@/components/ui/Wordmark";
+import { useT } from "@/lib/i18n/client";
 import { CameraPreview, type PreJoinTracks, useCameraCheck } from "./CameraCheck";
 import LessonRoom from "./LessonRoom";
 import RoomMessage from "./RoomMessage";
@@ -15,6 +16,7 @@ import RoomMessage from "./RoomMessage";
 type Exit = "left" | "ended" | "replaced";
 
 export default function StudentJoin({ slug }: { slug: string }) {
+  const t = useT();
   const [name, setName] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +36,7 @@ export default function StudentJoin({ slug }: { slug: string }) {
     const data = await res.json();
     setJoining(false);
     if (!res.ok) {
-      setError(data.error ?? "Could not join");
+      setError(data.error ?? t.room.couldNotJoin);
       return;
     }
     setExit(null);
@@ -65,23 +67,22 @@ export default function StudentJoin({ slug }: { slug: string }) {
 
   if (exit === "ended") {
     return (
-      <RoomMessage title="See you next time!" tick>
-        The lesson has ended. You can close this page.
+      <RoomMessage title={t.room.endedTitle} tick>
+        {t.room.endedText}
       </RoomMessage>
     );
   }
   if (exit === "replaced") {
     return (
       <RoomMessage
-        title="You joined this lesson somewhere else."
+        title={t.room.replacedTitle}
         actions={
           <Button disabled={joining} onClick={() => join()}>
-            {joining ? "Joining…" : "Continue here"}
+            {joining ? t.room.joining : t.room.continueHere}
           </Button>
         }
       >
-        This lesson is open on another device or tab. Close this page, or continue here to move the
-        lesson to this one.
+        {t.room.replacedText}
       </RoomMessage>
     );
   }
@@ -89,14 +90,14 @@ export default function StudentJoin({ slug }: { slug: string }) {
   if (exit === "left") {
     return (
       <RoomMessage
-        title="You left the lesson"
+        title={t.room.leftTitle}
         actions={
           <Button disabled={joining} onClick={() => join()} className="h-12 w-full text-[17px] font-semibold">
-            {joining ? "Joining…" : "Rejoin"}
+            {joining ? t.room.joining : t.room.rejoin}
           </Button>
         }
       >
-        Left by mistake? Join again with the same name.
+        {t.room.leftText}
         {error && <span className="mt-2 block text-sm text-danger">{error}</span>}
       </RoomMessage>
     );
@@ -119,6 +120,7 @@ function JoinCard({
   error: string | null;
   onJoin: (tracks: PreJoinTracks | null) => void;
 }) {
+  const t = useT();
   const check = useCameraCheck();
   return (
     <main className="flex min-h-dvh flex-1 items-center justify-center px-4 py-6">
@@ -133,21 +135,22 @@ function JoinCard({
         <CameraPreview check={check} />
         <div className="flex flex-col gap-1.5">
           <h1 className="text-[32px] leading-[1.1] tracking-[-0.02em]">
-            Join your{" "}
+            {t.room.joinTitle.before}
             <span className="relative isolate inline-block">
-              lesson
+              {t.room.joinTitle.marked}
               <Marker
                 shape="underline"
                 delay={0.2}
                 className="absolute -bottom-[0.15em] -left-[3%] -z-10 h-[0.3em] w-[106%]"
               />
             </span>
+            {t.room.joinTitle.after}
           </h1>
-          <p className="text-ink-muted">Check your camera, type your name, and you&apos;re in.</p>
+          <p className="text-ink-muted">{t.room.joinIntro}</p>
         </div>
         <Field
-          label="Your name"
-          placeholder="e.g. Anna"
+          label={t.room.yourName}
+          placeholder={t.room.namePlaceholder}
           value={name}
           onChange={(e) => setName(e.target.value)}
           autoComplete="given-name"
@@ -160,10 +163,10 @@ function JoinCard({
           </p>
         )}
         <Button disabled={joining} className="h-12 text-[17px] font-semibold">
-          {joining ? "Joining…" : "Join lesson"}
+          {joining ? t.room.joining : t.room.joinLesson}
         </Button>
         <p className="text-center text-[13px] leading-snug text-ink-muted">
-          When your browser asks, allow the camera and microphone.
+          {t.room.allowDevices}
         </p>
       </form>
     </main>

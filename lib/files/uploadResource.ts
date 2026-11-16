@@ -1,4 +1,8 @@
 import { createClient } from "@/lib/supabase/client";
+import { dashboard as enDashboard } from "@/lib/i18n/en/dashboard";
+
+// The messages for the teacher, in her language: pass `t.dashboard.upload` (default English).
+export type UploadMessages = typeof enDashboard.upload;
 
 export type ResourceKind = "image" | "pdf" | "audio" | "doc" | "link";
 
@@ -26,12 +30,14 @@ export async function uploadResource({
   file,
   contentType,
   ext,
+  messages = enDashboard.upload,
 }: {
   teacherId: string;
   lessonId: string;
   file: Blob & { name: string };
   contentType: string;
   ext: string;
+  messages?: UploadMessages;
 }): Promise<{ id: string } | { error: string }> {
   const supabase = createClient();
   // A random object name: the real name (any characters) is kept in the table.
@@ -41,10 +47,10 @@ export async function uploadResource({
     console.error("Upload failed", file.name, contentType, stored.error);
     return {
       error: /mime|type/i.test(stored.error.message)
-        ? `${file.name}: this kind of file isn't accepted yet.`
+        ? messages.notAccepted(file.name)
         : /row-level security/i.test(stored.error.message)
-          ? `${file.name} doesn't fit: your files can take up ${TEACHER_BYTES / MB} MB. Delete some first.`
-          : `${file.name} could not be uploaded. Please try again.`,
+          ? messages.noRoom(file.name, TEACHER_BYTES / MB)
+          : messages.failed(file.name),
     };
   }
   const row = await supabase
@@ -55,7 +61,7 @@ export async function uploadResource({
   if (row.error) {
     console.error("Saving the file failed", file.name, row.error);
     await supabase.storage.from("resources").remove([path]);
-    return { error: `${file.name} could not be uploaded. Please try again.` };
+    return { error: messages.failed(file.name) };
   }
   return { id: row.data.id as string };
 }

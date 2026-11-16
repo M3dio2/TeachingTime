@@ -1,0 +1,22 @@
+import type { common as en } from "../en/common";
+
+export const common: typeof en = {
+  save: "Guardar",
+  saving: "Guardando…",
+  cancel: "Cancelar",
+  close: "Cerrar",
+  send: "Enviar",
+  sending: "Enviando…",
+  remove: "Eliminar",
+  removing: "Eliminando…",
+  tryAgain: "Intentar de nuevo",
+  loading: "Cargando…",
+  more: "Más",
+  language: "Idioma",
+  chooseLanguage: "Elige el idioma de TeachingTime",
+  somethingWentWrong: "Algo salió mal",
+  crashText: "Lo sentimos. Ya nos llegó el aviso. Inténtalo de nuevo o recarga la página.",
+  backToStart: "Volver al inicio",
+  gettingLessonReady: "Preparando tu clase",
+  dragToResize: "Arrastra para cambiar el tamaño. También puedes usar las flechas.",
+};

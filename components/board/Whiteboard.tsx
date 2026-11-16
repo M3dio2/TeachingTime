@@ -7,6 +7,8 @@ import type { RemoteExcalidrawElement } from "@excalidraw/excalidraw/data/reconc
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import { type ReactNode, useEffect, useMemo, useRef } from "react";
 import type * as Y from "yjs";
+import { useLocale } from "@/lib/i18n/client";
+import { EXCALIDRAW_LANG } from "@/lib/i18n/locales";
 import ClearButton from "./ClearButton";
 
 const SEND_INTERVAL_MS = 50;
@@ -35,6 +37,7 @@ export default function Whiteboard({
   chip?: ReactNode;
   onClear?: () => void;
 }) {
+  const locale = useLocale();
   const board = useMemo(() => doc.getMap<OrderedExcalidrawElement>("board"), [doc]);
   const apiRef = useRef<ExcalidrawImperativeAPI | null>(null);
   const pending = useRef<readonly OrderedExcalidrawElement[] | null>(null);
@@ -107,6 +110,7 @@ export default function Whiteboard({
           elements: copiesFrom(board).sort((a, b) => ((a.index ?? "") < (b.index ?? "") ? -1 : 1)),
         }}
         viewModeEnabled={!editable}
+        langCode={EXCALIDRAW_LANG[locale]}
         renderTopRightUI={() => (
           onClear ? <ClearButton what="drawing" onClear={onClear} /> : null
         )}

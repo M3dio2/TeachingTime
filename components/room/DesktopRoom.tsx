@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import Handle from "@/components/ui/Handle";
+import { useT } from "@/lib/i18n/client";
 import { useStored, useWindowWidth } from "@/lib/useStored";
 import { CameraColumn, CameraRow } from "./CameraTiles";
 import { FilesPanel, FilesStrip, type RoomFile } from "./FilesPanel";
@@ -23,6 +24,7 @@ const CAMERA_ROW_HEIGHT = 128;
 // Widths and "folded" are personal and remembered in this browser; until the files panel is
 // folded or unfolded by hand, the window width decides.
 export default function DesktopRoom({ model }: { model: RoomModel }) {
+  const t = useT();
   const w = useWindowWidth();
   const row = useRef<HTMLDivElement>(null);
   const [camerasW, setCamerasW] = useStored<number | null>("room-cameras-width", null);
@@ -50,7 +52,7 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
         <>
           <CameraColumn width={columnW} onMute={model.onMute} />
           <Handle
-            label="Resize the camera column"
+            label={t.room.resizeCameras}
             onDrag={(x) => setCamerasW(clamp(x - edge("left") - 8, CAMERAS.min, CAMERAS.max))}
             onStep={(d) => setCamerasW(clamp(columnW + d * 16, CAMERAS.min, CAMERAS.max))}
           />
@@ -69,7 +71,7 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
         ) : (
           <>
             <Handle
-              label={`Resize ${model.filesTitle}`}
+              label={t.room.resizeFiles(model.filesTitle)}
               onDrag={(x) => setFilesW(clamp(edge("right") - 8 - x, FILES.min, FILES.max))}
               onStep={(d) => setFilesW(clamp(filesW - d * 16, FILES.min, FILES.max))}
             />

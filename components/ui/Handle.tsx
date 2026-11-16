@@ -1,6 +1,7 @@
 "use client";
 
 import type { KeyboardEvent, PointerEvent } from "react";
+import { useT } from "@/lib/i18n/client";
 
 // A resize handle (docs/DESIGN.md, "Handle"): a <button> with an 8 px hit area (12 px between
 // tabs) and a thin `line` mark that turns `accent` on hover and focus. Pointer drag reports the
@@ -16,6 +17,7 @@ export default function Handle({
   onStep: (direction: -1 | 1) => void;
   wide?: boolean;
 }) {
+  const t = useT();
   const start = (e: PointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return;
     e.preventDefault();
@@ -41,7 +43,7 @@ export default function Handle({
     <button
       type="button"
       aria-label={label}
-      title="Drag to resize. Arrow keys work too."
+      title={t.common.dragToResize}
       onPointerDown={start}
       onKeyDown={key}
       className={`group flex shrink-0 cursor-col-resize touch-none items-center justify-center self-stretch focus-visible:outline-none ${
