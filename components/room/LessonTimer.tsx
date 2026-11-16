@@ -3,7 +3,7 @@
 import { useConnectionState } from "@livekit/components-react";
 import { ConnectionState } from "livekit-client";
 import { useEffect, useRef } from "react";
-import { endLessonCall } from "@/app/lesson/[id]/actions";
+import { endLessonCall } from "@/app/(app)/lesson/[id]/actions";
 import { LESSON_WARNING_MINUTES, MAX_LESSON_HOURS } from "@/lib/limits";
 
 // Teacher only: at most 3 hours per lesson while TeachingTime is on free plans (G1).

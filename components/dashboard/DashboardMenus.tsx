@@ -1,8 +1,11 @@
 "use client";
 
-import { Check, Ellipsis, MessageSquare, Pencil, Trash2 } from "lucide-react";
-import { type ReactNode, useEffect, useRef, useState } from "react";
-import { removeLesson, sendFeedback, setTeacherName } from "@/app/dashboard/actions";
+import { Check, Ellipsis, Globe, MessageSquare, Pencil, Trash2 } from "lucide-react";
+import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
+import { removeLesson, sendFeedback, setLanguage, setTeacherName } from "@/app/(app)/dashboard/actions";
+import { useLocale, useT } from "@/lib/i18n/client";
+import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/locales";
+import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Field, { inputClass } from "@/components/ui/Field";
 import SubmitButton, { useFormPending } from "@/components/ui/SubmitButton";
@@ -78,6 +81,59 @@ export function NameChip({ name }: { name: string }) {
               Save
             </SubmitButton>
           </form>
+        </Popover>
+      )}
+    </div>
+  );
+}
+
+// Header: the language of TeachingTime for this teacher (I1). Shows the current language's
+// code (EN, DE …) and opens the four choices, each in its own language.
+export function LanguageMenu() {
+  const { open, setOpen, wrap } = usePopover();
+  const locale = useLocale();
+  const t = useT();
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <div ref={wrap} className="relative">
+      <button
+        type="button"
+        aria-label={`${t.common.language}: ${LOCALE_NAMES[locale]}`}
+        title={t.common.chooseLanguage}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onClick={() => setOpen(!open)}
+        className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+      >
+        <Globe size={16} aria-hidden />
+        <span className="uppercase">{locale}</span>
+      </button>
+      {open && (
+        <Popover className="w-48">
+          <div role="menu" aria-label={t.common.language} aria-busy={pending || undefined}>
+            {LOCALES.map((l) => (
+              <button
+                key={l}
+                type="button"
+                role="menuitemradio"
+                aria-checked={l === locale}
+                lang={l}
+                disabled={pending}
+                onClick={() =>
+                  start(async () => {
+                    await setLanguage(l);
+                    setOpen(false);
+                    router.refresh();
+                  })
+                }
+                className="flex h-10 w-full items-center justify-between gap-2.5 rounded-md px-2.5 text-left text-sm font-medium hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
+              >
+                {LOCALE_NAMES[l]}
+                {l === locale && <Check size={16} aria-hidden className="text-accent" />}
+              </button>
+            ))}
+          </div>
         </Popover>
       )}
     </div>

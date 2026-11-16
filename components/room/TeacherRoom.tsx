@@ -4,7 +4,7 @@ import { DisconnectReason } from "livekit-client";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { leaveQuickCall } from "@/app/dashboard/actions";
+import { leaveQuickCall } from "@/app/(app)/dashboard/actions";
 import { markLeavingLesson } from "@/components/dashboard/DashboardBits";
 import Button, { buttonClass } from "@/components/ui/Button";
 import LessonRoom, { type SavedLesson } from "./LessonRoom";

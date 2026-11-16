@@ -1,11 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { MAX_CLASSROOMS } from "@/lib/limits";
 import { linkLabel, normalizeUrl, youtubeId } from "@/lib/room/links";
 import { closeRoom } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
+import { isLocale, LOCALE_COOKIE } from "@/lib/i18n/locales";
 
 // Short, unguessable invite code for the student link.
 function newSlug() {
@@ -163,4 +165,14 @@ async function youtubeTitle(url: string) {
   } catch {
     return null;
   }
+}
+
+// The language menu in the dashboard header (I1): a cookie for this browser, and the teacher's
+// account (user_metadata.locale), so proxy.ts sets it on her other devices too.
+export async function setLanguage(locale: string) {
+  if (!isLocale(locale)) return;
+  (await cookies()).set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax" });
+  const supabase = await createClient();
+  await supabase.auth.updateUser({ data: { locale } });
+  revalidatePath("/", "layout");
 }

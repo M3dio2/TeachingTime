@@ -2,7 +2,7 @@
 
 import { FileText, FileType2, ImageIcon, Info, Link2, Music, Pause, Play, SquarePlay, Trash2, type LucideIcon } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { addLink, removeResource } from "@/app/dashboard/actions";
+import { addLink, removeResource } from "@/app/(app)/dashboard/actions";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
 import Button from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Field";
