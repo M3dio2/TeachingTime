@@ -6,11 +6,13 @@ import AuthCard, { FormError, submitClass } from "@/components/auth/AuthCard";
 import NewPasswordFields from "@/components/auth/NewPasswordFields";
 import Button from "@/components/ui/Button";
 import { authErrorMessage } from "@/lib/authErrors";
+import { useT } from "@/lib/i18n/client";
 import { passwordProblem } from "@/lib/passwordRules";
 import { createClient } from "@/lib/supabase/client";
 
 // Reached from the reset link (already logged in by /auth/confirm), or by a logged-in teacher.
 export default function ResetPasswordForm() {
+  const t = useT();
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -19,7 +21,7 @@ export default function ResetPasswordForm() {
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
-    const problem = passwordProblem(password, confirm);
+    const problem = passwordProblem(password, confirm, t);
     if (problem) {
       setError(problem);
       return;
@@ -29,7 +31,7 @@ export default function ResetPasswordForm() {
     const { error } = await createClient().auth.updateUser({ password });
     if (error) {
       setLoading(false);
-      setError(authErrorMessage(error));
+      setError(authErrorMessage(error, t));
       return;
     }
     router.push("/dashboard");
@@ -37,10 +39,10 @@ export default function ResetPasswordForm() {
   }
 
   return (
-    <AuthCard title="Choose a new password" intro="You'll use it the next time you log in.">
+    <AuthCard title={t.auth.resetTitle} intro={t.auth.resetIntro}>
       <form onSubmit={save} className="flex flex-col gap-4">
         <NewPasswordFields
-          label="New password"
+          label={t.auth.newPassword}
           password={password}
           confirm={confirm}
           onPasswordChange={setPassword}
@@ -48,7 +50,7 @@ export default function ResetPasswordForm() {
         />
         {error && <FormError>{error}</FormError>}
         <Button disabled={loading} className={submitClass}>
-          {loading ? "Saving…" : "Save password"}
+          {loading ? t.common.saving : t.auth.savePassword}
         </Button>
       </form>
     </AuthCard>

@@ -5,6 +5,7 @@ import { Track } from "livekit-client";
 import dynamic from "next/dynamic";
 import TextPad from "@/components/board/TextPad";
 import Chip from "@/components/ui/Chip";
+import { useT } from "@/lib/i18n/client";
 import { isFileTab, type TabId } from "@/lib/room/tabs";
 import { clearBoard, clearText } from "@/lib/sync/clearLesson";
 import { isTeacher } from "@/lib/sync/useTeacherSettings";
@@ -16,8 +17,13 @@ import { cap, type RoomModel } from "./roomModel";
 
 const Whiteboard = dynamic(() => import("@/components/board/Whiteboard"), {
   ssr: false,
-  loading: () => <p className="p-4 text-ink-muted">Loading whiteboard…</p>,
+  loading: () => <WhiteboardLoading />,
 });
+
+function WhiteboardLoading() {
+  const t = useT();
+  return <p className="p-4 text-ink-muted">{t.stage.loadingWhiteboard}</p>;
+}
 
 // The content of one tab. Screen shows the shared screen; Text and Draw are the shared doc.
 export default function TabPane({ id, model }: { id: TabId; model: RoomModel }) {
@@ -53,14 +59,20 @@ export default function TabPane({ id, model }: { id: TabId; model: RoomModel }) 
 
 // "Only you can write" / "Anna can write here" (teacher), "View only" / "You can write here".
 function WhoWrites({ model }: { model: RoomModel }) {
+  const t = useT();
   const can = model.view.studentCanEdit;
   if (model.role === "teacher") {
-    return can ? <Chip tone="ok">{cap(model.otherName)} can write here</Chip> : <Chip>Only you can write</Chip>;
+    return can ? (
+      <Chip tone="ok">{t.stage.canWriteHere(cap(model.otherName))}</Chip>
+    ) : (
+      <Chip>{t.stage.onlyYouCanWrite}</Chip>
+    );
   }
-  return can ? <Chip tone="ok">You can write here</Chip> : <Chip>View only</Chip>;
+  return can ? <Chip tone="ok">{t.stage.youCanWriteHere}</Chip> : <Chip>{t.stage.viewOnly}</Chip>;
 }
 
 function ScreenPane({ model }: { model: RoomModel }) {
+  const t = useT();
   const room = useRoomContext();
   const screen = useTracks([Track.Source.ScreenShare])
     .filter((t) => t.participant.isLocal || isTeacher(t.participant))
@@ -76,19 +88,19 @@ function ScreenPane({ model }: { model: RoomModel }) {
             style={{ width: "100%", height: "100%", objectFit: "contain" }}
           />
         ) : (
-          <p className="text-sm">Waiting for the screen…</p>
+          <p className="text-sm">{t.stage.waitingForScreen}</p>
         )}
       </div>
       {screen && (
         <div className="flex items-center gap-3 text-sm">
-          <span>{mine ? "You're sharing your screen" : `${screen.participant.name || model.otherName}'s screen`}</span>
+          <span>{mine ? t.stage.youAreSharing : t.stage.theirScreen(screen.participant.name || model.otherName)}</span>
           {mine && (
             <button
               type="button"
               onClick={() => room.localParticipant.setScreenShareEnabled(false).catch(console.error)}
               className="h-8 rounded-md border border-surface-2/45 px-3 text-white hover:bg-surface/10 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
             >
-              Stop sharing
+              {t.stage.stopSharing}
             </button>
           )}
         </div>

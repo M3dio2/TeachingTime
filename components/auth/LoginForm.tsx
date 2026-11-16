@@ -5,16 +5,18 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useSyncExternalStore } from "react";
 import AuthCard, { FormError, submitClass, textLink } from "@/components/auth/AuthCard";
-import { CAPTCHA_WAIT, CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
+import { CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
 import GoogleButton from "@/components/auth/GoogleButton";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import PasswordField from "@/components/ui/PasswordField";
 import { authErrorMessage } from "@/lib/authErrors";
+import { useT } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
 // Teacher login. New teachers create an account at /signup; students never log in.
 export default function LoginForm() {
+  const t = useT();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,7 +36,7 @@ export default function LoginForm() {
     captcha.reset();
     if (error) {
       setLoading(false);
-      setError(authErrorMessage(error));
+      setError(authErrorMessage(error, t));
       return;
     }
     router.push("/dashboard");
@@ -42,14 +44,14 @@ export default function LoginForm() {
   }
 
   return (
-    <AuthCard title="Teacher login" intro="Welcome back. Log in to see your classrooms.">
+    <AuthCard title={t.auth.loginTitle} intro={t.auth.loginIntro}>
       <GoogleFailed />
       <GoogleButton />
       <form onSubmit={logIn} className="flex flex-col gap-4">
         <Field
-          label="Email"
+          label={t.auth.email}
           type="email"
-          placeholder="you@example.com"
+          placeholder={t.auth.emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
@@ -57,11 +59,11 @@ export default function LoginForm() {
           required
         />
         <PasswordField
-          label="Password"
-          placeholder="Your password"
+          label={t.auth.password}
+          placeholder={t.auth.passwordPlaceholder}
           aside={
             <Link href="/forgot-password" className={`${textLink} text-sm`}>
-              Forgot your password?
+              {t.auth.forgotPasswordLink}
             </Link>
           }
           value={password}
@@ -73,13 +75,13 @@ export default function LoginForm() {
         <CaptchaBox {...captcha.box} />
         {error && <FormError>{error}</FormError>}
         <Button disabled={loading || captcha.token === null} className={submitClass}>
-          {loading ? "Logging in…" : captcha.token === null ? CAPTCHA_WAIT : "Log in"}
+          {loading ? t.auth.loggingIn : captcha.token === null ? t.auth.captchaWait : t.auth.logIn}
         </Button>
       </form>
       <p className="text-[15px] text-ink-muted">
-        New here?{" "}
+        {t.auth.newHere}{" "}
         <Link href="/signup" className={textLink}>
-          Create a teacher account
+          {t.auth.createTeacherAccount}
         </Link>
       </p>
       <div className="flex items-start gap-3 rounded-panel border border-line bg-surface px-4 py-3.5 text-sm leading-snug">
@@ -87,8 +89,8 @@ export default function LoginForm() {
           <Link2 size={16} aria-hidden />
         </span>
         <span>
-          <strong className="font-semibold">Are you a student?</strong>{" "}
-          <span className="text-ink-muted">Open the invite link from your teacher. You don&apos;t need an account.</span>
+          <strong className="font-semibold">{t.auth.areYouStudent}</strong>{" "}
+          <span className="text-ink-muted">{t.auth.studentHint}</span>
         </span>
       </div>
     </AuthCard>
@@ -97,10 +99,11 @@ export default function LoginForm() {
 
 // Back from Google without a session (cancelled, or the link was used twice).
 function GoogleFailed() {
+  const t = useT();
   const failed = useSyncExternalStore(
     () => () => {},
     () => new URLSearchParams(window.location.search).get("google") === "failed",
     () => false,
   );
-  return failed ? <FormError>Google sign-in didn&apos;t finish. Please try again, or log in with email.</FormError> : null;
+  return failed ? <FormError>{t.auth.googleFailed}</FormError> : null;
 }

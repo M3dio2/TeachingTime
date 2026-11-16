@@ -13,6 +13,7 @@ import {
   TEACHER_BYTES,
   uploadResource,
 } from "@/lib/files/uploadResource";
+import { useT } from "@/lib/i18n/client";
 
 export type { ResourceKind };
 
@@ -63,6 +64,7 @@ export function useFileUpload({
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
+  const t = useT().dashboard;
 
   async function upload(files: File[]) {
     setError("");
@@ -73,24 +75,24 @@ export function useFileUpload({
       const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "";
       const contentType = contentTypeOf(file, ext);
       if (ext === "doc") {
-        failed.push(`${file.name} is an old Word file. In Word, save it as .docx (or PDF), then upload that.`);
+        failed.push(t.upload.oldWord(file.name));
         continue;
       }
       if (!contentType) {
-        failed.push(`${file.name} is not a picture, PDF, Word or audio file.`);
+        failed.push(t.upload.wrongType(file.name));
         continue;
       }
       if (file.size > MAX_BYTES) {
-        failed.push(`${file.name} is bigger than 10 MB.`);
+        failed.push(t.upload.tooBig(file.name));
         continue;
       }
       if (used + file.size > TEACHER_BYTES) {
-        failed.push(`${file.name} doesn't fit: your files can take up ${TEACHER_BYTES / MB} MB. Delete some first.`);
+        failed.push(t.upload.noRoom(file.name, TEACHER_BYTES / MB));
         continue;
       }
 
-      setBusy(`Uploading ${file.name}…`);
-      const done = await uploadResource({ teacherId, lessonId, file, contentType, ext });
+      setBusy(t.uploading(file.name));
+      const done = await uploadResource({ teacherId, lessonId, file, contentType, ext, messages: t.upload });
       if ("error" in done) {
         failed.push(done.error);
         continue;
@@ -118,7 +120,7 @@ export function useFileUpload({
         className="h-11 w-full font-semibold md:h-10 md:w-auto"
       >
         <Upload size={16} aria-hidden />
-        Upload files
+        {t.uploadFiles}
       </Button>
     ),
     // The drop area (desktop) and the upload messages; files dropped here use the same code.
@@ -148,8 +150,8 @@ export function useFileUpload({
             <Upload size={18} aria-hidden />
           </span>
           <div className="flex flex-col gap-0.5 text-left">
-            <span className="font-semibold">{over ? "Drop to upload" : "Drop files here"}</span>
-            <span className="text-[13px] text-ink-muted">Pictures, PDFs, Word files or audio, up to 10 MB each</span>
+            <span className="font-semibold">{over ? t.dropToUpload : t.dropFilesHere}</span>
+            <span className="text-[13px] text-ink-muted">{t.dropHint}</span>
           </div>
         </div>
         <p className="text-sm text-ink-muted" aria-live="polite">
@@ -179,18 +181,19 @@ export function useFileUpload({
 
 // "38 MB of 50 MB" with a bar: all the teacher's classrooms together.
 export function StorageCard({ usedBytes }: { usedBytes: number }) {
+  const t = useT().dashboard;
   const used = Math.ceil(usedBytes / MB);
   const pct = Math.min(100, (usedBytes / TEACHER_BYTES) * 100);
   return (
     <section className="flex flex-col gap-2.5 rounded-panel border border-line bg-surface p-5">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="font-semibold">Storage</span>
-        <span className="text-sm text-ink-muted tabular-nums">{used} MB of {TEACHER_BYTES / MB} MB</span>
+        <span className="font-semibold">{t.storage}</span>
+        <span className="text-sm text-ink-muted tabular-nums">{t.storageUsed(used, TEACHER_BYTES / MB)}</span>
       </div>
-      <div role="img" aria-label={`${used} of ${TEACHER_BYTES / MB} MB used`} className="h-2 overflow-hidden rounded bg-surface-2">
+      <div role="img" aria-label={t.storageUsedLabel(used, TEACHER_BYTES / MB)} className="h-2 overflow-hidden rounded bg-surface-2">
         <div className="h-full rounded bg-accent" style={{ width: `${pct}%` }} />
       </div>
-      <span className="text-[13px] leading-snug text-ink-muted">All your classrooms together. Up to 10 MB per file.</span>
+      <span className="text-[13px] leading-snug text-ink-muted">{t.storageHint}</span>
     </section>
   );
 }

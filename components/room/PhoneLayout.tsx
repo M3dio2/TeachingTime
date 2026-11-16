@@ -8,7 +8,9 @@ import Chip from "@/components/ui/Chip";
 import Segmented from "@/components/ui/Segmented";
 import Sheet from "@/components/ui/Sheet";
 import Switch from "@/components/ui/Switch";
-import { tabLabel } from "@/lib/room/tabs";
+import { useT } from "@/lib/i18n/client";
+import type { Messages } from "@/lib/i18n/messages";
+import { fileTabKind, isFileTab, type TabId } from "@/lib/room/tabs";
 import { CameraRow } from "./CameraTiles";
 import { FileList, useFileOpener } from "./FilesPanel";
 import AudioBar from "./AudioBar";
@@ -17,6 +19,10 @@ import { MuteStudentButton, useDeviceErrorHandler } from "./RoomControls";
 import { cap, type RoomModel } from "./roomModel";
 import { TabIcon } from "./Stage";
 import TabPane from "./TabPane";
+
+// A tab's name in the page's language (file tabs: the file's name).
+const tabName = (t: Messages, id: TabId, names?: Record<string, string>) =>
+  isFileTab(id) ? (names?.[id] ?? t.stage.tabs[fileTabKind(id)]) : t.stage.tabs[id];
 
 // Phones, below 768 px (docs/design/HANDOFF.md, "Phones"; screens Phone-teacher, Phone-student):
 // cameras in a row, the tabs as a segmented control, the active tab, then a bar of 48 px
@@ -28,6 +34,7 @@ export default function PhoneLayout({
   model: RoomModel;
   onProblem: (message: string) => void;
 }) {
+  const t = useT();
   const teacher = model.role === "teacher";
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-2">
@@ -37,7 +44,7 @@ export default function PhoneLayout({
         <>
           <CameraRow />
           <section
-            aria-label="Lesson"
+            aria-label={t.room.lesson}
             className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-panel border border-line bg-surface"
           >
             <AudioBar model={model} phone />
@@ -55,6 +62,7 @@ export default function PhoneLayout({
 }
 
 function TeacherTabs({ model }: { model: RoomModel }) {
+  const t = useT();
   const { tabs, active } = model.view;
   const { actions } = model;
   const two = tabs.length === 2;
@@ -62,9 +70,9 @@ function TeacherTabs({ model }: { model: RoomModel }) {
 
   return (
     <>
-      <nav aria-label="Open tabs" className="flex shrink-0 items-center gap-1.5 border-b border-line px-2.5 py-2">
+      <nav aria-label={t.room.openTabs} className="flex shrink-0 items-center gap-1.5 border-b border-line px-2.5 py-2">
         <Segmented
-          label="Open tabs"
+          label={t.room.openTabs}
           value={tabs[active]}
           onChange={(id) => actions?.pick(tabs.indexOf(id as (typeof tabs)[number]))}
           segments={tabs.map((id, i) => ({
@@ -72,13 +80,13 @@ function TeacherTabs({ model }: { model: RoomModel }) {
             label: (
               <>
                 <TabIcon id={id} />
-                <span className="truncate">{tabLabel(id, model.names)}</span>
+                <span className="truncate">{tabName(t, id, model.names)}</span>
               </>
             ),
             extra: two ? (
               <button
                 type="button"
-                aria-label={`Close ${tabLabel(id, model.names)}`}
+                aria-label={t.room.closeTab(tabName(t, id, model.names))}
                 onClick={() => actions?.close(i)}
                 className="inline-flex h-10 w-8 shrink-0 items-center justify-center text-ink-muted focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
               >
@@ -90,8 +98,8 @@ function TeacherTabs({ model }: { model: RoomModel }) {
         {!two && (
           <button
             type="button"
-            aria-label="Open a second tab"
-            title={`Open ${tabLabel(next)} as a second tab`}
+            aria-label={t.room.openSecondTab}
+            title={t.room.openAsSecondTab(tabName(t, next))}
             onClick={() => actions?.open(next)}
             className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md border border-line bg-surface focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           >
@@ -107,6 +115,7 @@ function TeacherTabs({ model }: { model: RoomModel }) {
 // The student may tap between the teacher's two tabs; her choice lasts until the teacher
 // switches tabs or opens or closes one.
 function StudentTabs({ model }: { model: RoomModel }) {
+  const t = useT();
   const { tabs, active } = model.view;
   const key = `${tabs.join(",")}|${active}`;
   const [pick, setPick] = useState({ key, index: active });
@@ -116,19 +125,21 @@ function StudentTabs({ model }: { model: RoomModel }) {
 
   return (
     <>
-      <nav aria-label="Lesson tabs" className="flex shrink-0 flex-col gap-2 border-b border-line px-3 pt-2 pb-2.5">
+      <nav aria-label={t.room.lessonTabs} className="flex shrink-0 flex-col gap-2 border-b border-line px-3 pt-2 pb-2.5">
         <div className="flex items-center justify-between gap-2">
           <span className="truncate text-[13px] text-ink-muted">
-            {two ? `${cap(model.otherName)} shows two tabs` : `${cap(model.otherName)} shows ${tabLabel(tabs[0], model.names)}`}
+            {two
+              ? t.room.showsTwoTabs(cap(model.otherName))
+              : t.room.showsTab(cap(model.otherName), tabName(t, tabs[0], model.names))}
           </span>
           <Chip tone="marker" className="text-xs">
             <Eye size={14} aria-hidden />
-            Following {model.otherName}
+            {t.room.following(model.otherName)}
           </Chip>
         </div>
         {two && (
           <Segmented
-            label="Lesson tabs"
+            label={t.room.lessonTabs}
             value={tabs[shown]}
             onChange={(id) => setPick({ key, index: tabs.indexOf(id as (typeof tabs)[number]) })}
             segments={tabs.map((id) => ({
@@ -136,7 +147,7 @@ function StudentTabs({ model }: { model: RoomModel }) {
               label: (
                 <>
                   <TabIcon id={id} />
-                  <span className="truncate">{tabLabel(id, model.names)}</span>
+                  <span className="truncate">{tabName(t, id, model.names)}</span>
                 </>
               ),
             }))}
@@ -167,6 +178,7 @@ function PhoneBar({
   onProblem: (message: string) => void;
   children?: React.ReactNode;
 }) {
+  const t = useT();
   const onDeviceError = useDeviceErrorHandler(onProblem);
   return (
     <div
@@ -176,29 +188,30 @@ function PhoneBar({
         source={Track.Source.Microphone}
         showIcon
         style={BAR_BUTTON}
-        aria-label="Microphone"
+        aria-label={t.room.microphone}
         onDeviceError={(error) => onDeviceError({ source: Track.Source.Microphone, error })}
       />
       <TrackToggle
         source={Track.Source.Camera}
         showIcon
         style={BAR_BUTTON}
-        aria-label="Camera"
+        aria-label={t.room.camera}
         onDeviceError={(error) => onDeviceError({ source: Track.Source.Camera, error })}
       />
       {children}
       <DisconnectButton
-        aria-label="Leave the lesson"
+        aria-label={t.room.leaveLesson}
         style={{ height: 48, padding: children ? 0 : "0 20px", width: children ? 56 : undefined, borderRadius: 6 }}
       >
         <LogOut size={18} aria-hidden />
-        {!children && "Leave"}
+        {!children && t.room.leave}
       </DisconnectButton>
     </div>
   );
 }
 
 function TeacherBar({ model, onProblem }: { model: RoomModel; onProblem: (message: string) => void }) {
+  const t = useT();
   const [sheet, setSheet] = useState<"none" | "files" | "more">("none");
   const close = () => setSheet("none");
   const button = (on: boolean) =>
@@ -219,12 +232,12 @@ function TeacherBar({ model, onProblem }: { model: RoomModel; onProblem: (messag
             className={`${button(sheet === "files")} px-3.5`}
           >
             <FolderOpen size={18} aria-hidden />
-            Files
+            {t.room.files}
           </button>
         )}
         <button
           type="button"
-          aria-label="More controls"
+          aria-label={t.room.moreControls}
           aria-expanded={sheet === "more"}
           onClick={() => setSheet("more")}
           className={`${button(sheet === "more")} w-12`}
@@ -248,14 +261,14 @@ function TeacherBar({ model, onProblem }: { model: RoomModel; onProblem: (messag
               className={`px-1 pt-2 text-[13px] leading-snug ${opener.fullHint ? "text-ink" : "text-ink-muted"}`}
             >
               {opener.full
-                ? "Two tabs are open. Close one with its × to show a file."
-                : `Tap a file to show it to ${model.otherName}. It opens as a second tab.`}
+                ? t.room.filesFull
+                : t.room.tapFileToShow(model.otherName)}
             </p>
           )}
         </Sheet>
       )}
       {sheet === "more" && actions && (
-        <Sheet title="Lesson controls" onClose={close}>
+        <Sheet title={t.room.lessonControls} onClose={close}>
           <div className="flex flex-col">
             {model.lessonId && (
               <MuteStudentButton
@@ -272,7 +285,7 @@ function TeacherBar({ model, onProblem }: { model: RoomModel; onProblem: (messag
               icon={<Pencil size={20} aria-hidden />}
               className="border-t border-line"
             >
-              {cap(model.otherName)} can write and draw
+              {t.room.canWriteAndDraw(cap(model.otherName))}
             </Switch>
             <button
               type="button"
@@ -283,10 +296,10 @@ function TeacherBar({ model, onProblem }: { model: RoomModel; onProblem: (messag
               className="flex min-h-13 items-center gap-3 border-t border-line px-1 text-left text-base text-ink"
             >
               <Users size={20} aria-hidden />
-              {model.view.justTalk ? "Show the tabs" : "Just talk"}
+              {model.view.justTalk ? t.room.showTheTabs : t.room.justTalk}
             </button>
             <p className="px-1 pt-2 text-[13px] leading-snug text-ink-muted">
-              Screen sharing and side by side need a computer.
+              {t.room.needsComputer}
             </p>
           </div>
         </Sheet>

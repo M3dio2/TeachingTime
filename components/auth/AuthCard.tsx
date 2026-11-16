@@ -1,5 +1,6 @@
-import { Check, CircleAlert } from "lucide-react";
+import { CircleAlert } from "lucide-react";
 import type { ReactNode } from "react";
+import BrandPanel from "@/components/auth/BrandPanel";
 import Wordmark from "@/components/ui/Wordmark";
 
 // The one layout for login, sign-up, forgot password, check your email, new password and link
@@ -36,39 +37,8 @@ export default function AuthCard({
           </div>
         </main>
       </div>
-      <BrandPanel />
+      <BrandPanel drawing={<RoomDrawing />} />
     </div>
-  );
-}
-
-// The right-hand panel: what TeachingTime is, a small drawing of the room, three points.
-function BrandPanel() {
-  const points = [
-    "Both cameras stay visible while you share your screen",
-    "Notes and drawings update instantly for both of you",
-    "You decide when your student can write and draw",
-  ];
-  return (
-    <aside className="hidden min-w-0 flex-[1_1_560px] flex-col justify-center gap-9 border-l border-line bg-surface-2 px-[clamp(24px,5vw,80px)] py-16 md:flex">
-      <div className="flex max-w-[520px] flex-col gap-3.5">
-        <h2 className="font-display text-[44px] leading-[1.08] font-extrabold tracking-[-0.02em]">
-          Every lesson in one calm room.
-        </h2>
-        <p className="text-lg leading-normal text-ink-muted">
-          Video, screen sharing, a shared notebook and a whiteboard. Your student joins with a link, no
-          account needed.
-        </p>
-      </div>
-      <RoomDrawing />
-      <ul className="flex max-w-[520px] flex-col gap-3">
-        {points.map((p) => (
-          <li key={p} className="flex items-start gap-2.5">
-            <Check size={18} strokeWidth={2.5} aria-hidden className="mt-0.5 shrink-0 text-ok" />
-            {p}
-          </li>
-        ))}
-      </ul>
-    </aside>
   );
 }
 

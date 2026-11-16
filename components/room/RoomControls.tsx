@@ -11,15 +11,18 @@ import {
 import { MediaDeviceFailure, type Participant, Track } from "livekit-client";
 import { LogOut, MicOff, Pencil, PencilOff } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { muteMicrophones } from "@/lib/mute";
 import { useWindowWidth } from "@/lib/useStored";
 import { cap, type RoomModel } from "./roomModel";
 import { deviceProblemMessage } from "./StatusBanner";
 
 export function useDeviceErrorHandler(onProblem: (message: string) => void) {
+  const t = useT();
   return ({ source, error }: { source: Track.Source; error: Error }) =>
     onProblem(
       deviceProblemMessage(
+        t,
         MediaDeviceFailure.getFailure(error),
         source === Track.Source.Microphone ? "audioinput" : "videoinput",
       ),
@@ -35,6 +38,7 @@ export default function RoomControls({
   model: RoomModel;
   onProblem: (message: string) => void;
 }) {
+  const t = useT();
   const teacher = model.role === "teacher";
   const onDeviceError = useDeviceErrorHandler(onProblem);
   // Tablet-sized windows: icons only (each keeps its tooltip and label).
@@ -49,7 +53,7 @@ export default function RoomControls({
         >
           T
         </span>
-        <span className="truncate text-sm text-ink-muted">Lesson with {model.otherName}</span>
+        <span className="truncate text-sm text-ink-muted">{t.room.lessonWith(model.otherName)}</span>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-2">
         {teacher && model.actions && (
@@ -71,13 +75,25 @@ export default function RoomControls({
             <span aria-hidden className="mx-1 h-6 w-px bg-line" />
           </>
         )}
-        <DeviceToggle source={Track.Source.Microphone} kind="audioinput" label="Microphone" onDeviceError={onDeviceError} />
-        <DeviceToggle source={Track.Source.Camera} kind="videoinput" label="Camera" onDeviceError={onDeviceError} />
+        <DeviceToggle
+          source={Track.Source.Microphone}
+          kind="audioinput"
+          label={t.room.microphone}
+          menuLabel={t.room.chooseMicrophone}
+          onDeviceError={onDeviceError}
+        />
+        <DeviceToggle
+          source={Track.Source.Camera}
+          kind="videoinput"
+          label={t.room.camera}
+          menuLabel={t.room.chooseCamera}
+          onDeviceError={onDeviceError}
+        />
         {/* Only the teacher shares her screen (docs/DESIGN.md). */}
         {teacher && <ShareToggle />}
-        <DisconnectButton aria-label="Leave the lesson" title="Leave the lesson">
+        <DisconnectButton aria-label={t.room.leaveLesson} title={t.room.leaveLesson}>
           <LogOut size={16} aria-hidden />
-          {!iconOnly && "Leave"}
+          {!iconOnly && t.room.leave}
         </DisconnectButton>
       </div>
       <span className="flex-1" />
@@ -92,11 +108,13 @@ function DeviceToggle({
   source,
   kind,
   label,
+  menuLabel,
   onDeviceError,
 }: {
   source: Track.Source.Microphone | Track.Source.Camera;
   kind: MediaDeviceKind;
   label: string;
+  menuLabel: string;
   onDeviceError: OnDeviceError;
 }) {
   return (
@@ -109,15 +127,16 @@ function DeviceToggle({
         onDeviceError={(error) => onDeviceError({ source, error })}
       />
       <div className="lk-button-group-menu">
-        <MediaDeviceMenu kind={kind} aria-label={`Choose a ${label.toLowerCase()}`} />
+        <MediaDeviceMenu kind={kind} aria-label={menuLabel} />
       </div>
     </div>
   );
 }
 
 function ShareToggle() {
+  const t = useT();
   const { isScreenShareEnabled } = useLocalParticipant();
-  const label = isScreenShareEnabled ? "Stop sharing your screen" : "Share your screen";
+  const label = isScreenShareEnabled ? t.room.stopSharing : t.room.shareScreen;
   return (
     <TrackToggle
       source={Track.Source.ScreenShare}
@@ -146,6 +165,7 @@ export function MuteStudentButton({
   iconSize?: number;
   iconOnly?: boolean;
 }) {
+  const t = useT();
   const student = useRemoteParticipants()[0];
   return student ? (
     <MuteButton
@@ -162,11 +182,11 @@ export function MuteStudentButton({
       type="button"
       className={className}
       disabled
-      aria-label={iconOnly ? `Mute ${name}` : undefined}
-      title={`Mute ${name}`}
+      aria-label={iconOnly ? t.room.mute(name) : undefined}
+      title={t.room.mute(name)}
     >
       <MicOff size={iconSize} aria-hidden />
-      {!iconOnly && `Mute ${name}`}
+      {!iconOnly && t.room.mute(name)}
     </button>
   );
 }
@@ -188,24 +208,25 @@ function MuteButton({
   iconSize: number;
   iconOnly: boolean;
 }) {
+  const t = useT();
   const micOff = useIsMuted({ participant, source: Track.Source.Microphone });
   const [busy, setBusy] = useState(false);
   return (
     <button
       type="button"
       className={className}
-      aria-label={iconOnly ? `Mute ${name}` : undefined}
-      title={micOff ? `${name}'s microphone is off` : `Turn ${name}'s microphone off`}
+      aria-label={iconOnly ? t.room.mute(name) : undefined}
+      title={micOff ? t.room.micIsOff(name) : t.room.turnMicOff(name)}
       disabled={busy || micOff}
       onClick={() => {
         setBusy(true);
         muteMicrophones(lessonId)
-          .catch(() => onProblem("Muting didn't work. Please try again."))
+          .catch(() => onProblem(t.room.muteFailed))
           .finally(() => setBusy(false));
       }}
     >
       <MicOff size={iconSize} aria-hidden />
-      {!iconOnly && `Mute ${name}`}
+      {!iconOnly && t.room.mute(name)}
     </button>
   );
 }
@@ -223,12 +244,13 @@ function StudentCanEditToggle({
   onChange: (canEdit: boolean) => void;
   iconOnly: boolean;
 }) {
-  const label = canEdit ? `${cap(name)} can edit` : `${cap(name)} views only`;
+  const t = useT();
+  const label = canEdit ? t.room.canEdit(cap(name)) : t.room.viewsOnly(cap(name));
   return (
     <button
       type="button"
       className={`lk-button student-edit-toggle ${canEdit ? "is-on" : ""}`}
-      title={iconOnly ? `${label}. Click to change.` : `Let ${name} write and draw`}
+      title={iconOnly ? t.room.clickToChange(label) : t.room.letWriteAndDraw(name)}
       aria-label={iconOnly ? label : undefined}
       aria-pressed={canEdit}
       onClick={() => onChange(!canEdit)}

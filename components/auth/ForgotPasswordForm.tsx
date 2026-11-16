@@ -3,17 +3,19 @@
 import { Mail } from "lucide-react";
 import { useState } from "react";
 import AuthCard, { FormError, submitClass } from "@/components/auth/AuthCard";
-import { CAPTCHA_WAIT, CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
+import { CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
 import { BackToLogin } from "@/components/auth/SignupForm";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import { authErrorMessage } from "@/lib/authErrors";
+import { useT } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
 // Sends a reset link. The email template points it at /auth/confirm (type=recovery), which logs
 // the teacher in and continues to /reset-password. Supabase answers the same whether or not the
 // email has an account, so the message doesn't say either.
 export default function ForgotPasswordForm() {
+  const t = useT();
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function ForgotPasswordForm() {
     captcha.reset();
     setLoading(false);
     if (error) {
-      setError(authErrorMessage(error));
+      setError(authErrorMessage(error, t));
       return;
     }
     setSent(true);
@@ -40,33 +42,25 @@ export default function ForgotPasswordForm() {
   if (sent) {
     return (
       <AuthCard
-        title="Check your email"
+        title={t.auth.checkEmail}
         icon={<Mail size={24} aria-hidden />}
         intro={
-          <span className="text-ink">
-            If there&apos;s an account for <strong className="font-semibold">{email}</strong>, we sent it a link
-            to choose a new password.
-          </span>
+          <span className="text-ink">{t.auth.resetSent(<strong className="font-semibold">{email}</strong>)}</span>
         }
       >
-        <p className="rounded-md bg-surface-2 px-3.5 py-3 text-sm text-ink-muted">
-          No email after a few minutes? Look in your spam folder.
-        </p>
+        <p className="rounded-md bg-surface-2 px-3.5 py-3 text-sm text-ink-muted">{t.auth.noEmail}</p>
         <BackToLogin />
       </AuthCard>
     );
   }
 
   return (
-    <AuthCard
-      title="Forgot your password?"
-      intro="Enter your email and we'll send you a link to choose a new one."
-    >
+    <AuthCard title={t.auth.forgotTitle} intro={t.auth.forgotIntro}>
       <form onSubmit={sendLink} className="flex flex-col gap-4">
         <Field
-          label="Email"
+          label={t.auth.email}
           type="email"
-          placeholder="you@example.com"
+          placeholder={t.auth.emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
@@ -75,7 +69,7 @@ export default function ForgotPasswordForm() {
         <CaptchaBox {...captcha.box} />
         {error && <FormError>{error}</FormError>}
         <Button disabled={loading || captcha.token === null} className={submitClass}>
-          {loading ? "Sending…" : captcha.token === null ? CAPTCHA_WAIT : "Send link"}
+          {loading ? t.common.sending : captcha.token === null ? t.auth.captchaWait : t.auth.sendLink}
         </Button>
       </form>
       <BackToLogin />

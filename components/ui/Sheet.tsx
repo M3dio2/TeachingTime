@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
+import { useT } from "@/lib/i18n/client";
 
 // A phone bottom sheet (docs/DESIGN.md, "Sheet"): dimmed backdrop, `surface` panel with rounded
 // top corners, a grab bar and a close button. Tapping the backdrop or Escape closes it.
@@ -14,6 +15,7 @@ export default function Sheet({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const t = useT();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -24,7 +26,7 @@ export default function Sheet({
 
   return (
     <div className="fixed inset-0 z-30 flex flex-col justify-end bg-video/45">
-      <button type="button" aria-label="Close" onClick={onClose} className="flex-1 cursor-default" />
+      <button type="button" aria-label={t.common.close} onClick={onClose} className="flex-1 cursor-default" />
       <div
         role="dialog"
         aria-label={title}
@@ -35,7 +37,7 @@ export default function Sheet({
           <span className="text-[17px] font-semibold">{title}</span>
           <button
             type="button"
-            aria-label="Close"
+            aria-label={t.common.close}
             onClick={onClose}
             className="inline-flex h-10 w-10 items-center justify-center rounded-md text-ink-muted hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           >

@@ -14,4 +14,9 @@ export const common = {
   more: "More",
   language: "Language",
   chooseLanguage: "Choose the language of TeachingTime",
+  somethingWentWrong: "Something went wrong",
+  crashText: "Sorry about that. We've been told about it. Try again, or reload the page.",
+  backToStart: "Back to the start",
+  gettingLessonReady: "Getting your lesson ready",
+  dragToResize: "Drag to resize. Arrow keys work too.",
 };

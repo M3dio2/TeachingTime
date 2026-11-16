@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useFormStatus } from "react-dom";
 import LoadingScreen from "@/components/room/LoadingScreen";
+import { useT } from "@/lib/i18n/client";
 import Button from "./Button";
 
 type Props = React.ComponentProps<typeof Button> & {
@@ -36,5 +37,6 @@ export function useFormPending() {
 // D5d: a wait that takes you into a lesson. While the form runs, the full loading screen covers
 // the page; the lesson page shows the same screen until the call is connected.
 export function LessonStartScreen() {
-  return useFormStatus().pending ? <LoadingScreen title="Getting your lesson ready" /> : null;
+  const t = useT();
+  return useFormStatus().pending ? <LoadingScreen title={t.common.gettingLessonReady} /> : null;
 }

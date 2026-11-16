@@ -3,13 +3,17 @@
 import { createLocalTracks, type LocalAudioTrack, type LocalTrack, type LocalVideoTrack, MediaDeviceFailure, Track } from "livekit-client";
 import { Mic, MicOff, User, Video, VideoOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
+import type { Messages } from "@/lib/i18n/messages";
 import { deviceProblemMessage } from "./StatusBanner";
 
 // The tracks made on the join card, handed to the room so they're published as they are
 // (same devices, mic/camera on or off as chosen). `null` = that device failed.
 export type PreJoinTracks = { audio: LocalAudioTrack | null; video: LocalVideoTrack | null };
 
-type Started = { tracks: PreJoinTracks; problem: string | null };
+// A device that failed, turned into a message when shown (in the page's language).
+type Problem = { error: unknown; kind?: MediaDeviceKind };
+type Started = { tracks: PreJoinTracks; problem: Problem | null };
 
 // One device on its own. Returns the track, or the reason it failed.
 async function startOne(kind: "audio" | "video") {
@@ -21,10 +25,14 @@ async function startOne(kind: "audio" | "video") {
   }
 }
 
-function problemFor(error: unknown, kind?: MediaDeviceKind) {
+function problemFor(error: unknown, kind?: MediaDeviceKind): Problem {
+  return { error, kind };
+}
+
+function problemMessage(t: Messages, { error, kind }: Problem) {
   const name = error instanceof Error ? error.name : "";
   // The error's name helps when a tester sends a screenshot (e.g. NotAllowedError).
-  return `${deviceProblemMessage(MediaDeviceFailure.getFailure(error), kind)}${name ? ` (${name})` : ""}`;
+  return `${deviceProblemMessage(t, MediaDeviceFailure.getFailure(error), kind)}${name ? ` (${name})` : ""}`;
 }
 
 async function startTracks(): Promise<Started> {
@@ -61,7 +69,7 @@ function pick(tracks: LocalTrack[]): PreJoinTracks {
 // join"). Owns the tracks until `handOver()` gives them to the room; otherwise stops them.
 export function useCameraCheck() {
   const [tracks, setTracks] = useState<PreJoinTracks | null>(null);
-  const [problem, setProblem] = useState<string | null>(null);
+  const [problem, setProblem] = useState<Problem | null>(null);
   const [micOn, setMicOn] = useState(true);
   const [camOn, setCamOn] = useState(true);
   const handedOver = useRef(false);
@@ -128,6 +136,7 @@ export function useCameraCheck() {
 }
 
 export function CameraPreview({ check }: { check: ReturnType<typeof useCameraCheck> }) {
+  const t = useT();
   const video = useRef<HTMLVideoElement>(null);
   const track = check.tracks?.video;
   useEffect(() => {
@@ -145,8 +154,8 @@ export function CameraPreview({ check }: { check: ReturnType<typeof useCameraChe
   // A device that didn't start shows as off; tapping it asks the browser again.
   const micOn = hasMic && check.micOn;
   const camOn = hasCam && check.camOn;
-  const micLabel = micOn ? "Turn off your microphone" : "Turn on your microphone";
-  const camLabel = camOn ? "Turn off your camera" : "Turn on your camera";
+  const micLabel = micOn ? t.room.turnOffMic : t.room.turnOnMic;
+  const camLabel = camOn ? t.room.turnOffCam : t.room.turnOnCam;
 
   return (
     <div className="flex flex-col gap-2">
@@ -166,7 +175,7 @@ export function CameraPreview({ check }: { check: ReturnType<typeof useCameraChe
           </span>
         )}
         <span className="absolute top-2.5 left-2.5 rounded-md bg-video/85 px-2 py-0.5 text-xs text-white">
-          {check.tracks ? "Your camera" : "Starting your camera…"}
+          {check.tracks ? t.room.yourCamera : t.room.startingCamera}
         </span>
         <div className="absolute inset-x-0 bottom-2.5 flex justify-center gap-2.5">
           <RoundButton label={micLabel} off={!micOn} disabled={!loaded} onClick={check.toggleMic}>
@@ -179,7 +188,7 @@ export function CameraPreview({ check }: { check: ReturnType<typeof useCameraChe
       </div>
       {check.problem && (
         <p role="alert" className="rounded-md bg-danger-soft px-3 py-2.5 text-sm leading-snug text-danger">
-          {check.problem}
+          {problemMessage(t, check.problem)}
         </p>
       )}
     </div>

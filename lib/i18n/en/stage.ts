@@ -1,1 +1,170 @@
-export const stage = {};
+// The lesson stage: tabs, files panel, PDFs, Word files, pictures, audio, video, links, text
+// pad and whiteboard. Names passed in are already capitalised where a sentence starts.
+export const stage = {
+  // Tab names (the synced ids stay "screen", "text", "draw", "pdf:…" …).
+  tabs: {
+    screen: "Screen",
+    text: "Text",
+    draw: "Draw",
+    pdf: "PDF",
+    image: "Picture",
+    doc: "Word file",
+    video: "Video",
+    link: "Link",
+  },
+  lesson: "Lesson",
+  openTabs: "Open tabs",
+  closeTab: (name: string) => `Close ${name}`,
+  resizeTabs: "Resize the two tabs",
+  seesWhatYouSee: (name: string) => `${name} sees what you see`,
+  following: (name: string) => `Following ${name}`,
+  justTalk: "Just talk",
+  justTalkTitle: "Fold the tabs away for both of you",
+  sideBySide: "Side by side",
+  sideBySideNeedsWider: "Side by side needs a wider window",
+  oneAtATime: "One at a time",
+  openATab: "Open a tab",
+  opensBeside: (name: string) => `Opens beside ${name}`,
+  textAndDrawOpen: "Text and Draw are already open.",
+  drop: {
+    play: (name: string) => `Play ${name}`,
+    playSub: "You both hear it; the tabs stay as they are",
+    replace: (name: string) => `Replace ${name}`,
+    replaceSub: "Show it instead",
+    openBeside: (name: string) => `Open beside ${name}`,
+    besideSub: "Show both side by side",
+    twoIsMost: "Two tabs is the most",
+    dropToPlay: "Drop to play",
+    dropToOpen: "Drop to open",
+  },
+
+  // Tab contents
+  loadingWhiteboard: "Loading whiteboard…",
+  canWriteHere: (name: string) => `${name} can write here`,
+  onlyYouCanWrite: "Only you can write",
+  youCanWriteHere: "You can write here",
+  viewOnly: "View only",
+  waitingForScreen: "Waiting for the screen…",
+  youAreSharing: "You're sharing your screen",
+  theirScreen: (name: string) => `${name}'s screen`,
+  stopSharing: "Stop sharing",
+
+  files: {
+    pdfs: "PDFs",
+    docs: "Word files",
+    pictures: "Pictures",
+    audio: "Audio",
+    links: "Links",
+    hintFullClicked: "Two tabs are open. Close one first, or drag the file onto a tab to replace it.",
+    hintFull: "Two tabs are open. Drag a file onto one to replace it.",
+    hint: "Click a file or link to open it, press play for audio, or drag anything onto the stage.",
+    fold: "Fold the files",
+    clickOrDrag: "Click to open, or drag onto the stage",
+    show: (name: string) => `Show ${name}`,
+    open: (name: string) => `Open ${name}`,
+    empty: "No files yet. Upload pictures, PDFs and audio in the classroom.",
+    onScreen: "On screen",
+    inATab: "In a tab",
+    folded: (title: string) => `${title}, folded`,
+    play: (name: string) => `Play ${name}`,
+    pause: (name: string) => `Pause ${name}`,
+    playOrDrag: "Press play, or drag onto the stage",
+    playing: "Playing",
+  },
+
+  picture: {
+    failed: "This picture couldn't be opened.",
+    opening: "Opening the picture…",
+    teacherNote: (name: string) => `${name} sees this picture`,
+    studentNote: (name: string) => `${name} is showing this picture`,
+  },
+
+  pdf: {
+    failed: "This PDF couldn't be opened.",
+    opening: "Opening the PDF…",
+    pageOf: (page: number, pages: number) => `Page ${page} of ${pages}`,
+    page: (page: number) => `Page ${page}`,
+    seesPage: (name: string, page: number) => `${name} sees page ${page}`,
+    choosesPage: (name: string) => `${name} chooses the page`,
+    tooBig: (name: string) => `${name} is bigger than 10 MB.`,
+    logInAgain: "Log in again to save.",
+    savedAs: (name: string, where: string) => `Saved as “${name}” in ${where}`,
+    saveFailed: "The PDF could not be saved. Please try again.",
+    // The writing toolbar
+    toolbar: "Write on the PDF",
+    tools: {
+      scroll: "Scroll",
+      pen: "Pen",
+      highlighter: "Highlighter",
+      text: "Text",
+      eraser: "Eraser",
+    },
+    notAllowed: (tool: string) => `${tool} (your teacher hasn't let you write)`,
+    clear: "Clear the writing on this PDF for both of you",
+    clearConfirm: "Clear the writing on this PDF for both of you?",
+    saveTitle: "Save a copy with the writing in the classroom",
+    saveAsNew: "Save as new PDF",
+    textLabel: "Text on the PDF",
+    textPlaceholder: "Type, then Enter",
+  },
+
+  doc: {
+    failed: "This Word file couldn't be opened.",
+    opening: "Opening the Word file…",
+    copy: "Copy into the text pad",
+    copyTitle: "Put the text into the text pad, where you can both work on it",
+    copied: (replaced: string | null) =>
+      `Copied into the text pad${replaced ? `, which took ${replaced}'s place` : ""}. Pictures stay in the Word file.`,
+    copyFailed: "The text couldn't be copied from this file.",
+  },
+
+  video: {
+    cantPlay: "This video can't be played inside the lesson.",
+    watchOnYouTube: "Watch on YouTube",
+    opening: "Opening the video…",
+    tapToHear: "Tap to hear the video",
+    teacherNote: (name: string) => `${name} watches along: play, pause or jump, it follows you`,
+    studentNote: (name: string) => `${name} controls the video`,
+  },
+
+  link: {
+    failed: "This link couldn't be opened.",
+    opening: "Opening the link…",
+    open: "Open the link",
+    teacherNote: (name: string) =>
+      `${name} sees this card and can open the link too. It opens in a new tab, the lesson keeps running.`,
+    studentNote: (name: string) => `${name} shared this link. It opens in a new tab; come back here afterwards.`,
+  },
+
+  audio: {
+    play: "Play the audio",
+    pause: "Pause the audio",
+    stop: "Stop the audio",
+    position: "Audio position",
+    timeOf: (pos: string, total: string) => `${pos} of ${total}`,
+  },
+
+  textPad: {
+    label: "Text pad",
+    bold: "Bold",
+    italic: "Italic",
+    underline: "Underline",
+    strike: "Strikethrough (for corrections)",
+    heading: "Heading",
+    bulletList: "Bullet list",
+    numberedList: "Numbered list",
+    // The one-letter button faces
+    boldKey: "B",
+    italicKey: "I",
+    underlineKey: "U",
+    strikeKey: "S",
+    headingKey: "H",
+  },
+
+  clear: {
+    text: "Clear the text for both of you",
+    textConfirm: "Clear the text for both of you?",
+    drawing: "Clear the drawing for both of you",
+    drawingConfirm: "Clear the drawing for both of you?",
+  },
+};

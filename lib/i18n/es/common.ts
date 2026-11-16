@@ -14,4 +14,9 @@ export const common: typeof en = {
   more: "Más",
   language: "Idioma",
   chooseLanguage: "Elige el idioma de TeachingTime",
+  somethingWentWrong: "Algo salió mal",
+  crashText: "Lo sentimos. Ya nos llegó el aviso. Inténtalo de nuevo o recarga la página.",
+  backToStart: "Volver al inicio",
+  gettingLessonReady: "Preparando tu clase",
+  dragToResize: "Arrastra para cambiar el tamaño. También puedes usar las flechas.",
 };

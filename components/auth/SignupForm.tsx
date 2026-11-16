@@ -5,12 +5,13 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Mail } from "lucide-react";
 import { useState } from "react";
 import AuthCard, { FormError, submitClass, textLink } from "@/components/auth/AuthCard";
-import { CAPTCHA_WAIT, CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
+import { CaptchaBox, useCaptcha } from "@/components/auth/Captcha";
 import GoogleButton from "@/components/auth/GoogleButton";
 import NewPasswordFields from "@/components/auth/NewPasswordFields";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import { authErrorMessage } from "@/lib/authErrors";
+import { useT } from "@/lib/i18n/client";
 import { passwordProblem } from "@/lib/passwordRules";
 import { createClient } from "@/lib/supabase/client";
 
@@ -19,6 +20,7 @@ import { createClient } from "@/lib/supabase/client";
 // With "Confirm email" on in Supabase, signUp returns no session and the teacher gets a link
 // (handled by /auth/confirm); with it off, they're logged in straight away.
 export default function SignupForm() {
+  const t = useT();
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -31,7 +33,7 @@ export default function SignupForm() {
 
   async function signUp(e: React.FormEvent) {
     e.preventDefault();
-    const problem = passwordProblem(password, confirm);
+    const problem = passwordProblem(password, confirm, t);
     if (problem) {
       setError(problem);
       return;
@@ -50,7 +52,7 @@ export default function SignupForm() {
     captcha.reset();
     if (error) {
       setLoading(false);
-      setError(authErrorMessage(error));
+      setError(authErrorMessage(error, t));
       return;
     }
     if (data.session) {
@@ -65,34 +67,26 @@ export default function SignupForm() {
   if (emailSent) {
     return (
       <AuthCard
-        title="Check your email"
+        title={t.auth.checkEmail}
         icon={<Mail size={24} aria-hidden />}
         intro={
-          <span className="text-ink">
-            We sent a link to <strong className="font-semibold">{email}</strong>. Click it to finish creating
-            your account.
-          </span>
+          <span className="text-ink">{t.auth.signupSent(<strong className="font-semibold">{email}</strong>)}</span>
         }
       >
-        <p className="rounded-md bg-surface-2 px-3.5 py-3 text-sm text-ink-muted">
-          No email after a few minutes? Look in your spam folder.
-        </p>
+        <p className="rounded-md bg-surface-2 px-3.5 py-3 text-sm text-ink-muted">{t.auth.noEmail}</p>
         <BackToLogin />
       </AuthCard>
     );
   }
 
   return (
-    <AuthCard
-      title="Create a teacher account"
-      intro="Set up a classroom for each student and invite them with a link."
-    >
+    <AuthCard title={t.auth.createTeacherAccount} intro={t.auth.signupIntro}>
       <GoogleButton />
       <form onSubmit={signUp} className="flex flex-col gap-4">
         <Field
-          label="Your name"
-          placeholder="e.g. Laura"
-          hint="Students see it on your camera in every lesson."
+          label={t.auth.yourName}
+          placeholder={t.auth.namePlaceholder}
+          hint={t.auth.nameHint}
           value={name}
           onChange={(e) => setName(e.target.value)}
           autoComplete="name"
@@ -100,16 +94,16 @@ export default function SignupForm() {
           required
         />
         <Field
-          label="Email"
+          label={t.auth.email}
           type="email"
-          placeholder="you@example.com"
+          placeholder={t.auth.emailPlaceholder}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           autoComplete="email"
           required
         />
         <NewPasswordFields
-          label="Password"
+          label={t.auth.password}
           password={password}
           confirm={confirm}
           onPasswordChange={setPassword}
@@ -118,24 +112,23 @@ export default function SignupForm() {
         <CaptchaBox {...captcha.box} />
         {error && <FormError>{error}</FormError>}
         <Button disabled={loading || captcha.token === null} className={submitClass}>
-          {loading ? "Creating your account…" : captcha.token === null ? CAPTCHA_WAIT : "Create account"}
+          {loading ? t.auth.creatingAccount : captcha.token === null ? t.auth.captchaWait : t.auth.createAccount}
         </Button>
         <p className="text-[13px] leading-snug text-ink-muted">
-          By creating an account you agree to the{" "}
-          <Link href="/terms" className={textLink}>
-            terms
-          </Link>{" "}
-          and the{" "}
-          <Link href="/privacy" className={textLink}>
-            privacy policy
-          </Link>
-          .
+          {t.auth.agreeTerms(
+            <Link href="/terms" className={textLink}>
+              {t.auth.termsLink}
+            </Link>,
+            <Link href="/privacy" className={textLink}>
+              {t.auth.privacyLink}
+            </Link>,
+          )}
         </p>
       </form>
       <p className="text-[15px] text-ink-muted">
-        Already have an account?{" "}
+        {t.auth.haveAccount}{" "}
         <Link href="/login" className={textLink}>
-          Log in
+          {t.auth.logIn}
         </Link>
       </p>
     </AuthCard>
@@ -143,10 +136,11 @@ export default function SignupForm() {
 }
 
 export function BackToLogin() {
+  const t = useT();
   return (
     <Link href="/login" className={`${textLink} inline-flex items-center gap-1.5 self-start text-[15px]`}>
       <ArrowLeft size={16} aria-hidden />
-      Back to login
+      {t.auth.backToLogin}
     </Link>
   );
 }

@@ -3,6 +3,7 @@
 import { Check, Circle } from "lucide-react";
 import { useState } from "react";
 import PasswordField from "@/components/ui/PasswordField";
+import { useT } from "@/lib/i18n/client";
 import { PASSWORD_MIN_LENGTH, passwordRules } from "@/lib/passwordRules";
 
 // Password + "confirm password" for sign-up and reset. The rules sit in one row under the field
@@ -21,6 +22,7 @@ export default function NewPasswordFields({
   onPasswordChange: (value: string) => void;
   onConfirmChange: (value: string) => void;
 }) {
+  const t = useT();
   const [shown, setShown] = useState(false);
   const mismatch = confirm.length > 0 && confirm !== password;
 
@@ -42,10 +44,10 @@ export default function NewPasswordFields({
           {passwordRules.map((rule) => {
             const met = rule.test(password);
             return (
-              <li key={rule.label} className={`flex items-center gap-1.5 ${met ? "text-ok" : "text-ink-muted"}`}>
+              <li key={rule.id} className={`flex items-center gap-1.5 ${met ? "text-ok" : "text-ink-muted"}`}>
                 {met ? <Check size={14} strokeWidth={2.5} aria-hidden /> : <Circle size={14} aria-hidden />}
-                {rule.label}
-                <span className="sr-only">{met ? "(done)" : "(not yet)"}</span>
+                {rule.label(t)}
+                <span className="sr-only">{met ? t.auth.ruleDone : t.auth.ruleNotYet}</span>
               </li>
             );
           })}
@@ -53,7 +55,7 @@ export default function NewPasswordFields({
       </div>
       <div className="flex flex-col gap-1">
         <PasswordField
-          label="Confirm password"
+          label={t.auth.confirmPassword}
           value={confirm}
           onChange={(e) => onConfirmChange(e.target.value)}
           autoComplete="new-password"
@@ -62,7 +64,7 @@ export default function NewPasswordFields({
           toggle={false}
           required
         />
-        {mismatch && <p className="text-sm text-danger">The two passwords don&apos;t match.</p>}
+        {mismatch && <p className="text-sm text-danger">{t.auth.passwordsDontMatch}</p>}
       </div>
     </>
   );

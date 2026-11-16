@@ -2,6 +2,7 @@
 
 import type { PDFDocumentProxy } from "pdfjs-dist";
 import { useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 import { MAX_BYTES, uploadResource } from "@/lib/files/uploadResource";
 import { allInk, clearInk, inkedPdf, type InkItem, type PickedTool, savedName, useInk } from "@/lib/room/pdfInk";
@@ -21,13 +22,14 @@ function useFile(model: RoomModel, id: FileTab) {
 
 // A picture tab: fitted into the pane on `surface-2`.
 export function PicturePane({ id, model }: { id: FileTab; model: RoomModel }) {
+  const t = useT();
   const { file, failed } = useFile(model, id);
-  if (failed) return <Message>This picture couldn&apos;t be opened.</Message>;
-  if (!file?.src) return <Message>Opening the picture…</Message>;
+  if (failed) return <Message>{t.stage.picture.failed}</Message>;
+  if (!file?.src) return <Message>{t.stage.picture.opening}</Message>;
   const note =
     model.role === "teacher"
-      ? `${cap(model.otherName)} sees this picture`
-      : `${cap(model.otherName)} is showing this picture`;
+      ? t.stage.picture.teacherNote(cap(model.otherName))
+      : t.stage.picture.studentNote(cap(model.otherName));
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 bg-surface-2 p-5">
       <div className="flex min-h-0 w-full flex-1 items-center justify-center">
@@ -83,6 +85,8 @@ const MAX_W = 900;
 // The teacher's scroll position is sent to the student (lib/sync/useViewSync.ts) as
 // "page index + fraction into that page", so different widths line up.
 export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
+  const t = useT();
+  const p = t.stage.pdf;
   const { file, failed } = useFile(model, id);
   const [pdf, setPdf] = useState<{ doc: PDFDocumentProxy; ratios: number[] } | null>(null);
   const [broken, setBroken] = useState(false);
@@ -105,9 +109,9 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
     try {
       const bytes = await inkedPdf(file.bytes, allInk(model.doc, id));
       const name = savedName(model.names[id] ?? file.name);
-      if (bytes.byteLength > MAX_BYTES) throw new Error(`${name} is bigger than 10 MB.`);
+      if (bytes.byteLength > MAX_BYTES) throw new Error(p.tooBig(name));
       const { data } = await createClient().auth.getUser();
-      if (!data.user) throw new Error("Log in again to save.");
+      if (!data.user) throw new Error(p.logInAgain);
       const blob = Object.assign(new Blob([bytes as BlobPart], { type: "application/pdf" }), { name });
       const done = await uploadResource({
         teacherId: data.user.id,
@@ -115,12 +119,13 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
         file: blob,
         contentType: "application/pdf",
         ext: "pdf",
+        messages: t.dashboard.upload,
       });
       if ("error" in done) throw new Error(done.error);
       model.addFile?.({ id: done.id, kind: "pdf", name });
-      setSaved(`Saved as “${name}” in ${model.filesTitle}`);
+      setSaved(p.savedAs(name, model.filesTitle));
     } catch (e) {
-      setSaved(e instanceof Error ? e.message : "The PDF could not be saved. Please try again.");
+      setSaved(e instanceof Error ? e.message : p.saveFailed);
     } finally {
       setSaving(false);
     }
@@ -130,7 +135,7 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
     if (!file?.bytes) return;
     let live = true;
     openPdf(id, file).then(
-      (p) => live && setPdf(p),
+      (opened) => live && setPdf(opened),
       () => live && setBroken(true),
     );
     return () => {
@@ -188,11 +193,11 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [teacher, ready, pageW]);
 
-  if (failed || broken) return <Message>This PDF couldn&apos;t be opened.</Message>;
-  if (!pdf) return <Message>Opening the PDF…</Message>;
+  if (failed || broken) return <Message>{p.failed}</Message>;
+  if (!pdf) return <Message>{p.opening}</Message>;
 
   const pages = pdf.doc.numPages;
-  const note = teacher ? `${cap(model.otherName)} sees page ${page}` : `${cap(model.otherName)} chooses the page`;
+  const note = teacher ? p.seesPage(cap(model.otherName), page) : p.choosesPage(cap(model.otherName));
 
   return (
     <div
@@ -215,9 +220,7 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
           saving={saving}
         />
         <div className="flex h-4 w-full justify-between gap-2 text-[13px] text-ink-muted">
-          <span>
-            Page {page} of {pages}
-          </span>
+          <span>{p.pageOf(page, pages)}</span>
           <span>{note}</span>
         </div>
         {heights.map((h, i) => (
@@ -267,6 +270,7 @@ function PdfPage({
 }) {
   const box = useRef<HTMLDivElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
+  const t = useT();
   const [near, setNear] = useState(false);
 
   useEffect(() => {
@@ -308,7 +312,7 @@ function PdfPage({
       className="relative shrink-0 overflow-hidden rounded border border-line bg-surface"
       style={{ width, height }}
     >
-      {near && <canvas ref={canvas} aria-label={`Page ${index + 1}`} style={{ width: "100%", height: "100%" }} />}
+      {near && <canvas ref={canvas} aria-label={t.stage.pdf.page(index + 1)} style={{ width: "100%", height: "100%" }} />}
       {children}
     </div>
   );

@@ -2,6 +2,7 @@
 
 import Chip from "@/components/ui/Chip";
 import Button from "@/components/ui/Button";
+import { useT } from "@/lib/i18n/client";
 import AudioBar from "./AudioBar";
 import { BigCameras, SpotlightCameras } from "./CameraTiles";
 import { cap, type RoomModel } from "./roomModel";
@@ -18,6 +19,7 @@ export default function JustTalk({
   phone?: boolean;
   spotlight?: boolean;
 }) {
+  const t = useT();
   const teacher = model.role === "teacher";
   const count = model.view.tabs.length;
   return (
@@ -25,12 +27,12 @@ export default function JustTalk({
       <div className="flex min-h-10 flex-wrap items-center justify-center gap-3">
         <Chip tone="marker" className="text-sm">
           {teacher
-            ? "Just talking. The tabs are folded for both of you."
-            : `${cap(model.otherName)} folded the tabs. Just talking for now.`}
+            ? t.room.justTalkingTeacher
+            : t.room.justTalkingStudent(cap(model.otherName))}
         </Chip>
         {teacher && (
           <Button size="sm" onClick={() => model.actions?.setJustTalk(false)} className={phone ? "h-10" : ""}>
-            {count === 1 ? "Show the tab" : "Show the 2 tabs"}
+            {t.room.showTabs(count)}
           </Button>
         )}
       </div>

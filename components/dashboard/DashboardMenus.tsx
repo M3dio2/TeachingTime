@@ -43,12 +43,13 @@ function Popover({ children, className = "" }: { children: ReactNode; className?
 export function NameChip({ name }: { name: string }) {
   const { open, setOpen, wrap } = usePopover();
   const initial = name.trim().charAt(0).toUpperCase() || "?";
+  const t = useT();
   return (
     <div ref={wrap} className="relative">
       <button
         type="button"
-        title="Change the name students see in lessons"
-        aria-label={name ? `Your name in lessons: ${name}. Change it` : "Add your name"}
+        title={t.dashboard.changeNameTitle}
+        aria-label={name ? t.dashboard.nameChipLabel(name) : t.dashboard.addYourName}
         aria-expanded={open}
         onClick={() => setOpen(!open)}
         className="inline-flex h-9 items-center gap-2 rounded-full border border-line bg-surface px-1 text-sm font-medium hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none md:pr-3"
@@ -56,7 +57,7 @@ export function NameChip({ name }: { name: string }) {
         <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-ink font-display text-[13px] font-extrabold text-marker">
           {initial}
         </span>
-        <span className="hidden max-w-40 truncate md:inline">{name || "Add your name"}</span>
+        <span className="hidden max-w-40 truncate md:inline">{name || t.dashboard.addYourName}</span>
         <Pencil size={14} aria-hidden className="hidden text-ink-muted md:inline" />
       </button>
       {open && (
@@ -69,16 +70,16 @@ export function NameChip({ name }: { name: string }) {
             className="flex flex-col gap-3"
           >
             <Field
-              label="Your name in lessons"
+              label={t.dashboard.nameInLessons}
               name="name"
               defaultValue={name}
-              placeholder="e.g. Ms Smith"
+              placeholder={t.dashboard.namePlaceholder}
               maxLength={40}
               autoFocus
               required
             />
-            <SubmitButton className="h-10" pending="Saving…">
-              Save
+            <SubmitButton className="h-10" pending={t.common.saving}>
+              {t.common.save}
             </SubmitButton>
           </form>
         </Popover>
@@ -145,12 +146,13 @@ export function FeedbackButton() {
   const { open, setOpen, wrap } = usePopover();
   const [text, setText] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent" | "failed">("idle");
+  const t = useT();
   return (
     <div ref={wrap} className="relative">
       <button
         type="button"
-        aria-label="Send feedback"
-        title="Send feedback"
+        aria-label={t.dashboard.sendFeedback}
+        title={t.dashboard.sendFeedback}
         aria-expanded={open}
         onClick={() => {
           setOpen(!open);
@@ -159,14 +161,14 @@ export function FeedbackButton() {
         className="inline-flex h-9 items-center gap-1.5 rounded-md px-2.5 text-sm font-medium hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
       >
         <MessageSquare size={16} aria-hidden />
-        <span className="hidden md:inline">Feedback</span>
+        <span className="hidden md:inline">{t.dashboard.feedback}</span>
       </button>
       {open && (
         <Popover className="w-80 max-w-[calc(100vw-2rem)] p-3">
           {state === "sent" ? (
             <p className="flex items-start gap-2 p-1 text-sm">
               <Check size={16} aria-hidden className="mt-0.5 shrink-0 text-accent" />
-              Thank you! Every message is read.
+              {t.dashboard.feedbackThanks}
             </p>
           ) : (
             <form
@@ -180,7 +182,7 @@ export function FeedbackButton() {
               className="flex flex-col gap-3"
             >
               <label className="flex flex-col gap-1.5 text-sm font-medium">
-                What works, what&apos;s missing, what broke?
+                {t.dashboard.feedbackQuestion}
                 <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
@@ -188,15 +190,15 @@ export function FeedbackButton() {
                   maxLength={2000}
                   required
                   autoFocus
-                  placeholder="e.g. On my iPad the whiteboard…"
+                  placeholder={t.dashboard.feedbackPlaceholder}
                   className={`${inputClass()} h-auto resize-y py-2 font-normal`}
                 />
               </label>
               {state === "failed" && (
-                <p className="text-sm text-danger">It didn&apos;t send. Please try again in a moment.</p>
+                <p className="text-sm text-danger">{t.dashboard.feedbackFailed}</p>
               )}
               <Button disabled={state === "sending" || !text.trim()} className="h-10">
-                {state === "sending" ? "Sending…" : "Send"}
+                {state === "sending" ? t.common.sending : t.common.send}
               </Button>
             </form>
           )}
@@ -209,12 +211,13 @@ export function FeedbackButton() {
 // A card's ⋯ menu: Remove, with today's confirm.
 export function CardMenu({ id, name }: { id: string; name: string }) {
   const { open, setOpen, wrap } = usePopover();
+  const t = useT();
   return (
     <div ref={wrap} className="relative">
       <button
         type="button"
-        aria-label={`More for ${name}`}
-        title="More"
+        aria-label={t.dashboard.moreFor(name)}
+        title={t.common.more}
         aria-expanded={open}
         aria-haspopup="menu"
         onClick={() => setOpen(!open)}
@@ -236,20 +239,21 @@ export function CardMenu({ id, name }: { id: string; name: string }) {
 
 function RemoveItem({ name }: { name: string }) {
   const pending = useFormPending();
+  const t = useT();
   return (
     <button
       role="menuitem"
       disabled={pending}
       aria-busy={pending || undefined}
       onClick={(e) => {
-        if (!confirm(`Remove ${name}? Their link will stop working and their files are deleted.`)) {
+        if (!confirm(t.dashboard.removeConfirm(name))) {
           e.preventDefault();
         }
       }}
       className="flex h-10 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-sm font-medium text-danger hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
     >
       <Trash2 size={16} aria-hidden />
-      {pending ? "Removing…" : `Remove ${name}`}
+      {pending ? t.common.removing : t.dashboard.removeName(name)}
     </button>
   );
 }

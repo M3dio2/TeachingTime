@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 
 // Cloudflare Turnstile, the check against sign-up bots (G1). Supabase checks the token itself
 // (Authentication → Attack Protection → CAPTCHA), so skipping the form doesn't skip it.
@@ -93,18 +94,14 @@ export function CaptchaBox({
   failed: boolean;
   setBox: (el: HTMLDivElement | null) => void;
 }) {
+  const t = useT();
   if (!enabled) return null;
   return (
     <div className="flex flex-col gap-1.5">
       <div ref={setBox} data-testid="captcha" className="min-h-[65px]" />
       {failed && (
-        <p className="text-sm text-danger">
-          The check that you&apos;re not a robot didn&apos;t load. Reload the page, or try another browser.
-        </p>
+        <p className="text-sm text-danger">{t.auth.captchaFailed}</p>
       )}
     </div>
   );
 }
-
-// The submit button's label while the check is still running.
-export const CAPTCHA_WAIT = "Checking you're not a robot…";

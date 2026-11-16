@@ -6,6 +6,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { List, ListOrdered } from "lucide-react";
 import { type ReactNode, useEffect } from "react";
 import type * as Y from "yjs";
+import { useT } from "@/lib/i18n/client";
 import { listenForText } from "@/lib/room/textInbox";
 import ClearButton from "./ClearButton";
 
@@ -22,6 +23,7 @@ export default function TextPad({
   chip?: ReactNode;
   onClear?: () => void;
 }) {
+  const t = useT();
   const editor = useEditor({
     immediatelyRender: false,
     editable,
@@ -31,7 +33,7 @@ export default function TextPad({
       Collaboration.configure({ document: doc }),
     ],
     editorProps: {
-      attributes: { class: "tiptap min-h-full p-4 text-lg outline-none", "aria-label": "Text pad" },
+      attributes: { class: "tiptap min-h-full p-4 text-lg outline-none", "aria-label": t.stage.textPad.label },
     },
   });
 
@@ -63,6 +65,8 @@ export default function TextPad({
 }
 
 function Tools({ editor }: { editor: Editor }) {
+  const t = useT();
+  const tp = t.stage.textPad;
   const active = useEditorState({
     editor,
     selector: ({ editor }) => ({
@@ -78,49 +82,49 @@ function Tools({ editor }: { editor: Editor }) {
 
   const buttons = [
     {
-      label: "B",
-      title: "Bold",
+      label: tp.boldKey,
+      title: tp.bold,
       on: active.bold,
       run: () => editor.chain().focus().toggleBold().run(),
       className: "font-bold",
     },
     {
-      label: "I",
-      title: "Italic",
+      label: tp.italicKey,
+      title: tp.italic,
       on: active.italic,
       run: () => editor.chain().focus().toggleItalic().run(),
       className: "italic",
     },
     {
-      label: "U",
-      title: "Underline",
+      label: tp.underlineKey,
+      title: tp.underline,
       on: active.underline,
       run: () => editor.chain().focus().toggleUnderline().run(),
       className: "underline",
     },
     {
-      label: "S",
-      title: "Strikethrough (for corrections)",
+      label: tp.strikeKey,
+      title: tp.strike,
       on: active.strike,
       run: () => editor.chain().focus().toggleStrike().run(),
       className: "line-through",
     },
     {
-      label: "H",
-      title: "Heading",
+      label: tp.headingKey,
+      title: tp.heading,
       on: active.heading,
       run: () => editor.chain().focus().toggleHeading({ level: 2 }).run(),
       className: "font-semibold",
     },
     {
       label: <List size={16} aria-hidden />,
-      title: "Bullet list",
+      title: tp.bulletList,
       on: active.bulletList,
       run: () => editor.chain().focus().toggleBulletList().run(),
     },
     {
       label: <ListOrdered size={16} aria-hidden />,
-      title: "Numbered list",
+      title: tp.numberedList,
       on: active.orderedList,
       run: () => editor.chain().focus().toggleOrderedList().run(),
     },

@@ -1,16 +1,20 @@
-import { ArrowLeft, Video } from "lucide-react";
+import { Video } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
-import { LinkField, RemoveButton } from "@/components/classroom/ClassroomBits";
+import { BackToClassrooms, ClassroomLoading, LinkField, RemoveButton } from "@/components/classroom/ClassroomBits";
 import ClassroomFiles, { type Resource } from "@/components/classroom/ClassroomFiles";
 import { StorageCard } from "@/components/classroom/FileUpload";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
 import { buttonClass } from "@/components/ui/Button";
 import Wordmark from "@/components/ui/Wordmark";
 import { createClient } from "@/lib/supabase/server";
+import { getT } from "@/lib/i18n/server";
+import type { Messages } from "@/lib/i18n/messages";
+
+type T = Messages["dashboard"];
 import { removeLesson } from "../actions";
 
 // Private: never listed by search engines.
@@ -23,13 +27,10 @@ export default function ClassroomPage({ params }: PageProps<"/dashboard/[id]">) 
     <div className="flex min-h-dvh flex-1 flex-col">
       <header className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-4 px-[clamp(16px,4vw,32px)] py-5">
         <Wordmark underline="still" />
-        <Link href="/dashboard" className={buttonClass("ghost", "sm", "h-9 text-ink!")}>
-          <ArrowLeft size={16} aria-hidden />
-          Your classrooms
-        </Link>
+        <BackToClassrooms />
       </header>
       <main className="mx-auto flex w-full max-w-[1120px] flex-wrap items-start gap-6 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
-        <Suspense fallback={<p className="text-ink-muted">Loading…</p>}>
+        <Suspense fallback={<ClassroomLoading />}>
           <Classroom params={params} />
         </Suspense>
       </main>
@@ -39,7 +40,7 @@ export default function ClassroomPage({ params }: PageProps<"/dashboard/[id]">) 
 
 async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params">) {
   const { id } = await params;
-  const supabase = await createClient();
+  const [supabase, { dashboard: t }] = await Promise.all([createClient(), getT()]);
 
   const [{ data: auth }, { data: student }, { data: files }, { data: usedBytes }] = await Promise.all([
     supabase.auth.getUser(),
@@ -84,22 +85,22 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
               <span className="text-sm text-ink-muted">
                 {student.last_active_at ? (
                   <>
-                    Last lesson: <LocalDate iso={student.last_active_at} />
+                    {t.lastLesson} <LocalDate iso={student.last_active_at} />
                   </>
                 ) : (
-                  "No lessons yet"
+                  t.noLessonsYet
                 )}
               </span>
             </div>
           </div>
           <Link href={`/lesson/${student.id}`} className={buttonClass("primary", "md", "h-11 font-semibold")}>
             <Video size={16} aria-hidden />
-            Start lesson
+            {t.startLesson}
           </Link>
-          <StudentLink slug={student.invite_slug} name={student.title} />
+          <StudentLink t={t} slug={student.invite_slug} name={student.title} />
         </section>
         <StorageCard usedBytes={Number(usedBytes ?? 0)} />
-        <RemoveClassroom id={student.id} name={student.title} className="hidden md:flex" />
+        <RemoveClassroom t={t} id={student.id} name={student.title} className="hidden md:flex" />
       </aside>
       <ClassroomFiles
         files={resources.map((r) => ({ id: r.id, kind: r.kind, name: r.name, size: r.size, created_at: r.created_at, url: r.url ?? undefined }))}
@@ -108,32 +109,32 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
         usedBytes={Number(usedBytes ?? 0)}
       />
       {/* Phones: Remove sits at the very end of the page, after the files. */}
-      <RemoveClassroom id={student.id} name={student.title} className="flex md:hidden" />
+      <RemoveClassroom t={t} id={student.id} name={student.title} className="flex md:hidden" />
     </>
   );
 }
 
-function RemoveClassroom({ id, name, className }: { id: string; name: string; className: string }) {
+function RemoveClassroom({ t, id, name, className }: { t: T; id: string; name: string; className: string }) {
   return (
     <form action={removeLesson} className={`flex-col gap-1 px-1 ${className}`}>
       <input type="hidden" name="id" value={id} />
       <input type="hidden" name="then" value="dashboard" />
       <RemoveButton name={name} />
-      <span className="text-[13px] text-ink-muted">The link stops working and the files are deleted.</span>
+      <span className="text-[13px] text-ink-muted">{t.removeClassroomHint}</span>
     </form>
   );
 }
 
 // The student link in a read-only field with Copy. The host is read on the client.
-function StudentLink({ slug, name }: { slug: string; name: string }) {
+function StudentLink({ t, slug, name }: { t: T; slug: string; name: string }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium">{name}&apos;s link</span>
+      <span className="text-sm font-medium">{t.namesLink(name)}</span>
       <div className="flex gap-2">
-        <LinkField slug={slug} label={`${name}'s link`} />
-        <CopyLinkButton slug={slug} label="Copy" />
+        <LinkField slug={slug} label={t.namesLink(name)} />
+        <CopyLinkButton slug={slug} label={t.copy} />
       </div>
-      <span className="text-[13px] text-ink-muted">{name} joins with this link. It stays the same every week.</span>
+      <span className="text-[13px] text-ink-muted">{t.linkHint(name)}</span>
     </div>
   );
 }

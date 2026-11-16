@@ -7,6 +7,7 @@ import { LocalDate } from "@/components/dashboard/DashboardBits";
 import Button from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Field";
 import { useFormPending } from "@/components/ui/SubmitButton";
+import { useT } from "@/lib/i18n/client";
 import { linkLabel, youtubeId } from "@/lib/room/links";
 import { type ResourceKind, useFileUpload } from "./FileUpload";
 
@@ -19,12 +20,13 @@ export type Resource = {
   url?: string; // signed, valid for an hour
 };
 
-const SECTIONS: { kind: ResourceKind; title: string; filter: string; Icon: LucideIcon }[] = [
-  { kind: "image", title: "Pictures", filter: "Pictures", Icon: ImageIcon },
-  { kind: "pdf", title: "PDFs", filter: "PDFs", Icon: FileText },
-  { kind: "doc", title: "Word files", filter: "Word", Icon: FileType2 },
-  { kind: "audio", title: "Audio", filter: "Audio", Icon: Music },
-  { kind: "link", title: "Links", filter: "Links", Icon: Link2 },
+// Titles, filter names and empty texts: t.dashboard.sections[kind].
+const SECTIONS: { kind: ResourceKind; Icon: LucideIcon }[] = [
+  { kind: "image", Icon: ImageIcon },
+  { kind: "pdf", Icon: FileText },
+  { kind: "doc", Icon: FileType2 },
+  { kind: "audio", Icon: Music },
+  { kind: "link", Icon: Link2 },
 ];
 
 export function formatSize(bytes: number) {
@@ -46,11 +48,12 @@ export default function ClassroomFiles({
   usedBytes: number;
 }) {
   const upload = useFileUpload({ teacherId, lessonId, usedBytes });
+  const t = useT().dashboard;
   const [filter, setFilter] = useState<ResourceKind | "all">("all");
   const count = (k: ResourceKind) => files.filter((f) => f.kind === k).length;
   const filters: { id: ResourceKind | "all"; label: string; n: number }[] = [
-    { id: "all", label: "All", n: files.length },
-    ...SECTIONS.map((s) => ({ id: s.kind, label: s.filter, n: count(s.kind) })),
+    { id: "all", label: t.all, n: files.length },
+    ...SECTIONS.map((s) => ({ id: s.kind, label: t.sections[s.kind].filter, n: count(s.kind) })),
   ];
 
   return (
@@ -61,17 +64,17 @@ export default function ClassroomFiles({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-2.5">
           <h2 id="files" className="font-display text-[26px] font-extrabold tracking-[-0.01em]">
-            Files
+            {t.files}
           </h2>
           <span className="text-sm text-ink-muted">
-            {files.length} {files.length === 1 ? "file" : "files"}
+            {t.fileCount(files.length)}
           </span>
         </div>
         {upload.button}
       </div>
       {upload.area}
 
-      <div role="group" aria-label="Show" className="flex flex-wrap gap-1 self-start rounded-md bg-surface-2 p-[3px]">
+      <div role="group" aria-label={t.show} className="flex flex-wrap gap-1 self-start rounded-md bg-surface-2 p-[3px]">
         {filters.map((f) => (
           <button
             key={f.id}
@@ -88,14 +91,14 @@ export default function ClassroomFiles({
         ))}
       </div>
 
-      {SECTIONS.filter((s) => filter === "all" || filter === s.kind).map(({ kind, title, Icon }) => {
+      {SECTIONS.filter((s) => filter === "all" || filter === s.kind).map(({ kind, Icon }) => {
         const list = files.filter((f) => f.kind === kind);
         return (
           <div key={kind} className="flex flex-col gap-2.5">
-            <h3 className="text-[15px] font-semibold">{title}</h3>
+            <h3 className="text-[15px] font-semibold">{t.sections[kind].title}</h3>
             {kind === "link" && <AddLink lessonId={lessonId} />}
             {list.length === 0 ? (
-              <p className="text-sm text-ink-muted">No {title === "PDFs" ? title : title.toLowerCase()} yet.</p>
+              <p className="text-sm text-ink-muted">{t.sections[kind].empty}</p>
             ) : kind === "image" ? (
               <ul className="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3">
                 {list.map((f) => (
@@ -104,7 +107,7 @@ export default function ClassroomFiles({
                       href={f.url}
                       target="_blank"
                       rel="noreferrer"
-                      aria-label={`Open ${f.name}`}
+                      aria-label={t.openFile(f.name)}
                       className="flex aspect-[4/3] items-center justify-center overflow-hidden rounded-md border border-line bg-surface-2 text-ink-muted focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
                     >
                       {f.url ? (
@@ -166,16 +169,16 @@ export default function ClassroomFiles({
 
       <p className="flex items-start gap-2.5 rounded-md bg-surface-2 px-3.5 py-3 text-sm leading-snug text-ink-muted">
         <Info size={16} aria-hidden className="mt-0.5 shrink-0" />
-        In a lesson, these files sit in the side panel. Click a PDF, Word file, picture or link to show it (YouTube
-        videos play for both of you), press play for audio, or drag any file onto the stage.
+        {t.filesTip}
       </p>
     </section>
   );
 }
 
 function Meta({ file }: { file: Resource }) {
+  const t = useT().dashboard;
   const what =
-    file.kind === "link" ? (file.url && youtubeId(file.url) ? "YouTube video" : linkLabel(file.url ?? "").split("/")[0]) : formatSize(file.size);
+    file.kind === "link" ? (file.url && youtubeId(file.url) ? t.youtubeVideo : linkLabel(file.url ?? "").split("/")[0]) : formatSize(file.size);
   return (
     <span className="truncate text-[13px] text-ink-muted">
       {what} · <LocalDate iso={file.created_at} />
@@ -188,6 +191,7 @@ function AddLink({ lessonId }: { lessonId: string }) {
   const [url, setUrl] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const t = useT().dashboard;
   return (
     <form
       onSubmit={async (e) => {
@@ -205,8 +209,8 @@ function AddLink({ lessonId }: { lessonId: string }) {
         <input
           type="text"
           inputMode="url"
-          aria-label="Link to add"
-          placeholder="Paste a YouTube video or any link"
+          aria-label={t.linkToAdd}
+          placeholder={t.linkPlaceholder}
           value={url}
           onChange={(e) => setUrl(e.target.value)}
           maxLength={2000}
@@ -215,7 +219,7 @@ function AddLink({ lessonId }: { lessonId: string }) {
           className={`${inputClass(Boolean(error))} min-w-0 flex-1`}
         />
         <Button variant="secondary" disabled={saving || !url.trim()} className="h-11 shrink-0 px-4">
-          {saving ? "Adding…" : "Add link"}
+          {saving ? t.adding : t.addLink}
         </Button>
       </div>
       {error && <p className="text-sm text-danger">{error}</p>}
@@ -234,14 +238,15 @@ function DeleteFile({ file }: { file: Resource }) {
 
 function DeleteFileButton({ name }: { name: string }) {
   const pending = useFormPending();
+  const t = useT().dashboard;
   return (
     <button
-      aria-label={`Delete ${name}`}
-      title="Delete"
+      aria-label={t.deleteName(name)}
+      title={t.delete}
       disabled={pending}
       aria-busy={pending || undefined}
       onClick={(e) => {
-        if (!confirm(`Delete ${name}?`)) e.preventDefault();
+        if (!confirm(t.deleteConfirm(name))) e.preventDefault();
       }}
       className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-danger-soft hover:text-danger focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:animate-pulse"
     >
@@ -254,13 +259,14 @@ function DeleteFileButton({ name }: { name: string }) {
 function Listen({ file }: { file: Resource }) {
   const audio = useRef<HTMLAudioElement | null>(null);
   const [playing, setPlaying] = useState(false);
+  const t = useT().dashboard;
   useEffect(() => () => audio.current?.pause(), []);
-  const label = `${playing ? "Pause" : "Listen to"} ${file.name}`;
+  const label = playing ? t.pauseName(file.name) : t.listenTo(file.name);
   return (
     <button
       type="button"
       aria-label={label}
-      title={playing ? "Pause" : "Listen"}
+      title={playing ? t.pause : t.listen}
       disabled={!file.url}
       onClick={() => {
         audio.current ??= Object.assign(new Audio(file.url), { onended: () => setPlaying(false) });

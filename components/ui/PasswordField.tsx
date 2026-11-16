@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { type InputHTMLAttributes, type ReactNode, useId, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { inputClass } from "./Field";
 
 type Props = Omit<InputHTMLAttributes<HTMLInputElement>, "type"> & {
@@ -24,11 +25,12 @@ export default function PasswordField({
   className = "",
   ...props
 }: Props) {
+  const t = useT();
   const id = useId();
   const [own, setOwn] = useState(false);
   const shown = shownProp ?? own;
   const setShown = onShownChange ?? setOwn;
-  const label2 = shown ? "Hide password" : "Show password";
+  const label2 = shown ? t.auth.hidePassword : t.auth.showPassword;
 
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>

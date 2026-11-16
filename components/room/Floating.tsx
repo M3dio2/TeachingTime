@@ -1,6 +1,7 @@
 "use client";
 
 import { type KeyboardEvent, type PointerEvent, type ReactNode, useRef, useState } from "react";
+import { useT } from "@/lib/i18n/client";
 import { useStored } from "@/lib/useStored";
 
 export type Corner = "tl" | "tr" | "bl" | "br";
@@ -24,6 +25,7 @@ export default function Floating({
   children: ReactNode | ((corner: Corner) => ReactNode);
   testId?: string;
 }) {
+  const t = useT();
   const ref = useRef<HTMLDivElement>(null);
   const [corner, setCorner] = useStored<Corner>(storageKey, defaultCorner);
   const [drag, setDrag] = useState<{ x: number; y: number } | null>(null);
@@ -84,8 +86,8 @@ export default function Floating({
       ref={ref}
       role="group"
       tabIndex={0}
-      aria-label={`${label}. Drag to move, or use the arrow keys.`}
-      title="Drag to move"
+      aria-label={t.room.dragToMoveLabel(label)}
+      title={t.room.dragToMove}
       data-testid={testId}
       data-corner={corner}
       onPointerDown={start}

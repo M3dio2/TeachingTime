@@ -34,11 +34,22 @@ export const INITIAL_TABS: TabState = {
   screenReplaced: null,
 };
 
-const LABELS: Record<BuiltInTab, string> = { screen: "Screen", text: "Text", draw: "Draw" };
+// The displayed names; the ids above stay the same in every language. Pass `t.stage.tabs`
+// (lib/i18n) as `labels` for the reader's language; without it, English.
+export type TabLabels = Record<BuiltInTab | FileTabKind, string>;
+const LABELS: TabLabels = {
+  screen: "Screen",
+  text: "Text",
+  draw: "Draw",
+  pdf: "PDF",
+  image: "Picture",
+  doc: "Word file",
+  video: "Video",
+  link: "Link",
+};
 // File tabs are labelled with the file's name; `names` maps tab id → name.
-export const tabLabel = (id: TabId, names?: Record<string, string>) =>
-  isFileTab(id) ? (names?.[id] ?? FILE_LABELS[fileTabKind(id)]) : LABELS[id];
-const FILE_LABELS: Record<FileTabKind, string> = { pdf: "PDF", image: "Picture", doc: "Word file", video: "Video", link: "Link" };
+export const tabLabel = (id: TabId, names?: Record<string, string>, labels: TabLabels = LABELS) =>
+  isFileTab(id) ? (names?.[id] ?? labels[fileTabKind(id)]) : labels[id];
 
 const FILE_TAB = /^(pdf|image|doc|video|link):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 export const isFileTab = (value: string): value is FileTab => FILE_TAB.test(value);
