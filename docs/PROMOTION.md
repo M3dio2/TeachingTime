@@ -55,3 +55,25 @@ r/TEFL, r/Teachers, r/teaching, r/languagelearning (mod permission only), r/Prep
 **Facebook (after the admin's OK):** If you teach private students online, I'd love your help. TeachingTime is a free browser classroom for one-to-one lessons: each student gets a room link and joins without signing up; open your PDFs and write on them together, whiteboard, shared notes, audio for listening tasks, screen share, all in one tab. Looking for 10 tutors to try it with a real lesson this week. https://teachingtime.app
 
 **Product Hunt tagline:** "Free online classroom for 1-on-1 tutors, no student login"
+
+## Subreddits checked (November 2026)
+
+Rules change; read the sidebar before posting. Always say it's yours, one sub per day, different text each time.
+
+Post directly
+- r/PersonalTutors: tools you built are fine if you say it's yours (rule 4), no repeat pitches.
+- r/RealTutors: small, all self-promotion welcome.
+- r/indiehackers (~184k): one self-promo post with the "Self Promotion" flair, framed as asking for feedback.
+- r/SideProject (~790k): needs 50 karma and a 14-day-old account.
+- r/alphaandbetausers (~40k) and r/IMadeThis (~37k): need 25 karma and a 7-day-old account.
+
+Only in the pinned thread
+- r/Tutoring: pinned weekly/monthly "promote your services" thread only.
+- r/edtech: developers/sales thread only, no links (name it in plain text).
+- r/SaaS (~770k): weekly feedback thread; self-promo at most once per 60 days.
+
+Ask the mods first (modmail)
+- r/OnlineESLTeaching: promotion with mod permission only; best fit audience.
+- r/musicteachers, r/DaF_DaZ (German teachers), r/SpanishTeachers: no clear rule; ask.
+
+Avoid: r/TEFL, r/TutorsHelpingTutors, r/homeschool (apps count as spam), r/languagelearning, r/Teachers, r/Preply (Preply staff read it), r/InternetIsBeautiful (no sites that need sign-up).
