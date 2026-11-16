@@ -30,7 +30,7 @@ export const auth: typeof en = {
   orWithEmail: "o con tu correo",
 
   loginTitle: "Acceso para profesores",
-  loginIntro: "Hola de nuevo. Inicia sesión para ver tus aulas.",
+  loginIntro: "Hola de nuevo. Inicia sesión para ver tus Classrooms.",
   passwordPlaceholder: "Tu contraseña",
   forgotPasswordLink: "¿Olvidaste tu contraseña?",
   loggingIn: "Iniciando sesión…",
@@ -39,7 +39,7 @@ export const auth: typeof en = {
   areYouStudent: "¿Eres estudiante?",
   studentHint: "Abre el enlace de invitación que te envió tu profesor. No necesitas una cuenta.",
 
-  signupIntro: "Crea un aula para cada estudiante e invítalo con un enlace.",
+  signupIntro: "Crea un Classroom para cada estudiante e invítalo con un enlace.",
   yourName: "Tu nombre",
   namePlaceholder: "p. ej. Laura",
   nameHint: "Tus estudiantes lo ven en tu cámara en cada clase.",

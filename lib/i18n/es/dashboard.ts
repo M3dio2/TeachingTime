@@ -4,7 +4,7 @@ export const dashboard: typeof en = {
   // Header
   logOut: "Cerrar sesión",
   loggingOut: "Cerrando sesión…",
-  loadingClassrooms: "Cargando tus aulas",
+  loadingClassrooms: "Cargando tus Classrooms",
   leavingLesson: "Saliendo de la clase",
 
   // Name chip
@@ -41,13 +41,13 @@ export const dashboard: typeof en = {
   newQuickCallHint: "Termina la llamada de arriba e inicia una nueva.",
 
   // Classrooms
-  yourClassrooms: "Tus aulas",
-  classroomsIntro: "Un aula por estudiante: sus archivos y un enlace que es el mismo cada semana.",
-  classroomLimit: (max: number) => `Por ahora el máximo es ${max} aulas. Elimina una para añadir otra.`,
+  yourClassrooms: "Tus Classrooms",
+  classroomsIntro: "Un Classroom por estudiante: sus archivos y un enlace que es el mismo cada semana.",
+  classroomLimit: (max: number) => `Por ahora el máximo es ${max} Classrooms. Elimina uno para añadir otro.`,
   firstStudentTitle: "Empieza con tu primer estudiante",
   firstStudentText:
-    "Escribe su nombre y pulsa Añadir. Tendrás un aula para sus archivos y un enlace para enviarle.",
-  addClassroom: "Añadir un aula",
+    "Escribe su nombre y pulsa Añadir. Tendrás un Classroom para sus archivos y un enlace para enviarle.",
+  addClassroom: "Añadir un Classroom",
   forNewStudent: "Para un estudiante nuevo",
   studentName: "Nombre del estudiante",
   studentNamePlaceholder: "Nombre del estudiante, p. ej. Ana",
@@ -55,7 +55,7 @@ export const dashboard: typeof en = {
   adding: "Añadiendo…",
 
   // Classroom card
-  openClassroom: (name: string) => `Abrir el aula de ${name}`,
+  openClassroom: (name: string) => `Abrir el Classroom de ${name}`,
   lastLesson: "Última clase:",
   noLessonsYet: "Todavía sin clases",
   waiting: "Esperando",
@@ -81,7 +81,7 @@ export const dashboard: typeof en = {
   copy: "Copiar",
 
   // Classroom page
-  removeClassroom: "Eliminar esta aula",
+  removeClassroom: "Eliminar este Classroom",
   removeClassroomHint: "El enlace dejará de funcionar y se borrarán los archivos.",
   namesLink: (name: string) => `Enlace de ${name}`,
   linkHint: (name: string) => `${name} entra con este enlace. Es el mismo cada semana.`,
@@ -136,5 +136,5 @@ export const dashboard: typeof en = {
   storage: "Almacenamiento",
   storageUsed: (used: number, total: number) => `${used} MB de ${total} MB`,
   storageUsedLabel: (used: number, total: number) => `${used} de ${total} MB usados`,
-  storageHint: "Todas tus aulas juntas. Hasta 10 MB por archivo.",
+  storageHint: "Todos tus Classrooms juntos. Hasta 10 MB por archivo.",
 };

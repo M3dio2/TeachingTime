@@ -4,7 +4,7 @@ export const dashboard: typeof en = {
   // Header
   logOut: "Se déconnecter",
   loggingOut: "Déconnexion…",
-  loadingClassrooms: "Chargement de vos classes",
+  loadingClassrooms: "Chargement de vos Classrooms",
   leavingLesson: "Vous quittez le cours",
 
   // Name chip
@@ -41,14 +41,14 @@ export const dashboard: typeof en = {
   newQuickCallHint: "Termine l’appel ci-dessus et en lance un nouveau.",
 
   // Classrooms
-  yourClassrooms: "Vos classes",
-  classroomsIntro: "Une classe par élève : ses fichiers et un lien qui reste le même chaque semaine.",
+  yourClassrooms: "Vos Classrooms",
+  classroomsIntro: "Un Classroom par élève : ses fichiers et un lien qui reste le même chaque semaine.",
   classroomLimit: (max: number) =>
-    `${max} classes maximum pour le moment. Supprimez-en une pour en ajouter une autre.`,
+    `${max} Classrooms maximum pour le moment. Supprimez-en un pour en ajouter un autre.`,
   firstStudentTitle: "Commencez par votre premier élève",
   firstStudentText:
-    "Saisissez son nom et appuyez sur Ajouter. Vous obtenez une classe pour ses fichiers et un lien à lui envoyer.",
-  addClassroom: "Ajouter une classe",
+    "Saisissez son nom et appuyez sur Ajouter. Vous obtenez un Classroom pour ses fichiers et un lien à lui envoyer.",
+  addClassroom: "Ajouter un Classroom",
   forNewStudent: "Pour un nouvel élève",
   studentName: "Nom de l’élève",
   studentNamePlaceholder: "Nom de l’élève, ex. Anna",
@@ -56,7 +56,7 @@ export const dashboard: typeof en = {
   adding: "Ajout…",
 
   // Classroom card
-  openClassroom: (name: string) => `Ouvrir la classe de ${name}`,
+  openClassroom: (name: string) => `Ouvrir le Classroom de ${name}`,
   lastLesson: "Dernier cours :",
   noLessonsYet: "Aucun cours pour l’instant",
   waiting: "En attente",
@@ -82,7 +82,7 @@ export const dashboard: typeof en = {
   copy: "Copier",
 
   // Classroom page
-  removeClassroom: "Supprimer cette classe",
+  removeClassroom: "Supprimer ce Classroom",
   removeClassroomHint: "Le lien ne fonctionnera plus et les fichiers seront effacés.",
   namesLink: (name: string) => `Lien de ${name}`,
   linkHint: (name: string) => `${name} rejoint le cours avec ce lien. Il reste le même chaque semaine.`,
@@ -137,5 +137,5 @@ export const dashboard: typeof en = {
   storage: "Stockage",
   storageUsed: (used: number, total: number) => `${used} Mo sur ${total} Mo`,
   storageUsedLabel: (used: number, total: number) => `${used} Mo utilisés sur ${total}`,
-  storageHint: "Toutes vos classes ensemble. Jusqu’à 10 Mo par fichier.",
+  storageHint: "Tous vos Classrooms ensemble. Jusqu’à 10 Mo par fichier.",
 };

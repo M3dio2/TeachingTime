@@ -4,7 +4,7 @@ export const dashboard: typeof en = {
   // Header
   logOut: "Abmelden",
   loggingOut: "Wird abgemeldet…",
-  loadingClassrooms: "Deine Klassenzimmer werden geladen",
+  loadingClassrooms: "Deine Classrooms werden geladen",
   leavingLesson: "Lektion wird verlassen",
 
   // Name chip
@@ -41,14 +41,14 @@ export const dashboard: typeof en = {
   newQuickCallHint: "Beendet den Anruf oben und startet einen neuen.",
 
   // Classrooms
-  yourClassrooms: "Deine Klassenzimmer",
-  classroomsIntro: "Ein Klassenzimmer pro Schüler: seine Dateien und ein Link, der jede Woche gleich bleibt.",
+  yourClassrooms: "Deine Classrooms",
+  classroomsIntro: "Ein Classroom pro Schüler: seine Dateien und ein Link, der jede Woche gleich bleibt.",
   classroomLimit: (max: number) =>
-    `Mehr als ${max} Klassenzimmer geht im Moment nicht. Entferne eines, um ein neues hinzuzufügen.`,
+    `Mehr als ${max} Classrooms gehen im Moment nicht. Entferne eines, um ein neues hinzuzufügen.`,
   firstStudentTitle: "Fang mit deinem ersten Schüler an",
   firstStudentText:
-    "Gib den Namen ein und tippe auf Hinzufügen. Du bekommst ein Klassenzimmer für die Dateien und einen Link zum Verschicken.",
-  addClassroom: "Klassenzimmer hinzufügen",
+    "Gib den Namen ein und tippe auf Hinzufügen. Du bekommst ein Classroom für die Dateien und einen Link zum Verschicken.",
+  addClassroom: "Classroom hinzufügen",
   forNewStudent: "Für einen neuen Schüler",
   studentName: "Name des Schülers",
   studentNamePlaceholder: "Name, z. B. Anna",
@@ -56,7 +56,7 @@ export const dashboard: typeof en = {
   adding: "Wird hinzugefügt…",
 
   // Classroom card
-  openClassroom: (name: string) => `Klassenzimmer von ${name} öffnen`,
+  openClassroom: (name: string) => `Classroom von ${name} öffnen`,
   lastLesson: "Letzte Lektion:",
   noLessonsYet: "Noch keine Lektionen",
   waiting: "Wartet",
@@ -82,7 +82,7 @@ export const dashboard: typeof en = {
   copy: "Kopieren",
 
   // Classroom page
-  removeClassroom: "Dieses Klassenzimmer entfernen",
+  removeClassroom: "Dieses Classroom entfernen",
   removeClassroomHint: "Der Link funktioniert dann nicht mehr und die Dateien werden gelöscht.",
   namesLink: (name: string) => `Link für ${name}`,
   linkHint: (name: string) => `${name} kommt mit diesem Link rein. Er bleibt jede Woche gleich.`,
@@ -137,5 +137,5 @@ export const dashboard: typeof en = {
   storage: "Speicher",
   storageUsed: (used: number, total: number) => `${used} MB von ${total} MB`,
   storageUsedLabel: (used: number, total: number) => `${used} von ${total} MB belegt`,
-  storageHint: "Alle deine Klassenzimmer zusammen. Bis zu 10 MB pro Datei.",
+  storageHint: "Alle deine Classrooms zusammen. Bis zu 10 MB pro Datei.",
 };

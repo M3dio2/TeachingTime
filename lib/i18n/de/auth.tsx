@@ -30,7 +30,7 @@ export const auth: typeof en = {
   orWithEmail: "oder mit E-Mail",
 
   loginTitle: "Anmeldung für Lehrkräfte",
-  loginIntro: "Willkommen zurück. Melde dich an, um deine Klassenzimmer zu sehen.",
+  loginIntro: "Willkommen zurück. Melde dich an, um deine Classrooms zu sehen.",
   passwordPlaceholder: "Dein Passwort",
   forgotPasswordLink: "Passwort vergessen?",
   loggingIn: "Wird angemeldet…",
@@ -39,7 +39,7 @@ export const auth: typeof en = {
   areYouStudent: "Bist du Schüler?",
   studentHint: "Öffne den Einladungslink, den du bekommen hast. Du brauchst kein Konto.",
 
-  signupIntro: "Richte für jeden Schüler ein Klassenzimmer ein und lade ihn mit einem Link ein.",
+  signupIntro: "Richte für jeden Schüler ein Classroom ein und lade ihn mit einem Link ein.",
   yourName: "Dein Name",
   namePlaceholder: "z. B. Laura",
   nameHint: "Deine Schüler sehen ihn in jeder Lektion bei deiner Kamera.",
