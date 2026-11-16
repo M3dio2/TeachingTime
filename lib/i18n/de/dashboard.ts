@@ -62,6 +62,8 @@ export const dashboard: typeof en = {
   waiting: "Wartet",
   noFilesYet: "Noch keine Dateien",
   startLesson: "Lektion starten",
+  // The classroom card's button: short, it shares a row with "Copy link" and ⋯.
+  startLessonShort: "Starten",
   copyLink: "Link kopieren",
   moreFor: (name: string) => `Mehr für ${name}`,
   removeConfirm: (name: string) =>

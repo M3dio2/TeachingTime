@@ -36,7 +36,7 @@ export default function CopyLinkButton({
       size="sm"
       onClick={copy}
       aria-label={name ? t.dashboard.copyNamesLink(name) : undefined}
-      className={variant === "ghost" ? "text-ink!" : ""}
+      className={variant === "ghost" ? "whitespace-nowrap text-ink!" : "whitespace-nowrap"}
     >
       {icon && <Link2 size={16} aria-hidden />}
       {copied ? t.dashboard.copied : (label ?? t.dashboard.copyStudentLink)}

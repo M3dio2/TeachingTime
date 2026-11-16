@@ -253,6 +253,13 @@ Promotion (user; details, rules and links in `docs/PROMOTION.md`):
 
 # Open design work
 
+## I1: Languages (Nov 2026, branch `i18n`)
+- [x] English, German, Spanish and French for the app itself: login and sign-up, dashboard, classroom, join page, lesson room (Excalidraw's own menus too). Typed dictionaries in `lib/i18n/<lang>/` (English is the source; a missing text is a type error)
+- [x] Teachers pick the language in the dashboard header (globe button); saved in a cookie and in their account, so other devices follow. Students get their browser's language
+- [x] German uses "du", Spanish "tú", French "vous"
+- [ ] Still English: the start page and legal pages (SEO: a translated start page needs its own address, e.g. `/de`), page titles in the browser tab, Supabase's emails (sign-up, password reset: templates in Supabase), LiveKit's device list
+- [ ] A native speaker reads through each language (the user: German)
+
 ## Redesign (Nov 2026)
 - [x] Every page redesigned on the canvas "TeachingTime Redesign" (claude.ai, private to the user), desktop and phone, with resizing rules
 - [x] Copied to `docs/design/screens/`; spec in `docs/design/HANDOFF.md`; `docs/DESIGN.md` updated

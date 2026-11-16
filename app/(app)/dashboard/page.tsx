@@ -362,10 +362,10 @@ function StudentCard({ t, student, waiting, files }: { t: T; student: Lesson; wa
       <div className="relative z-10 flex items-center gap-1.5 border-t border-line pt-3">
         <Link
           href={`/lesson/${student.id}`}
-          className={buttonClass(waiting ? "primary" : "secondary", "sm", "h-9 font-semibold")}
+          className={buttonClass(waiting ? "primary" : "secondary", "sm", "h-9 font-semibold whitespace-nowrap")}
         >
           <Video size={16} aria-hidden />
-          {t.startLesson}
+          {t.startLessonShort}
         </Link>
         <CopyLinkButton slug={student.invite_slug} label={t.copyLink} name={student.title} variant="ghost" icon />
         <span className="flex-1" />

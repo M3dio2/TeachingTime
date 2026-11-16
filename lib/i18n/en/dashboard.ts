@@ -59,6 +59,8 @@ export const dashboard = {
   waiting: "Waiting",
   noFilesYet: "No files yet",
   startLesson: "Start lesson",
+  // The classroom card's button: short, it shares a row with "Copy link" and ⋯.
+  startLessonShort: "Start lesson",
   copyLink: "Copy link",
   moreFor: (name: string) => `More for ${name}`,
   removeConfirm: (name: string) => `Remove ${name}? Their link will stop working and their files are deleted.`,
