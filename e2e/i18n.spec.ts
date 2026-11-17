@@ -9,7 +9,7 @@ test.afterEach(async ({ page }) => {
   const menu = page.getByRole("button", { name: /^(Language|Sprache|Idioma|Langue):/ });
   await menu.click();
   await page.getByRole("menuitemradio", { name: "English" }).click();
-  await expect(page.getByRole("heading", { name: "Your classrooms", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your Classrooms", exact: true })).toBeVisible();
 });
 
 test("I1: a Spanish browser joins in Spanish; the teacher switches the dashboard to German", async ({ page, browser }) => {

@@ -17,7 +17,7 @@ test("start page: content, links, metadata", async ({ page }) => {
   const ld = JSON.parse((await page.locator('script[type="application/ld+json"]').textContent())!);
   expect(ld["@graph"].map((n: { "@type": string }) => n["@type"])).toEqual(["WebApplication", "Organization", "FAQPage"]);
 
-  await page.getByRole("link", { name: "Create your free classroom" }).first().click();
+  await page.getByRole("link", { name: "Create your free Classroom" }).first().click();
   await expect(page).toHaveURL(/\/signup$/);
   await page.getByRole("link", { name: "Log in" }).click();
   await expect(page).toHaveURL(/\/login$/);

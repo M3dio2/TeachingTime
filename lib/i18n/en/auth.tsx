@@ -36,7 +36,7 @@ export const auth = {
 
   // Login
   loginTitle: "Teacher login",
-  loginIntro: "Welcome back. Log in to see your classrooms.",
+  loginIntro: "Welcome back. Log in to see your Classrooms.",
   passwordPlaceholder: "Your password",
   forgotPasswordLink: "Forgot your password?",
   loggingIn: "Logging in…",
@@ -46,7 +46,7 @@ export const auth = {
   studentHint: "Open the invite link from your teacher. You don't need an account.",
 
   // Sign-up
-  signupIntro: "Set up a classroom for each student and invite them with a link.",
+  signupIntro: "Set up a Classroom for each student and invite them with a link.",
   yourName: "Your name",
   namePlaceholder: "e.g. Laura",
   nameHint: "Students see it on your camera in every lesson.",

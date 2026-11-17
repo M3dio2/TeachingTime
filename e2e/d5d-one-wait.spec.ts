@@ -16,7 +16,7 @@ test("D5d: Start a quick call shows the loading screen at once, until connected"
   // Leaving (ends the quick call): "Leaving the lesson" until the classrooms are shown.
   await page.getByRole("button", { name: "Leave the lesson" }).click();
   await expect(page.getByRole("status").filter({ hasText: "Leaving the lesson" })).toBeVisible({ timeout: 5_000 });
-  await expect(page.getByRole("heading", { name: "Your classrooms", exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Your Classrooms", exact: true })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByRole("status").filter({ hasText: "Leaving the lesson" })).toHaveCount(0);
   await expect(page.getByRole("region", { name: "Quick call in progress" })).toHaveCount(0);
   expect(await page.evaluate(() => sessionStorage.getItem("leaving-lesson"))).toBeNull();
@@ -26,7 +26,7 @@ test("D5d: Start lesson in a classroom shows the loading screen at once", async 
   test.setTimeout(90_000);
   await startTestLesson(page); // clicks Start lesson and waits for the room
   await page.getByRole("button", { name: "Leave the lesson" }).click();
-  await expect(page.getByRole("heading", { name: "Your classrooms", exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Your Classrooms", exact: true })).toBeVisible({ timeout: 30_000 });
 
   // From the dashboard card this time: the loading screen appears within a moment.
   await page.getByRole("link", { name: "Start lesson" }).first().click();

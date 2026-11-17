@@ -15,8 +15,8 @@ export const stage: typeof en = {
   openTabs: "Onglets ouverts",
   closeTab: (name) => `Fermer ${name}`,
   resizeTabs: "Redimensionner les deux onglets",
-  seesWhatYouSee: (name) => `${name} voit ce que vous voyez`,
-  following: (name) => `Vous suivez ${name}`,
+  seesWhatYouSee: (name) => `${name} voit ce que tu vois`,
+  following: (name) => `Tu suis ${name}`,
   justTalk: "Juste parler",
   justTalkTitle: "Replier les onglets pour vous deux",
   sideBySide: "Côte à côte",
@@ -39,11 +39,11 @@ export const stage: typeof en = {
 
   loadingWhiteboard: "Chargement du tableau…",
   canWriteHere: (name) => `${name} peut écrire ici`,
-  onlyYouCanWrite: "Vous seul pouvez écrire",
-  youCanWriteHere: "Vous pouvez écrire ici",
+  onlyYouCanWrite: "Toi seul peux écrire",
+  youCanWriteHere: "Tu peux écrire ici",
   viewOnly: "Lecture seule",
   waitingForScreen: "En attente de l’écran…",
-  youAreSharing: "Vous partagez votre écran",
+  youAreSharing: "Tu partages ton écran",
   theirScreen: (name) => `Écran de ${name}`,
   stopSharing: "Arrêter le partage",
 
@@ -54,20 +54,20 @@ export const stage: typeof en = {
     audio: "Audio",
     links: "Liens",
     hintFullClicked:
-      "Deux onglets sont ouverts. Fermez-en un d’abord, ou faites glisser le fichier sur un onglet pour le remplacer.",
-    hintFull: "Deux onglets sont ouverts. Faites glisser un fichier sur l’un d’eux pour le remplacer.",
-    hint: "Cliquez sur un fichier ou un lien pour l’ouvrir, lancez l’audio, ou faites glisser n’importe quoi sur la scène.",
+      "Deux onglets sont ouverts. Fermes-en un d’abord, ou fais glisser le fichier sur un onglet pour le remplacer.",
+    hintFull: "Deux onglets sont ouverts. Fais glisser un fichier sur l’un d’eux pour le remplacer.",
+    hint: "Clique sur un fichier ou un lien pour l’ouvrir, lance l’audio, ou fais glisser n’importe quoi sur la scène.",
     fold: "Replier les fichiers",
-    clickOrDrag: "Cliquez pour ouvrir, ou faites glisser sur la scène",
+    clickOrDrag: "Clique pour ouvrir, ou fais glisser sur la scène",
     show: (name) => `Afficher ${name}`,
     open: (name) => `Ouvrir ${name}`,
-    empty: "Aucun fichier pour l’instant. Ajoutez des images, des PDF et de l’audio dans le Classroom.",
+    empty: "Aucun fichier pour l’instant. Ajoute des images, des PDF et de l’audio dans le Classroom.",
     onScreen: "À l’écran",
     inATab: "Dans un onglet",
     folded: (title) => `${title}, replié`,
     play: (name) => `Lire ${name}`,
     pause: (name) => `Mettre ${name} en pause`,
-    playOrDrag: "Lancez la lecture, ou faites glisser sur la scène",
+    playOrDrag: "Lance la lecture, ou fais glisser sur la scène",
     playing: "En lecture",
   },
 
@@ -75,7 +75,7 @@ export const stage: typeof en = {
     failed: "Impossible d’ouvrir cette image.",
     opening: "Ouverture de l’image…",
     teacherNote: (name) => `${name} voit cette image`,
-    studentNote: (name) => `${name} vous montre cette image`,
+    studentNote: (name) => `${name} te montre cette image`,
   },
 
   pdf: {
@@ -86,9 +86,9 @@ export const stage: typeof en = {
     seesPage: (name, page) => `${name} voit la page ${page}`,
     choosesPage: (name) => `${name} choisit la page`,
     tooBig: (name) => `${name} dépasse 10 Mo.`,
-    logInAgain: "Reconnectez-vous pour enregistrer.",
+    logInAgain: "Reconnecte-toi pour enregistrer.",
     savedAs: (name, where) => `Enregistré sous « ${name} » dans ${where}`,
-    saveFailed: "Impossible d’enregistrer le PDF. Veuillez réessayer.",
+    saveFailed: "Impossible d’enregistrer le PDF. Réessaie.",
     toolbar: "Écrire sur le PDF",
     tools: {
       scroll: "Défiler",
@@ -97,13 +97,13 @@ export const stage: typeof en = {
       text: "Texte",
       eraser: "Gomme",
     },
-    notAllowed: (tool) => `${tool} (votre professeur ne vous a pas autorisé à écrire)`,
+    notAllowed: (tool) => `${tool} (ton professeur ne t’a pas autorisé à écrire)`,
     clear: "Effacer ce qui est écrit sur ce PDF pour vous deux",
     clearConfirm: "Effacer ce qui est écrit sur ce PDF pour vous deux ?",
     saveTitle: "Enregistrer une copie annotée dans le Classroom",
     saveAsNew: "Enregistrer comme nouveau PDF",
     textLabel: "Texte sur le PDF",
-    textPlaceholder: "Tapez, puis Entrée",
+    textPlaceholder: "Tape, puis Entrée",
   },
 
   doc: {
@@ -120,8 +120,8 @@ export const stage: typeof en = {
     cantPlay: "Cette vidéo ne peut pas être lue dans le cours.",
     watchOnYouTube: "Regarder sur YouTube",
     opening: "Ouverture de la vidéo…",
-    tapToHear: "Touchez pour entendre la vidéo",
-    teacherNote: (name) => `${name} regarde avec vous : lecture, pause ou saut, tout suit`,
+    tapToHear: "Touche pour entendre la vidéo",
+    teacherNote: (name) => `${name} regarde avec toi : lecture, pause ou saut, tout suit`,
     studentNote: (name) => `${name} contrôle la vidéo`,
   },
 
@@ -132,7 +132,7 @@ export const stage: typeof en = {
     teacherNote: (name) =>
       `${name} voit cette carte et peut aussi ouvrir le lien. Il s’ouvre dans un nouvel onglet, le cours continue.`,
     studentNote: (name) =>
-      `${name} a partagé ce lien. Il s’ouvre dans un nouvel onglet ; revenez ici ensuite.`,
+      `${name} a partagé ce lien. Il s’ouvre dans un nouvel onglet ; reviens ici ensuite.`,
   },
 
   audio: {

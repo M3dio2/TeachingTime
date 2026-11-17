@@ -94,7 +94,7 @@ async function Dashboard() {
       <DoneLeaving />
       <header className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-4 px-[clamp(16px,4vw,32px)] py-5">
         {/* First visit: the arrow doodle is the page's marker stroke, so no underline here. */}
-        <Wordmark underline={firstVisit ? "none" : "draw"} />
+        <Wordmark underline={firstVisit ? "none" : "still"} />
         <div className="flex items-center gap-2">
           <LanguageMenu />
           <FeedbackButton />
@@ -145,7 +145,20 @@ async function Dashboard() {
 
         <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
           <div className="flex flex-[1_1_360px] flex-col gap-1.5">
-            <h1 className="text-[30px] leading-[1.1] tracking-[-0.02em] md:text-4xl">{t.yourClassrooms}</h1>
+            <h1 className="text-[30px] leading-[1.1] tracking-[-0.02em] md:text-4xl">
+              {t.yourClassroomsTitle.before}
+              <span className="relative isolate inline-block">
+                {t.yourClassroomsTitle.marked}
+                {/* The screen's one marker gesture; on a first visit the welcome arrow is, so it rests. */}
+                <Marker
+                  shape="underline"
+                  delay={0.2}
+                  play={firstVisit ? "none" : "draw"}
+                  className="absolute -bottom-[0.15em] -left-[3%] -z-10 h-[0.3em] w-[106%]"
+                />
+              </span>
+              {t.yourClassroomsTitle.after}
+            </h1>
             <p className="max-w-[560px] text-ink-muted">
               {t.classroomsIntro}
             </p>
