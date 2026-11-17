@@ -51,7 +51,7 @@ test("token route: a student may publish camera and mic only; one student identi
   expect(t.video.canPublishSources).toBeUndefined();
 
   await page.getByRole("button", { name: "Leave the lesson" }).click();
-  await expect(page.getByRole("heading", { name: "Your classrooms", exact: true })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("heading", { name: "Your Classrooms", exact: true })).toBeVisible({ timeout: 30_000 });
 });
 
 test("token route: another teacher's lesson id is not found", async ({ page }) => {

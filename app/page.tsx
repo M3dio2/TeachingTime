@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 const FEATURES: { Icon: LucideIcon; title: string; text: string }[] = [
   {
     Icon: School,
-    title: "A classroom for every student",
+    title: "A Classroom for every student",
     text: "Their files, notes and whiteboard stay put between lessons, so the next one starts where the last one ended.",
   },
   {
@@ -64,15 +64,15 @@ const FEATURES: { Icon: LucideIcon; title: string; text: string }[] = [
 ];
 
 const STEPS = [
-  { title: "Add a classroom", text: "One per student. Upload the PDFs, Word files, pictures and audio you teach with." },
-  { title: "Send the link", text: "Each classroom has its own link. Send it once: it stays the same for every lesson." },
+  { title: "Add a Classroom", text: "One per student. Upload the PDFs, Word files, pictures and audio you teach with." },
+  { title: "Send the link", text: "Each Classroom has its own link. Send it once: it stays the same for every lesson." },
   { title: "Teach", text: "Start the lesson, open a file, draw, talk. Your student follows what you show." },
 ];
 
 const FAQ = [
   {
     q: "Is TeachingTime free?",
-    a: `Yes, while it's new. A free account has ${MAX_CLASSROOMS} classrooms, ${TEACHER_BYTES / MB} MB of files and ${MONTHLY_LESSON_HOURS} hours of lessons a month.`,
+    a: `Yes, while it's new. A free account has ${MAX_CLASSROOMS} Classrooms, ${TEACHER_BYTES / MB} MB of files and ${MONTHLY_LESSON_HOURS} hours of lessons a month.`,
   },
   {
     q: "Does my student need an account?",
@@ -174,7 +174,7 @@ export default function Home() {
             </p>
             <div className="flex flex-wrap items-center gap-3">
               <Link href="/signup" className={buttonClass("primary", "md", "h-12 px-6 text-base font-semibold")}>
-                Create your free classroom
+                Create your free Classroom
                 <ArrowRight size={18} aria-hidden />
               </Link>
               <Link href="/login" className={buttonClass("secondary", "md", "h-12 px-5 text-base")}>
@@ -281,13 +281,13 @@ export default function Home() {
           <div className="flex flex-col items-center gap-5 rounded-panel bg-ink px-6 py-12 text-center text-paper md:py-16">
             <h2 className={h2}>Your next lesson could start here</h2>
             <p className="max-w-[520px] text-lg text-paper/80">
-              Create a classroom, send the link, teach. It takes about a minute.
+              Create a Classroom, send the link, teach. It takes about a minute.
             </p>
             <Link
               href="/signup"
               className="inline-flex h-12 items-center gap-2 rounded-md bg-marker px-6 text-base font-semibold text-ink hover:bg-marker-soft focus-visible:ring-2 focus-visible:ring-marker focus-visible:ring-offset-2 focus-visible:ring-offset-ink focus-visible:outline-none"
             >
-              Create your free classroom
+              Create your free Classroom
               <ArrowRight size={18} aria-hidden />
             </Link>
           </div>

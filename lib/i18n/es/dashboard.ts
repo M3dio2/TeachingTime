@@ -42,6 +42,8 @@ export const dashboard: typeof en = {
 
   // Classrooms
   yourClassrooms: "Tus Classrooms",
+  // The heading again, in parts: the marker underlines `marked`.
+  yourClassroomsTitle: { before: "Tus ", marked: "Classrooms", after: "" },
   classroomsIntro: "Un Classroom por estudiante: sus archivos y un enlace que es el mismo cada semana.",
   classroomLimit: (max: number) => `Por ahora el máximo es ${max} Classrooms. Elimina uno para añadir otro.`,
   firstStudentTitle: "Empieza con tu primer estudiante",

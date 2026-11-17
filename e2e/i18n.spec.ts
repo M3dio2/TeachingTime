@@ -9,7 +9,7 @@ test.afterEach(async ({ page }) => {
   const menu = page.getByRole("button", { name: /^(Language|Sprache|Idioma|Langue):/ });
   await menu.click();
   await page.getByRole("menuitemradio", { name: "English" }).click();
-  await expect(page.getByRole("heading", { name: "Your classrooms", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Your Classrooms", exact: true })).toBeVisible();
 });
 
 test("I1: a Spanish browser joins in Spanish; the teacher switches the dashboard to German", async ({ page, browser }) => {
@@ -30,17 +30,17 @@ test("I1: a Spanish browser joins in Spanish; the teacher switches the dashboard
   await page.goto("/dashboard");
   await page.getByRole("button", { name: "Language: English" }).click();
   await page.getByRole("menuitemradio", { name: "Deutsch" }).click();
-  await expect(page.getByRole("heading", { name: "Deine Klassenzimmer", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Deine Classrooms", exact: true })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "de");
   await expect(page.getByRole("button", { name: "Abmelden" })).toBeVisible();
 
   // Still German after a reload, and on another device (from her account).
   await page.reload();
-  await expect(page.getByRole("heading", { name: "Deine Klassenzimmer", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Deine Classrooms", exact: true })).toBeVisible();
   const other = await browser.newContext();
   const otherPage = await other.newPage();
   await logIn(otherPage).catch(() => {}); // logIn waits for English texts; only the dashboard matters
   await otherPage.goto("/dashboard");
-  await expect(otherPage.getByRole("heading", { name: "Deine Klassenzimmer", exact: true })).toBeVisible();
+  await expect(otherPage.getByRole("heading", { name: "Deine Classrooms", exact: true })).toBeVisible();
   await other.close();
 });

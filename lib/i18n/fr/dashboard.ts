@@ -4,14 +4,14 @@ export const dashboard: typeof en = {
   // Header
   logOut: "Se déconnecter",
   loggingOut: "Déconnexion…",
-  loadingClassrooms: "Chargement de vos Classrooms",
-  leavingLesson: "Vous quittez le cours",
+  loadingClassrooms: "Chargement de tes Classrooms",
+  leavingLesson: "Tu quittes le cours",
 
   // Name chip
-  changeNameTitle: "Modifier le nom que vos élèves voient pendant les cours",
-  nameChipLabel: (name: string) => `Votre nom pendant les cours : ${name}. Le modifier`,
-  addYourName: "Ajouter votre nom",
-  nameInLessons: "Votre nom pendant les cours",
+  changeNameTitle: "Modifier le nom que tes élèves voient pendant les cours",
+  nameChipLabel: (name: string) => `Ton nom pendant les cours : ${name}. Le modifier`,
+  addYourName: "Ajouter ton nom",
+  nameInLessons: "Ton nom pendant les cours",
   namePlaceholder: "ex. Mme Martin",
 
   // Feedback
@@ -20,15 +20,15 @@ export const dashboard: typeof en = {
   feedbackThanks: "Merci ! Chaque message est lu.",
   feedbackQuestion: "Qu’est-ce qui marche, qu’est-ce qui manque, qu’est-ce qui ne marche pas ?",
   feedbackPlaceholder: "ex. Sur mon iPad, le tableau blanc…",
-  feedbackFailed: "L’envoi a échoué. Veuillez réessayer dans un instant.",
+  feedbackFailed: "L’envoi a échoué. Réessaie dans un instant.",
 
   // Welcome (first visit)
-  welcomeTitle: "Bienvenue ! Comment vos élèves doivent-ils vous appeler ?",
-  welcomeText: "Ce nom s’affiche sur votre caméra à chaque cours. Vous pourrez le modifier plus tard.",
+  welcomeTitle: "Bienvenue ! Comment tes élèves doivent-ils t’appeler ?",
+  welcomeText: "Ce nom s’affiche sur ta caméra à chaque cours. Tu pourras le modifier plus tard.",
 
   // Quick call
   quickCallInProgress: "Appel rapide en cours",
-  studentWaiting: "Votre élève attend.",
+  studentWaiting: "Ton élève attend.",
   nobodyInCall: "Personne n’est dans l’appel.",
   rejoin: "Revenir",
   endQuickCallConfirm: "Terminer cet appel rapide ? Le lien de l’élève ne fonctionnera plus.",
@@ -41,13 +41,15 @@ export const dashboard: typeof en = {
   newQuickCallHint: "Termine l’appel ci-dessus et en lance un nouveau.",
 
   // Classrooms
-  yourClassrooms: "Vos Classrooms",
+  yourClassrooms: "Tes Classrooms",
+  // The heading again, in parts: the marker underlines `marked`.
+  yourClassroomsTitle: { before: "Tes ", marked: "Classrooms", after: "" },
   classroomsIntro: "Un Classroom par élève : ses fichiers et un lien qui reste le même chaque semaine.",
   classroomLimit: (max: number) =>
-    `${max} Classrooms maximum pour le moment. Supprimez-en un pour en ajouter un autre.`,
-  firstStudentTitle: "Commencez par votre premier élève",
+    `${max} Classrooms maximum pour le moment. Supprimes-en un pour en ajouter un autre.`,
+  firstStudentTitle: "Commence par ton premier élève",
   firstStudentText:
-    "Saisissez son nom et appuyez sur Ajouter. Vous obtenez un Classroom pour ses fichiers et un lien à lui envoyer.",
+    "Saisis son nom et appuie sur Ajouter. Tu obtiens un Classroom pour ses fichiers et un lien à lui envoyer.",
   addClassroom: "Ajouter un Classroom",
   forNewStudent: "Pour un nouvel élève",
   studentName: "Nom de l’élève",
@@ -101,13 +103,13 @@ export const dashboard: typeof en = {
   },
   openFile: (name: string) => `Ouvrir ${name}`,
   filesTip:
-    "Pendant le cours, ces fichiers se trouvent dans le panneau latéral. Cliquez sur un PDF, un fichier Word, une image ou un lien pour l’afficher (les vidéos YouTube se lisent pour vous deux), lancez la lecture d’un audio, ou glissez un fichier sur la scène.",
+    "Pendant le cours, ces fichiers se trouvent dans le panneau latéral. Clique sur un PDF, un fichier Word, une image ou un lien pour l’afficher (les vidéos YouTube se lisent pour vous deux), lance la lecture d’un audio, ou glisse un fichier sur la scène.",
   youtubeVideo: "Vidéo YouTube",
   linkToAdd: "Lien à ajouter",
-  linkPlaceholder: "Collez une vidéo YouTube ou un lien",
+  linkPlaceholder: "Colle une vidéo YouTube ou un lien",
   addLink: "Ajouter le lien",
-  badLink: "Cela ne ressemble pas à une adresse web. Collez un lien qui commence par https://",
-  linkNotSaved: "Le lien n’a pas pu être enregistré. Veuillez réessayer.",
+  badLink: "Cela ne ressemble pas à une adresse web. Colle un lien qui commence par https://",
+  linkNotSaved: "Le lien n’a pas pu être enregistré. Réessaie.",
   deleteName: (name: string) => `Supprimer ${name}`,
   delete: "Supprimer",
   deleteConfirm: (name: string) => `Supprimer ${name} ?`,
@@ -118,24 +120,24 @@ export const dashboard: typeof en = {
 
   // Upload
   uploadFiles: "Importer des fichiers",
-  dropToUpload: "Relâchez pour importer",
-  dropFilesHere: "Déposez vos fichiers ici",
+  dropToUpload: "Relâche pour importer",
+  dropFilesHere: "Dépose tes fichiers ici",
   dropHint: "Images, PDF, fichiers Word ou audio, jusqu’à 10 Mo chacun",
   uploading: (name: string) => `Import de ${name}…`,
   upload: {
     oldWord: (name: string) =>
-      `${name} est un ancien fichier Word. Dans Word, enregistrez-le en .docx (ou PDF), puis importez ce fichier.`,
+      `${name} est un ancien fichier Word. Dans Word, enregistre-le en .docx (ou PDF), puis importe ce fichier.`,
     wrongType: (name: string) => `${name} n’est ni une image, ni un PDF, ni un fichier Word ou audio.`,
     tooBig: (name: string) => `${name} dépasse 10 Mo.`,
     noRoom: (name: string, mb: number) =>
-      `${name} ne rentre pas : vos fichiers peuvent occuper ${mb} Mo au total. Supprimez-en d’abord quelques-uns.`,
+      `${name} ne rentre pas : tes fichiers peuvent occuper ${mb} Mo au total. Supprimes-en d’abord quelques-uns.`,
     notAccepted: (name: string) => `${name} : ce type de fichier n’est pas encore accepté.`,
-    failed: (name: string) => `${name} n’a pas pu être importé. Veuillez réessayer.`,
+    failed: (name: string) => `${name} n’a pas pu être importé. Réessaie.`,
   },
 
   // Storage
   storage: "Stockage",
   storageUsed: (used: number, total: number) => `${used} Mo sur ${total} Mo`,
   storageUsedLabel: (used: number, total: number) => `${used} Mo utilisés sur ${total}`,
-  storageHint: "Tous vos Classrooms ensemble. Jusqu’à 10 Mo par fichier.",
+  storageHint: "Tous tes Classrooms ensemble. Jusqu’à 10 Mo par fichier.",
 };

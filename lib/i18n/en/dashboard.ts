@@ -3,7 +3,7 @@ export const dashboard = {
   // Header
   logOut: "Log out",
   loggingOut: "Logging out…",
-  loadingClassrooms: "Loading your classrooms",
+  loadingClassrooms: "Loading your Classrooms",
   leavingLesson: "Leaving the lesson",
 
   // Name chip
@@ -40,12 +40,14 @@ export const dashboard = {
   newQuickCallHint: "Ends the call above and starts a fresh one.",
 
   // Classrooms
-  yourClassrooms: "Your classrooms",
-  classroomsIntro: "One classroom per student: their files, and a link that stays the same every week.",
-  classroomLimit: (max: number) => `${max} classrooms is the most for now. Remove one to add another.`,
+  yourClassrooms: "Your Classrooms",
+  // The heading again, in parts: the marker underlines `marked`.
+  yourClassroomsTitle: { before: "Your ", marked: "Classrooms", after: "" },
+  classroomsIntro: "One Classroom per student: their files, and a link that stays the same every week.",
+  classroomLimit: (max: number) => `${max} Classrooms is the most for now. Remove one to add another.`,
   firstStudentTitle: "Start with your first student",
-  firstStudentText: "Type their name and press Add. You get a classroom for their files and a link to send them.",
-  addClassroom: "Add a classroom",
+  firstStudentText: "Type their name and press Add. You get a Classroom for their files and a link to send them.",
+  addClassroom: "Add a Classroom",
   forNewStudent: "For a new student",
   studentName: "Student's name",
   studentNamePlaceholder: "Student's name, e.g. Anna",
@@ -53,7 +55,7 @@ export const dashboard = {
   adding: "Adding…",
 
   // Classroom card
-  openClassroom: (name: string) => `Open ${name}'s classroom`,
+  openClassroom: (name: string) => `Open ${name}'s Classroom`,
   lastLesson: "Last lesson:",
   noLessonsYet: "No lessons yet",
   waiting: "Waiting",
@@ -79,7 +81,7 @@ export const dashboard = {
   copy: "Copy",
 
   // Classroom page
-  removeClassroom: "Remove this classroom",
+  removeClassroom: "Remove this Classroom",
   removeClassroomHint: "The link stops working and the files are deleted.",
   namesLink: (name: string) => `${name}'s link`,
   linkHint: (name: string) => `${name} joins with this link. It stays the same every week.`,
@@ -133,5 +135,5 @@ export const dashboard = {
   storage: "Storage",
   storageUsed: (used: number, total: number) => `${used} MB of ${total} MB`,
   storageUsedLabel: (used: number, total: number) => `${used} of ${total} MB used`,
-  storageHint: "All your classrooms together. Up to 10 MB per file.",
+  storageHint: "All your Classrooms together. Up to 10 MB per file.",
 };
