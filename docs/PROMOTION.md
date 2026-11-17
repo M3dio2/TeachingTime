@@ -77,3 +77,33 @@ Ask the mods first (modmail)
 - r/musicteachers, r/DaF_DaZ (German teachers), r/SpanishTeachers: no clear rule; ask.
 
 Avoid: r/TEFL, r/TutorsHelpingTutors, r/homeschool (apps count as spam), r/languagelearning, r/Teachers, r/Preply (Preply staff read it), r/InternetIsBeautiful (no sites that need sign-up).
+
+## Facebook groups (checked November 2026)
+
+Facebook hides most rules behind a login: member counts and rules below are from the public pages where readable. Always message the admin first, say it's yours and free.
+
+Independent / online tutors (English)
+- Going Solo / Independent Online Teaching: https://www.facebook.com/groups/281563156187874 (private, ~9k, about building an independent teaching business: best fit)
+- Ultimate Support Group for Online Tutors: https://www.facebook.com/groups/303391446535402 (private, ~15k, very active; only pre-approved, paid promos: ask the admin Joanne)
+- Private English Teachers (Tutors): https://www.facebook.com/groups/725667951491045/ (private, ~26k; rule "no spam or advertisement": ask the admin, or only answer questions)
+- Online English Teachers Who Freelance: https://www.facebook.com/groups/onlineteachersclub2025 (public, ~41k)
+- Online English Teachers: https://www.facebook.com/groups/794264473944141/ (links allowed per the description)
+- Teacher to Tutor support group: https://www.facebook.com/groups/753702820322114
+- Teachers Using Tech Group: https://www.facebook.com/groups/400687194205440/ (sharing tech tools)
+- World Language Teacher Lounge: https://www.facebook.com/groups/WorldLanguageTeachers/
+
+German (DaF/DaZ, Nachhilfe)
+- DaF-Lehrer / Teacher of German as a Foreign Language: https://www.facebook.com/groups/daflehrer.germanteacher (exchange between teachers and live-online trainers, links allowed per the description)
+- Deutschtrainer/in im Ausland & online: https://www.facebook.com/groups/deutschtrainer
+- Avoid: Nachhilfe online (https://www.facebook.com/groups/nachhilfeonline, "no ads for portals"), Nachhilfe Schweiz (students looking for tutors, not teachers)
+
+Spanish (ELE)
+- Profesores de ELE: https://www.facebook.com/groups/profedeele/
+- EducaSpain, Foro de profesores de español (ELE): https://www.facebook.com/groups/EducaSpainELE/
+
+French (FLE)
+- FLE indépendant, Idées & Pratiques: https://www.facebook.com/groups/1288449734924570/ (public, ~12.5k, independent FLE teachers online: best fit)
+- Enseignants de FLE: https://www.facebook.com/groups/enseignants.fle/
+- Professeurs de FLE: https://www.facebook.com/groups/professursdefle/
+
+Order: the 2–3 best fits first (Going Solo, FLE indépendant, DaF-Lehrer), one group a day, a post in the group's language with the short video.
