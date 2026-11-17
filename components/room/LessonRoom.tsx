@@ -34,6 +34,7 @@ import { isTeacher, type TeacherSettings, useTeacherSettings } from "@/lib/sync/
 import { useViewSync } from "@/lib/sync/useViewSync";
 import { useFileNames } from "@/lib/room/fileCache";
 import { useLessonAudio } from "@/lib/room/useLessonAudio";
+import { useQuizNames } from "@/lib/room/quizDoc";
 import { useYjsSync } from "@/lib/sync/useYjsSync";
 import { PHONE_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import type { PreJoinTracks } from "./CameraCheck";
@@ -147,6 +148,9 @@ function LessonContent({
   });
 
   // Teacher only: her tabs and "student can edit". Every join starts from the defaults.
+  // Q1: quizzes in their own doc; the student may always answer (lib/room/quizDoc.ts).
+  const [quizDoc] = useState(() => new Y.Doc());
+
   const [tabs, setTabs] = useState<TabState>(INITIAL_TABS);
   const [studentCanEdit, setStudentCanEdit] = useState(false);
   // G2: the teacher's YouTube player (play, pause, position), followed by the student.
@@ -191,6 +195,7 @@ function LessonContent({
   // (the student's UI is read-only then; this also stops a tampered client).
   useYjsSync(doc, "lesson", teacher ? () => studentCanEdit : undefined);
   useLessonPersistence(doc, lesson?.saveBoard ? lesson.id : undefined);
+  useYjsSync(quizDoc, "quiz");
 
   const sync = useViewSync(teacher);
   // The classroom's files; "Save as new PDF" adds one during the lesson.
@@ -199,7 +204,9 @@ function LessonContent({
   const known = lesson?.files
     ? Object.fromEntries(files.map((f) => [`${f.kind}:${f.id}`, f.name]))
     : undefined;
-  const names = useFileNames(inviteSlug, view.tabs, known);
+  const fileNames = useFileNames(inviteSlug, view.tabs, known);
+  const quizNames = useQuizNames(quizDoc, view.tabs);
+  const names = { ...quizNames, ...fileNames };
 
   const other = useRemoteParticipants()[0];
   const studentLesson = Boolean(lesson?.saveBoard);
@@ -209,6 +216,7 @@ function LessonContent({
   const model: RoomModel = {
     role,
     doc,
+    quizDoc,
     view,
     canEdit: teacher || view.studentCanEdit,
     sharing,

@@ -10,6 +10,7 @@ export const stage: typeof en = {
     doc: "Fichier Word",
     video: "Vidéo",
     link: "Lien",
+    quiz: "Quiz",
   },
   lesson: "Cours",
   openTabs: "Onglets ouverts",
@@ -53,6 +54,7 @@ export const stage: typeof en = {
     pictures: "Images",
     audio: "Audio",
     links: "Liens",
+    quizzes: "Quiz",
     hintFullClicked:
       "Deux onglets sont ouverts. Fermes-en un d’abord, ou fais glisser le fichier sur un onglet pour le remplacer.",
     hintFull: "Deux onglets sont ouverts. Fais glisser un fichier sur l’un d’eux pour le remplacer.",

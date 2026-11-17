@@ -1,4 +1,4 @@
-import { Video } from "lucide-react";
+import { ListChecks, Plus, Video } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -15,6 +15,8 @@ import { createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
 import { addStudent, removeLesson, setTeacherName, signOut, startQuickCall } from "./actions";
 import { MAX_CLASSROOMS } from "@/lib/limits";
+import { createQuiz } from "./quiz/actions";
+import { cleanQuestions, MAX_QUIZZES, playable } from "@/lib/quiz";
 import { getT } from "@/lib/i18n/server";
 import type { Messages } from "@/lib/i18n/messages";
 
@@ -47,10 +49,10 @@ type Lesson = {
 };
 
 async function Dashboard() {
-  const [supabase, { dashboard: t, common }] = await Promise.all([createClient(), getT()]);
+  const [supabase, { dashboard: t, common, quiz: tq }] = await Promise.all([createClient(), getT()]);
 
   // Each call is a round trip to Supabase or LiveKit (0.3–0.7 s), so they run side by side.
-  const [{ data: auth }, { data }, { data: fileRows }, occupiedOrUnknown] = await Promise.all([
+  const [{ data: auth }, { data }, { data: fileRows }, occupiedOrUnknown, { data: quizRows }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("lessons")
@@ -58,6 +60,7 @@ async function Dashboard() {
       .order("title"),
     supabase.from("resources").select("lesson_id, kind"),
     occupiedLessons(),
+    supabase.from("quizzes").select("id, title, questions, updated_at").order("updated_at", { ascending: false }),
   ]);
   const teacherName: string = auth.user?.user_metadata.display_name ?? "";
   const occupied = occupiedOrUnknown ?? new Set<string>();
@@ -206,6 +209,8 @@ async function Dashboard() {
             </li>
           )}
         </ul>
+
+        <Quizzes t={tq} quizzes={(quizRows ?? []) as QuizRow[]} />
       </main>
     </div>
   );
@@ -393,5 +398,62 @@ function Paperclip() {
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
     </svg>
+  );
+}
+
+type QuizRow = { id: string; title: string; questions: unknown; updated_at: string };
+
+// Q1: the teacher's quizzes, under her Classrooms. Each card opens the editor.
+function Quizzes({ t, quizzes }: { t: Messages["quiz"]; quizzes: QuizRow[] }) {
+  return (
+    <section aria-labelledby="quizzes-title" className="mt-6 flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+        <div className="flex flex-[1_1_360px] flex-col gap-1.5">
+          <h2 id="quizzes-title" className="font-display text-[26px] leading-[1.15] font-extrabold tracking-[-0.01em]">
+            {t.yourQuizzes}
+          </h2>
+          <p className="max-w-[560px] text-ink-muted">{t.quizzesIntro}</p>
+        </div>
+        {quizzes.length < MAX_QUIZZES ? (
+          <form action={createQuiz}>
+            <SubmitButton variant="secondary" className="h-11 px-[18px] font-semibold" pending={t.creating}>
+              <Plus size={16} aria-hidden />
+              {t.newQuiz}
+            </SubmitButton>
+          </form>
+        ) : (
+          <p className="text-sm text-ink-muted">{t.quizLimit(MAX_QUIZZES)}</p>
+        )}
+      </div>
+      {quizzes.length ? (
+        <ul className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(min(260px,100%),1fr))]">
+          {quizzes.map((q) => {
+            const questions = cleanQuestions(q.questions);
+            const ready = playable(questions).length;
+            return (
+              <li key={q.id}>
+                <Link
+                  href={`/dashboard/quiz/${q.id}`}
+                  aria-label={t.openQuiz(q.title)}
+                  className="flex h-full items-start gap-3 rounded-panel border border-line bg-surface p-4 hover:border-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                >
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-marker-soft text-marker-ink">
+                    <ListChecks size={18} aria-hidden />
+                  </span>
+                  <span className="flex min-w-0 flex-col gap-0.5">
+                    <span className="truncate font-semibold">{q.title}</span>
+                    <span className="text-[13px] text-ink-muted">
+                      {t.questionCount(ready)} · <LocalDate iso={q.updated_at} />
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="rounded-panel border-[1.5px] border-dashed border-line p-4 text-sm text-ink-muted">{t.noQuizzesYet}</p>
+      )}
+    </section>
   );
 }

@@ -10,6 +10,7 @@ export const stage: typeof en = {
     doc: "Archivo de Word",
     video: "Video",
     link: "Enlace",
+    quiz: "Quiz",
   },
   lesson: "Clase",
   openTabs: "Pestañas abiertas",
@@ -53,6 +54,7 @@ export const stage: typeof en = {
     pictures: "Imágenes",
     audio: "Audio",
     links: "Enlaces",
+    quizzes: "Quizzes",
     hintFullClicked:
       "Hay dos pestañas abiertas. Cierra una primero o arrastra el archivo sobre una pestaña para reemplazarla.",
     hintFull: "Hay dos pestañas abiertas. Arrastra un archivo sobre una para reemplazarla.",

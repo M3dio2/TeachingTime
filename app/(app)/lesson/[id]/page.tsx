@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import LoadingScreen from "@/components/room/LoadingScreen";
 import type { RoomFile } from "@/components/room/FilesPanel";
 import TeacherRoom from "@/components/room/TeacherRoom";
+import { cleanQuestions } from "@/lib/quiz";
 import { createClient } from "@/lib/supabase/server";
 import { isWithin } from "@/lib/time";
 
@@ -30,7 +31,10 @@ async function Lesson({ params }: Pick<PageProps<"/lesson/[id]">, "params">) {
     .eq("id", id)
     .maybeSingle();
   if (!lesson) notFound();
-  const files = lesson.kind === "student" ? await loadFiles(supabase, lesson.id) : undefined;
+  const files =
+    lesson.kind === "student"
+      ? [...(await loadFiles(supabase, lesson.id)), ...(await loadQuizzes(supabase))]
+      : undefined;
 
   // Read-only on purpose (links may be prefetched); last_active_at is written by the
   // token route when the teacher actually joins, and by every save.
@@ -74,6 +78,19 @@ async function loadFiles(supabase: Awaited<ReturnType<typeof createClient>>, les
       name: r.name,
       previewUrl: r.path ? (urls.get(r.path) ?? undefined) : undefined,
       url: r.kind === "link" ? (r.url ?? undefined) : undefined,
+    }),
+  );
+}
+
+// Q1: the teacher's quizzes, listed in the files panel of every student lesson.
+async function loadQuizzes(supabase: Awaited<ReturnType<typeof createClient>>) {
+  const { data } = await supabase.from("quizzes").select("id, title, questions").order("title");
+  return (data ?? []).map(
+    (q): RoomFile => ({
+      id: q.id,
+      kind: "quiz",
+      name: q.title,
+      quiz: { id: q.id, title: q.title, questions: cleanQuestions(q.questions) },
     }),
   );
 }
