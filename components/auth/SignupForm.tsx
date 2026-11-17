@@ -11,7 +11,7 @@ import NewPasswordFields from "@/components/auth/NewPasswordFields";
 import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import { authErrorMessage } from "@/lib/authErrors";
-import { useT } from "@/lib/i18n/client";
+import { useLocale, useT } from "@/lib/i18n/client";
 import { passwordProblem } from "@/lib/passwordRules";
 import { createClient } from "@/lib/supabase/client";
 
@@ -21,6 +21,7 @@ import { createClient } from "@/lib/supabase/client";
 // (handled by /auth/confirm); with it off, they're logged in straight away.
 export default function SignupForm() {
   const t = useT();
+  const locale = useLocale();
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -44,7 +45,8 @@ export default function SignupForm() {
       email,
       password,
       options: {
-        data: { display_name: name.trim().slice(0, 40) },
+        // `locale`: the language of the emails Supabase sends her (supabase/email-templates/).
+        data: { display_name: name.trim().slice(0, 40), locale },
         emailRedirectTo: window.location.origin,
         captchaToken: captcha.token ?? undefined,
       },

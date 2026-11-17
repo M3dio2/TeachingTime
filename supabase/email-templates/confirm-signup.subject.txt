@@ -1,0 +1,1 @@
+{{ $l := "en" }}{{ with .Data }}{{ with .locale }}{{ $l = . }}{{ end }}{{ end }}{{ if eq $l "de" }}Bestätige deine E-Mail für TeachingTime{{ else if eq $l "es" }}Confirma tu correo para TeachingTime{{ else if eq $l "fr" }}Confirme ton e-mail pour TeachingTime{{ else }}Confirm your email for TeachingTime{{ end }}

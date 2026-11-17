@@ -11,12 +11,13 @@ import Button from "@/components/ui/Button";
 import Field from "@/components/ui/Field";
 import PasswordField from "@/components/ui/PasswordField";
 import { authErrorMessage } from "@/lib/authErrors";
-import { useT } from "@/lib/i18n/client";
+import { useLocale, useT } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 
 // Teacher login. New teachers create an account at /signup; students never log in.
 export default function LoginForm() {
   const t = useT();
+  const locale = useLocale();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -28,12 +29,17 @@ export default function LoginForm() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const { error } = await createClient().auth.signInWithPassword({
+    const supabase = createClient();
+    const { data: signedIn, error } = await supabase.auth.signInWithPassword({
       email,
       password,
       options: { captchaToken: captcha.token ?? undefined },
     });
     captcha.reset();
+    // Accounts from before languages (I1) have none saved: the emails (password reset) need it.
+    if (!error && !signedIn.user?.user_metadata.locale) {
+      await supabase.auth.updateUser({ data: { locale } });
+    }
     if (error) {
       setLoading(false);
       setError(authErrorMessage(error, t));
