@@ -1,4 +1,4 @@
-import { Video } from "lucide-react";
+import { ListChecks, Trash2, Video } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,6 +16,7 @@ import type { Messages } from "@/lib/i18n/messages";
 
 type T = Messages["dashboard"];
 import { removeLesson } from "../actions";
+import { removeQuizResult } from "../quiz/actions";
 
 // Private: never listed by search engines.
 export const metadata: Metadata = { title: "Classroom", robots: { index: false, follow: false } };
@@ -40,9 +41,9 @@ export default function ClassroomPage({ params }: PageProps<"/dashboard/[id]">) 
 
 async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params">) {
   const { id } = await params;
-  const [supabase, { dashboard: t }] = await Promise.all([createClient(), getT()]);
+  const [supabase, { dashboard: t, quiz: tq }] = await Promise.all([createClient(), getT()]);
 
-  const [{ data: auth }, { data: student }, { data: files }, { data: usedBytes }] = await Promise.all([
+  const [{ data: auth }, { data: student }, { data: files }, { data: usedBytes }, { data: results }] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("lessons")
@@ -56,6 +57,12 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
       .eq("lesson_id", id)
       .order("created_at", { ascending: false }),
     supabase.rpc("resources_used_bytes"),
+    supabase
+      .from("quiz_results")
+      .select("id, quiz_title, score, total, created_at")
+      .eq("lesson_id", id)
+      .order("created_at", { ascending: false })
+      .limit(20),
   ]);
   if (!student || !auth.user) notFound();
 
@@ -100,6 +107,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           <StudentLink t={t} slug={student.invite_slug} name={student.title} />
         </section>
         <StorageCard usedBytes={Number(usedBytes ?? 0)} />
+        <QuizResults t={tq} lessonId={student.id} results={(results ?? []) as QuizResult[]} />
         <RemoveClassroom t={t} id={student.id} name={student.title} className="hidden md:flex" />
       </aside>
       <ClassroomFiles
@@ -136,5 +144,56 @@ function StudentLink({ t, slug, name }: { t: T; slug: string; name: string }) {
       </div>
       <span className="text-[13px] text-ink-muted">{t.linkHint(name)}</span>
     </div>
+  );
+}
+
+type QuizResult = { id: string; quiz_title: string; score: number; total: number; created_at: string };
+
+// Q1: the quizzes checked in this student's lessons, newest first.
+function QuizResults({ t, lessonId, results }: { t: Messages["quiz"]; lessonId: string; results: QuizResult[] }) {
+  return (
+    <section aria-labelledby="quiz-results" className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-5">
+      <h2 id="quiz-results" className="flex items-center gap-2 text-[15px] font-semibold">
+        <ListChecks size={16} aria-hidden className="text-accent" />
+        {t.results}
+      </h2>
+      {results.length ? (
+        <ul className="flex flex-col">
+          {results.map((r) => {
+            const share = r.score / r.total;
+            return (
+              <li key={r.id} className="flex items-center gap-3 border-t border-line py-2.5 first:border-t-0 first:pt-0">
+                <span
+                  className={`inline-flex h-9 min-w-12 shrink-0 items-center justify-center rounded-md px-2 text-sm font-bold ${
+                    share >= 0.8 ? "bg-ok/10 text-ok" : share >= 0.5 ? "bg-marker-soft text-marker-ink" : "bg-danger-soft text-danger"
+                  }`}
+                >
+                  {r.score}/{r.total}
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-sm font-medium">{r.quiz_title}</span>
+                  <span className="text-[13px] text-ink-muted">
+                    <LocalDate iso={r.created_at} />
+                  </span>
+                </span>
+                <form action={removeQuizResult}>
+                  <input type="hidden" name="id" value={r.id} />
+                  <input type="hidden" name="lessonId" value={lessonId} />
+                  <button
+                    aria-label={t.removeResult(r.quiz_title)}
+                    title={t.removeResult(r.quiz_title)}
+                    className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-danger-soft hover:text-danger focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                  >
+                    <Trash2 size={15} aria-hidden />
+                  </button>
+                </form>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="text-sm text-ink-muted">{t.noResults}</p>
+      )}
+    </section>
   );
 }
