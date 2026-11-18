@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8"><title>New question types, student on phone</title><link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&display=swap" rel="stylesheet"><style>
+:root{--paper:#faf6f0;--surface:#fff;--s2:#f3ebe0;--line:#e6d9c8;--ink:#3b2a1e;--muted:#76604f;--accent:#8b5e3c;--ok:#52703f;--danger:#b4442f;--marker:#f4d35e;--msoft:#fbedb5;--mink:#6b4e0e;--warn:#8a5a12;--warnsoft:#fbf0dc}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.display{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;letter-spacing:-.02em}
+.wm{font-family:"Bricolage Grotesque",Georgia,serif;font-weight:800;font-size:20px}.wm u{text-decoration:none;background:linear-gradient(transparent 70%,var(--marker) 70%)}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 12px;border-radius:8px;border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:14px;color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.ghost{border-color:transparent;background:transparent}
+.chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--s2);color:var(--muted)}
+.n{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:999px;background:var(--msoft);color:var(--mink);font-weight:800;font-size:13px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px}
+.sel{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,94,60,.12)}
+.in{height:40px;border:1px solid var(--line);border-radius:8px;padding:0 10px;display:flex;align-items:center;color:var(--ink);background:#fff}
+.ph{color:var(--muted)}
+.opt{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.opt.ok{border-color:var(--ok);background:rgba(82,112,63,.06)}
+.tick{width:24px;height:24px;border-radius:999px;border:2px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:12px;color:transparent}
+.opt.ok .tick{background:var(--ok);border-color:var(--ok);color:#fff}
+.lbl{font-size:13px;font-weight:600;color:var(--muted)}
+.type{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;border:1px solid var(--line);background:#fff;font-weight:600;font-size:14px}
+.type small{display:block;font-weight:400;color:var(--muted);font-size:12px;line-height:1.3}
+.ico{width:32px;height:32px;border-radius:8px;background:var(--s2);color:var(--accent);display:inline-flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.new{background:var(--msoft);color:var(--mink);font-size:10px;font-weight:700;padding:1px 6px;border-radius:999px;margin-left:4px}
+.toggle{width:34px;height:20px;border-radius:999px;background:var(--line);position:relative;flex-shrink:0}.toggle.on{background:var(--ok)}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:999px;background:#fff}.toggle.on::after{left:16px}
+.row{display:flex;align-items:center;gap:8px}
+.gap{display:inline-block;min-width:60px;border-bottom:2px solid var(--accent);background:var(--paper);border-radius:4px;text-align:center;padding:0 6px;color:var(--muted)}
+.tabs{display:flex;background:var(--s2);border-radius:8px;padding:3px;gap:3px}.tabs span{flex:1;text-align:center;padding:6px;border-radius:6px;font-weight:600;font-size:13px;color:var(--muted)}.tabs .on{background:#fff;color:var(--ink);box-shadow:inset 0 -3px 0 var(--marker)}
+.nav{display:flex;flex-direction:column;gap:4px}.nav div{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;font-size:13px}.nav .on{background:var(--msoft);font-weight:600}
+.dot{width:8px;height:8px;border-radius:999px;background:var(--ok);flex-shrink:0}.dot.w{background:var(--warn)}
+.label-p{position:absolute;top:8px;left:8px;background:var(--ink);color:#fff;font-weight:700;padding:2px 8px;border-radius:6px;font-size:12px}
+</style></head><body><div style="display:flex;gap:24px;padding:16px"><div style="width:390px;height:720px;overflow:hidden;border:1px solid var(--line);border-radius:28px;background:var(--paper);position:relative;padding:44px 14px 14px;display:flex;flex-direction:column;gap:12px"><span class="label-p">True or false</span><div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px"><div class="row"><span class="n">1</span><b>“Buyed” is the past of “buy”.</b></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><span class="opt" style="justify-content:center;height:52px;font-weight:700">✓ True</span><span class="opt" style="justify-content:center;height:52px;font-weight:700;border-color:var(--accent);background:var(--msoft)">✗ False</span></div></div></div><div style="width:390px;height:720px;overflow:hidden;border:1px solid var(--line);border-radius:28px;background:var(--paper);position:relative;padding:44px 14px 14px;display:flex;flex-direction:column;gap:12px"><span class="label-p">Choose in the text</span><div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px"><div class="row"><span class="n">2</span><b>Put the verbs in the past simple.</b></div>
+<p style="line-height:2.3;margin:0;font-size:16px">Last summer we <span class="gap" style="color:var(--ink);font-weight:600">flew ▾</span> to Lisbon. We <span class="gap">choose ▾</span> fish every day…</p>
+<div class="card" style="padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.12)"><div class="type" style="border:0">ate</div><div class="type" style="border:0">eated</div></div></div></div><div style="width:390px;height:720px;overflow:hidden;border:1px solid var(--line);border-radius:28px;background:var(--paper);position:relative;padding:44px 14px 14px;display:flex;flex-direction:column;gap:12px"><span class="label-p">Match pairs: tap one, then its partner</span><div class="card" style="padding:16px;display:flex;flex-direction:column;gap:10px"><div class="row"><span class="n">3</span><b>Match the verbs with their past.</b></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+<span class="opt" style="background:var(--s2)">go <span style="flex:1"></span><span class="chip">A</span></span><span class="opt" style="background:var(--s2)">went<span style="flex:1"></span><span class="chip">A</span></span>
+<span class="opt" style="border-color:var(--accent);background:var(--msoft);font-weight:600">see</span><span class="opt">bought</span>
+<span class="opt">buy</span><span class="opt">saw</span>
+<span class="opt">eat</span><span class="opt">ate</span></div><span style="font-size:13px;color:var(--muted)">Paired ones get the same letter. Tap again to undo.</span></div></div><div style="width:390px;height:720px;overflow:hidden;border:1px solid var(--line);border-radius:28px;background:var(--paper);position:relative;padding:44px 14px 14px;display:flex;flex-direction:column;gap:12px"><span class="label-p">Put in order: tap the words</span><div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px"><div class="row"><span class="n">4</span><b>Make a sentence.</b></div>
+<div style="min-height:84px;border-bottom:2px solid var(--accent);display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start;padding-bottom:8px"><span class="btn">Yesterday</span><span class="btn">I</span><span class="btn">went</span></div>
+<div style="display:flex;flex-wrap:wrap;gap:6px"><span class="btn">to</span><span class="btn">cinema</span><span class="btn">the</span><span class="btn" style="opacity:.3">I</span></div></div></div></div></body></html>
