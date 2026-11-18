@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { joinAsStudent, logIn, startTestLesson } from "./helpers";
+import { joinAsStudent, logIn, openTestClassroom } from "./helpers";
 
 // Q1: the teacher makes a quiz in the dashboard, drags it into the lesson, the student answers
 // live, the teacher checks; the result is saved in the Classroom. The quiz is called "e2e-…"
@@ -7,11 +7,13 @@ import { joinAsStudent, logIn, startTestLesson } from "./helpers";
 const TITLE = `e2e-Quiz ${Date.now()}`;
 
 async function deleteE2eQuizzes(page: Page) {
-  await page.goto("/dashboard");
   for (;;) {
+    await page.goto("/dashboard");
+    // The dashboard streams in: wait for it before counting.
+    await expect(page.getByRole("heading", { name: "Your quizzes" })).toBeVisible({ timeout: 30_000 });
     const card = page.getByRole("link", { name: /^Edit the quiz e2e-/ }).first();
     if (!(await card.count())) return;
-    await card.click();
+    await page.goto((await card.getAttribute("href"))!);
     page.once("dialog", (d) => d.accept());
     await page.getByRole("button", { name: "Delete quiz" }).click();
     await page.waitForURL("**/dashboard");
@@ -22,6 +24,9 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   test.setTimeout(180_000);
   await logIn(page);
   await deleteE2eQuizzes(page);
+  // A fresh page load: Next keeps pages visited by client navigation hidden in the DOM, and
+  // an old quiz editor would match the locators below.
+  await page.goto("/dashboard");
 
   // Dashboard → New quiz → editor.
   await page.getByRole("button", { name: "New quiz" }).click();
@@ -43,13 +48,23 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   await expect(page.getByRole("link", { name: `Edit the quiz ${TITLE}` })).toContainText("2 questions");
 
   // In the lesson: drag it from the files panel onto the stage.
-  const joinPath = await startTestLesson(page);
+  // (startTestLesson logs in again, which a logged-in teacher can't: the steps by hand.)
+  await openTestClassroom(page);
+  const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
+  await page.getByRole("link", { name: "Start lesson" }).click();
+  await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+  const joinPath = new URL(`http://${link}`).pathname;
   const student = await joinAsStudent(browser, joinPath);
   const panel = page.getByRole("complementary", { name: /files$/ });
-  const item = panel.getByRole("button", { name: TITLE });
-  await item.dragTo(page.getByTestId("stage"));
-  const drop = page.getByText(/^Open beside|^Drop/).first();
-  if (await drop.isVisible().catch(() => false)) await item.dragTo(drop);
+  // A real mouse drag, as in l2a-file-tabs (Playwright's dragTo doesn't drive HTML5 drags here).
+  await panel.getByRole("button", { name: TITLE }).hover();
+  await page.mouse.down();
+  await page.mouse.move(700, 400, { steps: 5 });
+  await expect(page.getByTestId("drop-zones")).toBeVisible();
+  await page.waitForTimeout(300);
+  const zone = (await page.getByTestId("drop-1").boundingBox())!;
+  await page.mouse.move(zone.x + zone.width / 2, zone.y + zone.height / 2, { steps: 5 });
+  await page.mouse.up();
   await expect(page.getByRole("tab", { name: TITLE })).toBeVisible({ timeout: 15_000 });
   await expect(student.getByRole("tab", { name: TITLE })).toBeVisible({ timeout: 20_000 });
 

@@ -6,6 +6,7 @@ import {
   FileText,
   FileType2,
   Link2,
+  ListChecks,
   ImageIcon,
   Monitor,
   SquarePlay,
@@ -24,6 +25,8 @@ import Chip from "@/components/ui/Chip";
 import Handle from "@/components/ui/Handle";
 import Marker from "@/components/ui/Marker";
 import {
+  type BuiltInTab,
+  type FileTabKind,
   addableTabs,
   MIN_TAB_PX,
   SPLIT_MIN_PX,
@@ -38,7 +41,8 @@ import { type RoomFile, tabOf } from "./FilesPanel";
 import AudioBar from "./AudioBar";
 import TabPane from "./TabPane";
 
-const ICONS: Record<string, typeof Monitor> = {
+// Typed by tab kind, so a new kind without an icon is a type error.
+const ICONS: Record<BuiltInTab | FileTabKind, typeof Monitor> = {
   screen: Monitor,
   text: Type,
   draw: Pencil,
@@ -47,9 +51,10 @@ const ICONS: Record<string, typeof Monitor> = {
   video: SquarePlay,
   link: Link2,
   image: ImageIcon,
+  quiz: ListChecks,
 };
 export const TabIcon = ({ id, size = 16 }: { id: TabId; size?: number }) => {
-  const Icon = ICONS[id.split(":")[0]];
+  const Icon = ICONS[id.split(":")[0] as BuiltInTab | FileTabKind];
   return <Icon size={size} aria-hidden className="shrink-0" />;
 };
 

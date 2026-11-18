@@ -208,7 +208,7 @@ function QuestionView({
       </div>
 
       {q.type === "choice" ? (
-        <div role="radiogroup" aria-label={q.prompt || t.question(n)} className="grid gap-2 sm:grid-cols-2">
+        <div role="radiogroup" aria-label={q.prompt || t.question(n)} className="flex flex-col gap-2">
           {q.options.map((o, i) => {
             const chosen = answer === i;
             const solution = checked?.type === "choice" && checked.solution === i;
