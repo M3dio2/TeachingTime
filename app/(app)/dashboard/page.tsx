@@ -430,6 +430,7 @@ function Quizzes({ t, quizzes }: { t: Messages["quiz"]; quizzes: QuizRow[] }) {
           {quizzes.map((q) => {
             const questions = cleanQuestions(q.questions);
             const ready = playable(questions).length;
+            const incomplete = questions.length - ready;
             return (
               <li key={q.id}>
                 <Link
@@ -445,6 +446,12 @@ function Quizzes({ t, quizzes }: { t: Messages["quiz"]; quizzes: QuizRow[] }) {
                     <span className="text-[13px] text-ink-muted">
                       {t.questionCount(ready)} · <LocalDate iso={q.updated_at} />
                     </span>
+                    {incomplete > 0 && (
+                      <span className="mt-1 inline-flex items-center gap-1.5 self-start rounded-full bg-warn-soft px-2 py-0.5 text-[12px] font-semibold text-warn">
+                        <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-warn" />
+                        {ready === 0 ? t.noneReady : t.incompleteCount(incomplete)}
+                      </span>
+                    )}
                   </span>
                 </Link>
               </li>

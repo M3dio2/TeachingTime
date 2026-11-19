@@ -88,6 +88,7 @@ export default function QuizEditor({ quiz }: { quiz: Quiz }) {
   }, [state]);
 
   const full = questions.length >= MAX_QUESTIONS;
+  const incomplete = questions.filter((q) => questionProblem(q) !== null).length;
   const insert = (type: QuestionType, at: number) => {
     if (full) return;
     const q = emptyQuestion(type);
@@ -156,6 +157,12 @@ export default function QuizEditor({ quiz }: { quiz: Quiz }) {
               className="-mx-2 w-full rounded-md border border-transparent bg-transparent px-2 py-1 font-display text-[30px] leading-[1.15] font-extrabold tracking-[-0.02em] text-ink placeholder:text-ink-muted/60 hover:border-line focus-visible:border-accent focus-visible:bg-surface focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none md:text-4xl"
             />
             <SaveStatus state={state} />
+            {incomplete > 0 && (
+              <p className="flex items-center gap-1.5 text-[13px] font-medium text-warn" data-testid="quiz-incomplete">
+                <span aria-hidden className="h-2.5 w-2.5 shrink-0 rounded-full bg-warn" />
+                {t.incompleteNote(incomplete)}
+              </p>
+            )}
           </div>
           <QuizMenu id={quiz.id} title={title} />
         </div>
