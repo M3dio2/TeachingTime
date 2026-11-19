@@ -7,6 +7,10 @@ export const quiz = {
   creating: "Creating…",
   noQuizzesYet: "No quizzes yet. Seven kinds of question, ready in a few minutes.",
   questionCount: (n: number) => (n === 1 ? "1 question" : `${n} questions`),
+  incompleteCount: (n: number) => (n === 1 ? "1 incomplete" : `${n} incomplete`),
+  incompleteNote: (n: number) =>
+    n === 1 ? "1 question is incomplete: it isn't shown in lessons." : `${n} questions are incomplete: they aren't shown in lessons.`,
+  noneReady: "Not ready for lessons yet",
   openQuiz: (title: string) => `Edit the quiz ${title}`,
   quizLimit: (max: number) => `${max} quizzes is the most for now. Delete one to add another.`,
   untitled: "Untitled quiz",

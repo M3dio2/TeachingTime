@@ -5,7 +5,7 @@ import { CaptureUpdateAction, Excalidraw, MainMenu, reconcileElements } from "@e
 import type { OrderedExcalidrawElement } from "@excalidraw/excalidraw/element/types";
 import type { RemoteExcalidrawElement } from "@excalidraw/excalidraw/data/reconcile";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
-import { type ReactNode, useEffect, useMemo, useRef } from "react";
+import { type ReactNode, useEffect, useMemo, useRef, useSyncExternalStore } from "react";
 import type * as Y from "yjs";
 import { useLocale } from "@/lib/i18n/client";
 import { EXCALIDRAW_LANG } from "@/lib/i18n/locales";
@@ -57,30 +57,6 @@ export default function Whiteboard({
     api.updateScene({ elements, captureUpdate: CaptureUpdateAction.NEVER });
   };
 
-  useEffect(() => {
-    const onBoardChange = (_: Y.YMapEvent<OrderedExcalidrawElement>, tx: Y.Transaction) => {
-      // Everything except our own writes: the peer's edits, and "Clear" (lib/sync/clearLesson.ts).
-      if (tx.origin !== WHITEBOARD) applyRemote();
-    };
-    board.observe(onBoardChange);
-    return () => {
-      board.unobserve(onBoardChange);
-      if (timer.current) clearTimeout(timer.current);
-    };
-    // applyRemote only reads refs and `board`.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [board]);
-
-  // Excalidraw only notices window resizes. Dragging a panel divider changes its size too,
-  // and without a refresh the canvas keeps its old size and clicks land in the wrong place.
-  useEffect(() => {
-    const element = container.current;
-    if (!element) return;
-    const observer = new ResizeObserver(() => apiRef.current?.refresh());
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, []);
-
   // onChange fires on every pointer move; write changed elements at most every 50 ms.
   const flush = () => {
     timer.current = null;
@@ -97,9 +73,48 @@ export default function Whiteboard({
     }, WHITEBOARD);
   };
 
+  // How many drawn elements the shared board holds (for tests: data-elements).
+  const elementCount = useSyncExternalStore(
+    (onChange) => {
+      board.observe(onChange);
+      return () => board.unobserve(onChange);
+    },
+    () => [...board.values()].filter((e) => !e.isDeleted).length,
+    () => 0,
+  );
+
+  useEffect(() => {
+    const onBoardChange = (_: Y.YMapEvent<OrderedExcalidrawElement>, tx: Y.Transaction) => {
+      // Everything except our own writes: the peer's edits, and "Clear" (lib/sync/clearLesson.ts).
+      if (tx.origin !== WHITEBOARD) applyRemote();
+    };
+    board.observe(onBoardChange);
+    return () => {
+      board.unobserve(onBoardChange);
+      // Closing or replacing the tab: write the last strokes now instead of dropping them.
+      if (timer.current) {
+        clearTimeout(timer.current);
+        flush();
+      }
+    };
+    // applyRemote only reads refs and `board`.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [board]);
+
+  // Excalidraw only notices window resizes. Dragging a panel divider changes its size too,
+  // and without a refresh the canvas keeps its old size and clicks land in the wrong place.
+  useEffect(() => {
+    const element = container.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => apiRef.current?.refresh());
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+
   return (
     // `whiteboard` hooks up the narrow-panel rules in app/globals.css.
-    <div ref={container} className="whiteboard relative h-full w-full">
+    <div ref={container} className="whiteboard relative h-full w-full" data-testid="whiteboard" data-elements={elementCount}>
       {!editable && chip && <div className="absolute top-3 right-3 z-10">{chip}</div>}
       <Excalidraw
         excalidrawAPI={(api) => {

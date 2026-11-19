@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import LoadingScreen from "@/components/room/LoadingScreen";
 import type { RoomFile } from "@/components/room/FilesPanel";
 import TeacherRoom from "@/components/room/TeacherRoom";
-import { cleanQuestions } from "@/lib/quiz";
+import { cleanQuestions, playable } from "@/lib/quiz";
 import { createClient } from "@/lib/supabase/server";
 import { isWithin } from "@/lib/time";
 
@@ -85,12 +85,9 @@ async function loadFiles(supabase: Awaited<ReturnType<typeof createClient>>, les
 // Q1: the teacher's quizzes, listed in the files panel of every student lesson.
 async function loadQuizzes(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data } = await supabase.from("quizzes").select("id, title, questions").order("title");
-  return (data ?? []).map(
-    (q): RoomFile => ({
-      id: q.id,
-      kind: "quiz",
-      name: q.title,
-      quiz: { id: q.id, title: q.title, questions: cleanQuestions(q.questions) },
-    }),
-  );
+  // Only quizzes with at least one complete question (incomplete ones are drafts).
+  return (data ?? [])
+    .map((q) => ({ id: q.id, title: q.title, questions: cleanQuestions(q.questions) }))
+    .filter((q) => playable(q.questions).length > 0)
+    .map((quiz): RoomFile => ({ id: quiz.id, kind: "quiz", name: quiz.title, quiz }));
 }

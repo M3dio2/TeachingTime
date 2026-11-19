@@ -8,6 +8,10 @@ export const quiz: typeof en = {
   creating: "Wird erstellt…",
   noQuizzesYet: "Noch keine Quizze. Sieben Fragetypen, in wenigen Minuten fertig.",
   questionCount: (n: number) => (n === 1 ? "1 Frage" : `${n} Fragen`),
+  incompleteCount: (n: number) => `${n} unvollständig`,
+  incompleteNote: (n: number) =>
+    n === 1 ? "1 Frage ist unvollständig: Sie wird in Lektionen nicht gezeigt." : `${n} Fragen sind unvollständig: Sie werden in Lektionen nicht gezeigt.`,
+  noneReady: "Noch nicht bereit für Lektionen",
   openQuiz: (title: string) => `Quiz ${title} bearbeiten`,
   quizLimit: (max: number) => `Mehr als ${max} Quizze gehen im Moment nicht. Lösche eines, um ein neues hinzuzufügen.`,
   untitled: "Quiz ohne Titel",

@@ -42,6 +42,12 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   await card(1).getByRole("checkbox", { name: "Answer 2 is right" }).click();
   await card(1).getByRole("checkbox", { name: "Answer 1 is right" }).click();
 
+  // An incomplete question is marked (and left out of lessons).
+  await blocks.getByRole("button", { name: /^Open answer/ }).click();
+  await expect(page.getByTestId("quiz-incomplete")).toHaveText("1 question is incomplete: it isn't shown in lessons.");
+  await card(2).getByRole("button", { name: "Remove" }).click();
+  await expect(page.getByTestId("quiz-incomplete")).toBeHidden();
+
   // A click on a block adds it below the open question and opens it.
   await blocks.getByRole("button", { name: /^Fill the gaps/ }).click();
   await card(2).getByLabel("Text").fill("Yesterday I [went] home and [saw/watched] a film.");
