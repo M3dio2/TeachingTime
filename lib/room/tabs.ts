@@ -4,11 +4,18 @@
 // the teacher publishes (lib/sync/useTeacherSettings.ts).
 
 // Built-in tabs, plus one tab per classroom file: `pdf:<id>`, `image:<id>`, `doc:<id>` (Word),
-// `video:<id>` (a YouTube link), `link:<id>` (any other link).
+// `video:<id>` (a YouTube link), `link:<id>` (any other link), `quiz:<id>` (a quiz, Q1: its
+// id is the quiz's, not a classroom file's).
 export const TAB_IDS = ["screen", "text", "draw"] as const;
 export type BuiltInTab = (typeof TAB_IDS)[number];
-export type FileTab = `pdf:${string}` | `image:${string}` | `doc:${string}` | `video:${string}` | `link:${string}`;
-export type FileTabKind = "pdf" | "image" | "doc" | "video" | "link";
+export type FileTab =
+  | `pdf:${string}`
+  | `image:${string}`
+  | `doc:${string}`
+  | `video:${string}`
+  | `link:${string}`
+  | `quiz:${string}`;
+export type FileTabKind = "pdf" | "image" | "doc" | "video" | "link" | "quiz";
 export type TabId = BuiltInTab | FileTab;
 export type Layout = "split" | "single";
 
@@ -46,12 +53,13 @@ const LABELS: TabLabels = {
   doc: "Word file",
   video: "Video",
   link: "Link",
+  quiz: "Quiz",
 };
 // File tabs are labelled with the file's name; `names` maps tab id → name.
 export const tabLabel = (id: TabId, names?: Record<string, string>, labels: TabLabels = LABELS) =>
   isFileTab(id) ? (names?.[id] ?? labels[fileTabKind(id)]) : labels[id];
 
-const FILE_TAB = /^(pdf|image|doc|video|link):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const FILE_TAB = /^(pdf|image|doc|video|link|quiz):[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 export const isFileTab = (value: string): value is FileTab => FILE_TAB.test(value);
 export const fileTabId = (kind: FileTabKind, resourceId: string): FileTab => `${kind}:${resourceId}`;
 export const fileTabKind = (id: FileTab) => id.slice(0, id.indexOf(":")) as FileTabKind;

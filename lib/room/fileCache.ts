@@ -69,7 +69,8 @@ export function useLoadedFile(slug: string | undefined, id: FileTab) {
 // Student: the names of the teacher's file tabs, for the tab labels.
 export function useFileNames(slug: string | undefined, tabs: TabId[], known?: Record<string, string>) {
   const [names, setNames] = useState<Record<string, string>>({});
-  const missing = tabs.filter((t) => isFileTab(t) && !known?.[t] && !names[t]).join(",");
+  // Quizzes aren't classroom files: their names come from the quiz doc (lib/room/quizDoc.ts).
+  const missing = tabs.filter((t) => isFileTab(t) && !t.startsWith("quiz:") && !known?.[t] && !names[t]).join(",");
   useEffect(() => {
     if (!slug || !missing) return;
     for (const id of missing.split(",") as FileTab[]) {

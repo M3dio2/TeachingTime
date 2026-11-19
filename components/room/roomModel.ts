@@ -25,6 +25,7 @@ export type TabActions = {
 export type RoomModel = {
   role: Role;
   doc: Y.Doc;
+  quizDoc: Y.Doc; // Q1: the lesson's quizzes and answers (lib/room/quizDoc.ts)
   // What the stage shows: the teacher's own state, or what the student follows.
   view: TeacherSettings;
   canEdit: boolean; // may I write and draw

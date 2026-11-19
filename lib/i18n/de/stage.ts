@@ -10,6 +10,7 @@ export const stage: typeof en = {
     doc: "Word-Datei",
     video: "Video",
     link: "Link",
+    quiz: "Quiz",
   },
   lesson: "Lektion",
   openTabs: "Offene Tabs",
@@ -53,6 +54,7 @@ export const stage: typeof en = {
     pictures: "Bilder",
     audio: "Audio",
     links: "Links",
+    quizzes: "Quizze",
     hintFullClicked:
       "Zwei Tabs sind offen. Schließ zuerst einen oder zieh die Datei auf einen Tab, um ihn zu ersetzen.",
     hintFull: "Zwei Tabs sind offen. Zieh eine Datei auf einen davon, um ihn zu ersetzen.",

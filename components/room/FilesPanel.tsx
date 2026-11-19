@@ -6,6 +6,7 @@ import {
   GripVertical,
   ImageIcon,
   Link2,
+  ListChecks,
   LoaderCircle,
   Music,
   PanelRightClose,
@@ -18,22 +19,24 @@ import {
 import { useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
 import { youtubeId } from "@/lib/room/links";
+import type { Quiz } from "@/lib/quiz";
 import { fileTabId, type FileTab } from "@/lib/room/tabs";
 import type { RoomModel } from "./roomModel";
 
 // A classroom file, as the room's files panel lists it (app/lesson/[id]/page.tsx).
 export type RoomFile = {
   id: string;
-  kind: "image" | "pdf" | "doc" | "audio" | "link";
+  kind: "image" | "pdf" | "doc" | "audio" | "link" | "quiz";
   name: string;
   previewUrl?: string; // pictures only
   url?: string; // links only
+  quiz?: Quiz; // quizzes only (Q1): the teacher's quiz, with the answers
 };
 
 // `title` names the heading in t.stage.files.
 const SECTIONS: {
   kind: RoomFile["kind"];
-  title: "pdfs" | "docs" | "pictures" | "audio" | "links";
+  title: "pdfs" | "docs" | "pictures" | "audio" | "links" | "quizzes";
   Icon: LucideIcon;
 }[] = [
   { kind: "pdf", title: "pdfs", Icon: FileText },
@@ -41,6 +44,7 @@ const SECTIONS: {
   { kind: "image", title: "pictures", Icon: ImageIcon },
   { kind: "audio", title: "audio", Icon: Music },
   { kind: "link", title: "links", Icon: Link2 },
+  { kind: "quiz", title: "quizzes", Icon: ListChecks },
 ];
 
 export const tabOf = (f: RoomFile): FileTab | null =>
