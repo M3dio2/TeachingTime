@@ -17,7 +17,8 @@ export async function POST(request: Request) {
       body,
       request.headers.get("Authorization") ?? undefined,
     );
-  } catch {
+  } catch (e) {
+    await reportRejected(request.headers.get("Authorization"), apiKey, e);
     return new Response(null, { status: 401 });
   }
 
@@ -44,4 +45,31 @@ export async function POST(request: Request) {
     if (error) console.error("lesson_sessions update:", error.message);
   }
   return new Response(null, { status: 204 });
+}
+
+// A refused call that looks like LiveKit's (a signed token): note which key signed it, so a
+// wrong signing key in the LiveKit dashboard shows up in /api/usage. Key names are not secret;
+// only their first 6 characters are kept. At most one note per hour.
+async function reportRejected(auth: string | null, ourKey: string, error: unknown) {
+  const payload = auth?.replace(/^Bearer /, "").split(".")[1];
+  if (!payload) return;
+  let iss = "";
+  try {
+    iss = String(JSON.parse(Buffer.from(payload, "base64url").toString()).iss ?? "");
+  } catch {
+    return;
+  }
+  const admin = createAdminClient();
+  const hourAgo = new Date(Date.now() - 3600_000).toISOString();
+  const { count } = await admin
+    .from("error_reports")
+    .select("id", { count: "exact", head: true })
+    .eq("page", "/api/livekit-webhook")
+    .gte("created_at", hourAgo);
+  if (count) return;
+  const reason = error instanceof Error ? error.message.slice(0, 120) : "invalid";
+  await admin.from("error_reports").insert({
+    page: "/api/livekit-webhook",
+    message: `webhook refused (${reason}): signed with key ${iss.slice(0, 6)}…, the app uses ${ourKey.slice(0, 6)}…`,
+  });
 }
