@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import LegalPage, { H2, List } from "@/components/legal/LegalPage";
 import { CONTACT_EMAIL, OPERATOR, OPERATOR_ADDRESS } from "@/lib/legal";
-import { MAX_CLASSROOMS, MAX_LESSON_HOURS, MONTHLY_LESSON_HOURS } from "@/lib/limits";
+import { MAX_CLASSROOMS, MAX_LESSON_HOURS } from "@/lib/limits";
 import { MB, TEACHER_BYTES } from "@/lib/files/uploadResource";
 
 export const metadata: Metadata = {
@@ -33,7 +33,7 @@ export default function Terms() {
           {TEACHER_BYTES / MB} MB of files per teacher, up to 10 MB per file
         </li>
         <li>
-          {MONTHLY_LESSON_HOURS} hours of lessons a month per teacher, up to {MAX_LESSON_HOURS} hours per lesson
+          up to {MAX_LESSON_HOURS} hours per lesson (no monthly limit during the beta; we may add one again with notice)
         </li>
       </List>
 

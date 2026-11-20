@@ -1,6 +1,6 @@
 "use client";
 
-import { createLocalTracks, type LocalAudioTrack, type LocalTrack, type LocalVideoTrack, MediaDeviceFailure, Track } from "livekit-client";
+import { createLocalTracks, VideoPresets, type LocalAudioTrack, type LocalTrack, type LocalVideoTrack, MediaDeviceFailure, Track } from "livekit-client";
 import { Mic, MicOff, User, Video, VideoOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
@@ -18,7 +18,10 @@ type Started = { tracks: PreJoinTracks; problem: Problem | null };
 // One device on its own. Returns the track, or the reason it failed.
 async function startOne(kind: "audio" | "video") {
   try {
-    const [track] = await createLocalTracks({ audio: kind === "audio", video: kind === "video" });
+    const [track] = await createLocalTracks({
+      audio: kind === "audio",
+      video: kind === "video" ? { resolution: VideoPresets.h720.resolution } : false,
+    });
     return { track, error: null };
   } catch (error) {
     return { track: null, error };
@@ -37,7 +40,7 @@ function problemMessage(t: Messages, { error, kind }: Problem) {
 
 async function startTracks(): Promise<Started> {
   try {
-    const tracks = await createLocalTracks({ audio: true, video: true });
+    const tracks = await createLocalTracks({ audio: true, video: { resolution: VideoPresets.h720.resolution } });
     return { tracks: pick(tracks), problem: null };
   } catch {
     // One of the two may still work (e.g. no camera on this computer). One after the other,
