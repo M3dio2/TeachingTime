@@ -27,8 +27,16 @@ export async function GET(request: Request) {
     const end = s.ended_at ? Date.parse(s.ended_at) : now.getTime();
     ms += Math.min(Math.max(0, end - Date.parse(s.started_at)), capMs);
   }
+  // The last refused webhook calls (app/api/livekit-webhook: a wrong signing key).
+  const { data: refused } = await createAdminClient()
+    .from("error_reports")
+    .select("message, created_at")
+    .eq("page", "/api/livekit-webhook")
+    .order("created_at", { ascending: false })
+    .limit(3);
   return Response.json(
     {
+      webhookRefused: refused ?? [],
       month: monthStart.toISOString().slice(0, 7),
       lessonHours: Math.round((ms / 3600_000) * 10) / 10,
       lessons: data?.length ?? 0,
