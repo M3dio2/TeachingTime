@@ -98,7 +98,7 @@ export async function POST(request: Request) {
   if (!(await withinShared)) return tooMany();
 
   const time = await lessonTime(teacherId, lessonId);
-  if (time && time.month_seconds >= MONTHLY_LESSON_HOURS * 3600) {
+  if (time && MONTHLY_LESSON_HOURS !== null && time.month_seconds >= MONTHLY_LESSON_HOURS * 3600) {
     return Response.json(
       {
         error:

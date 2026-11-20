@@ -18,7 +18,7 @@ import Marker from "@/components/ui/Marker";
 import Wordmark from "@/components/ui/Wordmark";
 import { MB, TEACHER_BYTES } from "@/lib/files/uploadResource";
 import { CONTACT_EMAIL } from "@/lib/legal";
-import { MAX_CLASSROOMS, MONTHLY_LESSON_HOURS } from "@/lib/limits";
+import { MAX_CLASSROOMS, MAX_LESSON_HOURS } from "@/lib/limits";
 import { DESCRIPTION, SITE_NAME, SITE_URL, TAGLINE } from "@/lib/site";
 
 // The start page (SEO, G2): what TeachingTime is, for teachers who find it in a search or a
@@ -72,7 +72,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "Is TeachingTime free?",
-    a: `Yes, while it's new. A free account has ${MAX_CLASSROOMS} Classrooms, ${TEACHER_BYTES / MB} MB of files and ${MONTHLY_LESSON_HOURS} hours of lessons a month.`,
+    a: `Yes, while it's new. A free account has ${MAX_CLASSROOMS} Classrooms, ${TEACHER_BYTES / MB} MB of files and as many lessons as you like (up to ${MAX_LESSON_HOURS} hours each).`,
   },
   {
     q: "Does my student need an account?",

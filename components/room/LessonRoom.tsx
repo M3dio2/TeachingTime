@@ -9,7 +9,7 @@ import {
   useRoomContext,
   useTracks,
 } from "@livekit/components-react";
-import { ConnectionState, type DisconnectReason, MediaDeviceFailure, Track } from "livekit-client";
+import { ConnectionState, type DisconnectReason, MediaDeviceFailure, type RoomOptions, Track, VideoPresets } from "livekit-client";
 import { useEffect, useRef, useState } from "react";
 import * as Y from "yjs";
 import { useT } from "@/lib/i18n/client";
@@ -70,6 +70,17 @@ type Props = {
   tracks?: PreJoinTracks | null;
 };
 
+// Video quality follows the size it's shown at: each camera is sent in 720p plus two smaller
+// copies (180p, 360p); the other side receives only the copy that fits its tile (adaptive
+// stream), so small cameras cost little data and Just Talk's big tiles get the full 720p.
+// Copies nobody watches aren't sent at all (dynacast). Saves LiveKit data on the free plan.
+const ROOM_OPTIONS: RoomOptions = {
+  adaptiveStream: true,
+  dynacast: true,
+  videoCaptureDefaults: { resolution: VideoPresets.h720.resolution },
+  publishDefaults: { simulcast: true, videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360] },
+};
+
 export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, tracks }: Props) {
   const t = useT();
   const [problem, setProblem] = useState<string | null>(null);
@@ -80,6 +91,7 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
       token={token}
       serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
       connect
+      options={ROOM_OPTIONS}
       video={!tracks}
       audio={!tracks}
       onDisconnected={onLeave}
