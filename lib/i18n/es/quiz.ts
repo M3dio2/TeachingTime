@@ -68,9 +68,9 @@ export const quiz: typeof en = {
   gapTextLabel: "Texto",
   gapTextPlaceholder: "Ayer [fui] al cine y [vi/miré] una película.",
   gapHint: "Pon cada respuesta entre [corchetes]. Varias respuestas correctas: [vi/miré].",
-  selectTextPlaceholder: "El verano pasado [volamos|volimos|volar] a Lisboa y [comimos|comemos] pescado.",
+  selectTextPlaceholder: "El verano pasado [volamos/volimos/volar] a Lisboa y [comimos/comemos] pescado.",
   selectHint:
-    "Pon las opciones entre [corchetes] separadas por |. La primera es la correcta; tu estudiante las ve mezcladas.",
+    "Pon las opciones entre [corchetes] separadas por /. La primera es la correcta; tu estudiante las ve mezcladas.",
   pairsLabel: "Parejas",
   pairsHint: "Tu estudiante ve el lado derecho mezclado.",
   leftPlaceholder: (n: number) => `Izquierda ${n}`,

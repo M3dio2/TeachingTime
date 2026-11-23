@@ -53,7 +53,7 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   await card(2).getByLabel("Text").fill("Yesterday I [went] home and [saw/watched] a film.");
   await expect(card(2).getByText("Your student sees:")).toBeVisible();
   await blocks.getByRole("button", { name: /^Choose in the text/ }).click();
-  await card(3).getByLabel("Text").fill("We [flew|flied] to Lisbon and [ate|eated] fish.");
+  await card(3).getByLabel("Text").fill("We [flew/flied] to Lisbon and [ate|eated] fish.");
   await blocks.getByRole("button", { name: /^Match pairs/ }).click();
   await card(4).getByLabel("Left 1").fill("go");
   await card(4).getByLabel("Right 1").fill("went");

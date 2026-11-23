@@ -799,7 +799,7 @@ function AddRow({ label, onClick }: { label: string; onClick: () => void }) {
 
 function GapPreview({ text, select }: { text: string; select: boolean }) {
   const t = useT().quiz;
-  const parts = parseGaps(text, select ? "|" : "/");
+  const parts = parseGaps(text);
   if (!parts.some(Array.isArray)) return null;
   return (
     <div className="flex flex-col gap-1.5 rounded-md border border-line p-3">

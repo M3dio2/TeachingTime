@@ -68,9 +68,9 @@ export const quiz: typeof en = {
   gapTextLabel: "Text",
   gapTextPlaceholder: "Gestern [bin] ich ins Kino gegangen und habe einen Film [gesehen/geschaut].",
   gapHint: "Setz jede Antwort in [eckige Klammern]. Mehrere richtige Antworten: [gesehen/geschaut].",
-  selectTextPlaceholder: "Letzten Sommer [sind|haben|ist] wir nach Lissabon geflogen und haben Fisch [gegessen|gegesst].",
+  selectTextPlaceholder: "Letzten Sommer [sind/haben/ist] wir nach Lissabon geflogen und haben Fisch [gegessen/gegesst].",
   selectHint:
-    "Setz die Auswahl in [eckige Klammern], getrennt durch |. Die erste ist richtig; dein Schüler sieht sie gemischt.",
+    "Setz die Auswahl in [eckige Klammern], getrennt durch /. Die erste ist richtig; dein Schüler sieht sie gemischt.",
   pairsLabel: "Paare",
   pairsHint: "Dein Schüler sieht die rechte Seite gemischt.",
   leftPlaceholder: (n: number) => `Links ${n}`,

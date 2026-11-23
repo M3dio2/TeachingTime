@@ -68,9 +68,9 @@ export const quiz: typeof en = {
   gapTextLabel: "Texte",
   gapTextPlaceholder: "Hier, je [suis allé] au cinéma et j’ai [vu/regardé] un film.",
   gapHint: "Mets chaque réponse entre [crochets]. Plusieurs bonnes réponses : [vu/regardé].",
-  selectTextPlaceholder: "L’été dernier, nous [sommes allés|avons allé|allons] à Lisbonne et nous avons [mangé|mangions] du poisson.",
+  selectTextPlaceholder: "L’été dernier, nous [sommes allés/avons allé/allons] à Lisbonne et nous avons [mangé/mangions] du poisson.",
   selectHint:
-    "Mets les choix entre [crochets], séparés par |. Le premier est le bon ; ton élève les voit mélangés.",
+    "Mets les choix entre [crochets], séparés par /. Le premier est le bon ; ton élève les voit mélangés.",
   pairsLabel: "Paires",
   pairsHint: "Ton élève voit le côté droit mélangé.",
   leftPlaceholder: (n: number) => `Gauche ${n}`,
