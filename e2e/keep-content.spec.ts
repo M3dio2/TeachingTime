@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { deleteTestFiles, joinAsStudent, startTestLesson, testPdf, uploadToClassroom } from "./helpers";
+import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testPdf, uploadToClassroom } from "./helpers";
 
 // User report: what's written, drawn or written on a PDF must survive closing or replacing
 // its tab, and come back when the tab is opened again (both sides).
@@ -81,7 +81,10 @@ test("closing or replacing a tab keeps its text, drawing and PDF writing", async
   } finally {
     await student.context().close();
     await page.getByRole("button", { name: "Leave the lesson" }).click();
+    // The test PDF is on the Classroom page (on the dashboard, an "e2e-" Classroom or quiz
+    // would match and has no Delete button: the cleanup hung there).
     await page.goto("/dashboard");
-    await deleteTestFiles(page).catch(() => {});
+    await openTestClassroom(page);
+    await deleteTestFiles(page);
   }
 });

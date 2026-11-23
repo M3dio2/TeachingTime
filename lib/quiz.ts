@@ -149,14 +149,16 @@ export function cleanQuestions(raw: unknown): Question[] {
 
 export const cleanTitle = (raw: unknown) => str(raw, MAX_TITLE).trim();
 
-// "I [go/went] home." → ["I ", ["go", "went"], " home."]. `sep` "/" for gaps, "|" for choices.
-export function parseGaps(text: string, sep = "/"): (string | string[])[] {
+// "I [go/went] home." → ["I ", ["go", "went"], " home."]. "/" separates answers in every
+// question type (the user's wish); "|" is still read, for quizzes saved before.
+const SEP = /[/|]/;
+export function parseGaps(text: string): (string | string[])[] {
   const parts: (string | string[])[] = [];
   const re = /\[([^[\]]*)\]/g;
   let last = 0;
   for (let m = re.exec(text); m; m = re.exec(text)) {
     if (m.index > last) parts.push(text.slice(last, m.index));
-    const answers = m[1].split(sep).map((a) => a.trim()).filter(Boolean);
+    const answers = m[1].split(SEP).map((a) => a.trim()).filter(Boolean);
     parts.push(answers.length ? answers : [""]);
     last = m.index + m[0].length;
   }
@@ -164,7 +166,7 @@ export function parseGaps(text: string, sep = "/"): (string | string[])[] {
   return parts;
 }
 const gapsOf = (q: GapQuestion | SelectQuestion) =>
-  parseGaps(q.text, q.type === "select" ? "|" : "/").filter((p): p is string[] => Array.isArray(p));
+  parseGaps(q.text).filter((p): p is string[] => Array.isArray(p));
 
 export const orderItems = (q: OrderQuestion) =>
   (q.mode === "list" ? q.text.split("\n") : q.text.split(/\s+/)).map((s) => s.trim()).filter(Boolean);
@@ -255,7 +257,7 @@ export function publicQuestion(q: Question): PublicQuestion {
       return {
         ...base,
         type: "select",
-        parts: parseGaps(q.text, "|").map((p) => (Array.isArray(p) ? null : p)),
+        parts: parseGaps(q.text).map((p) => (Array.isArray(p) ? null : p)),
         choices: gapsOf(q).map((g, i) => perms[i].map((j) => g[j])),
       };
     }

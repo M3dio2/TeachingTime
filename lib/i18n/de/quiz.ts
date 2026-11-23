@@ -3,7 +3,7 @@ import type { quiz as en } from "../en/quiz";
 export const quiz: typeof en = {
   // Dashboard
   yourQuizzes: "Deine Quizze",
-  quizzesIntro: "Bereite ein Quiz einmal vor und nutze es mit jedem Schüler: Zieh es wie eine Datei in die Lektion.",
+  quizzesIntro: "Bereite ein Quiz einmal vor, füg es den Classrooms deiner Schüler hinzu und zieh es wie eine Datei in die Lektion.",
   newQuiz: "Neues Quiz",
   creating: "Wird erstellt…",
   noQuizzesYet: "Noch keine Quizze. Sieben Fragetypen, in wenigen Minuten fertig.",
@@ -68,9 +68,9 @@ export const quiz: typeof en = {
   gapTextLabel: "Text",
   gapTextPlaceholder: "Gestern [bin] ich ins Kino gegangen und habe einen Film [gesehen/geschaut].",
   gapHint: "Setz jede Antwort in [eckige Klammern]. Mehrere richtige Antworten: [gesehen/geschaut].",
-  selectTextPlaceholder: "Letzten Sommer [sind|haben|ist] wir nach Lissabon geflogen und haben Fisch [gegessen|gegesst].",
+  selectTextPlaceholder: "Letzten Sommer [sind/haben/ist] wir nach Lissabon geflogen und haben Fisch [gegessen/gegesst].",
   selectHint:
-    "Setz die Auswahl in [eckige Klammern], getrennt durch |. Die erste ist richtig; dein Schüler sieht sie gemischt.",
+    "Setz die Auswahl in [eckige Klammern], getrennt durch /. Die erste ist richtig; dein Schüler sieht sie gemischt.",
   pairsLabel: "Paare",
   pairsHint: "Dein Schüler sieht die rechte Seite gemischt.",
   leftPlaceholder: (n: number) => `Links ${n}`,
@@ -101,13 +101,29 @@ export const quiz: typeof en = {
     noGap: "Setz mindestens eine Antwort in [eckige Klammern].",
     emptyGap: "Eine Lücke [ ] ist leer.",
     tooManyGaps: "Höchstens 20 Lücken pro Text.",
-    selectNeedsTwo: "Jede Lücke braucht mindestens zwei Auswahlmöglichkeiten, z. B. [ging|gehte].",
+    selectNeedsTwo: "Jede Lücke braucht mindestens zwei Auswahlmöglichkeiten, z. B. [ging/gehte].",
     emptyPair: "Füll bei jedem Paar beide Seiten aus oder entferne das leere.",
     orderTooShort: "Schreib mindestens zwei Wörter oder Zeilen.",
     orderTooLong: "Höchstens 15 Wörter oder Zeilen.",
   },
   notInLesson: "Wird in Lektionen erst gezeigt, wenn sie vollständig ist.",
   maxQuestions: (max: number) => `Mehr als ${max} Fragen pro Quiz gehen nicht.`,
+
+  // Classrooms (Q1b)
+  inClassrooms: "In diesen Classrooms",
+  inClassroomsHint: "Du kannst es in ihren Lektionen öffnen.",
+  notInClassroom: "Füg es einem Classroom hinzu, um es in einer Lektion zu nutzen.",
+  noClassroomsYet: "Leg zuerst im Dashboard ein Classroom an.",
+  classroomNotSaved: "Das wurde nicht gespeichert. Versuch es nochmal.",
+  classroomCount: (n: number) => (n === 1 ? "1 Classroom" : `${n} Classrooms`),
+  notInClassroomShort: "Noch in keinem Classroom",
+  takeOut: (title: string) => `„${title}“ aus diesem Classroom nehmen`,
+  noQuizzesHere: "Noch keine Quizze in diesem Classroom. Füg eins hinzu, um es in der Lektion zu öffnen.",
+  addQuizLabel: "Ein Quiz zu diesem Classroom hinzufügen",
+  chooseQuiz: "Quiz wählen…",
+  add: "Hinzufügen",
+  adding: "Wird hinzugefügt…",
+  newQuizHere: "Neues Quiz für dieses Classroom",
 
   // Lesson room
   quizzes: "Quizze",

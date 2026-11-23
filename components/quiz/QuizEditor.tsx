@@ -9,11 +9,12 @@ import {
   Ellipsis,
   GripVertical,
   Plus,
+  School,
   Trash2,
   X,
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { deleteQuiz, duplicateQuiz, saveQuiz } from "@/app/(app)/dashboard/quiz/actions";
+import { deleteQuiz, duplicateQuiz, saveQuiz, setQuizClassroom } from "@/app/(app)/dashboard/quiz/actions";
 import { inputClass } from "@/components/ui/Field";
 import Segmented from "@/components/ui/Segmented";
 import Sheet from "@/components/ui/Sheet";
@@ -50,7 +51,15 @@ type Dragging = { block: QuestionType } | { move: string } | null;
 // opens when clicked: its fields, then its options right beneath; the ones below move down.
 // Every change is saved a moment later. Phones: no block column; "+ Add a question" opens
 // the blocks in a sheet.
-export default function QuizEditor({ quiz }: { quiz: Quiz }) {
+export default function QuizEditor({
+  quiz,
+  classrooms,
+  inClassrooms,
+}: {
+  quiz: Quiz;
+  classrooms: { id: string; name: string }[];
+  inClassrooms: string[];
+}) {
   const t = useT().quiz;
   const [title, setTitle] = useState(quiz.title);
   const [questions, setQuestions] = useState<Question[]>(quiz.questions);
@@ -166,6 +175,7 @@ export default function QuizEditor({ quiz }: { quiz: Quiz }) {
           </div>
           <QuizMenu id={quiz.id} title={title} />
         </div>
+        <ClassroomPicker quizId={quiz.id} classrooms={classrooms} initial={inClassrooms} />
 
         <ol
           className="flex flex-col"
@@ -799,7 +809,7 @@ function AddRow({ label, onClick }: { label: string; onClick: () => void }) {
 
 function GapPreview({ text, select }: { text: string; select: boolean }) {
   const t = useT().quiz;
-  const parts = parseGaps(text, select ? "|" : "/");
+  const parts = parseGaps(text);
   if (!parts.some(Array.isArray)) return null;
   return (
     <div className="flex flex-col gap-1.5 rounded-md border border-line p-3">
@@ -818,5 +828,92 @@ function GapPreview({ text, select }: { text: string; select: boolean }) {
         )}
       </p>
     </div>
+  );
+}
+
+// Q1b: which Classrooms the quiz is in (only those lessons list it). A pill per Classroom,
+// on or off; each tap is saved right away (and undone if saving fails).
+function ClassroomPicker({
+  quizId,
+  classrooms,
+  initial,
+}: {
+  quizId: string;
+  classrooms: { id: string; name: string }[];
+  initial: string[];
+}) {
+  const t = useT().quiz;
+  const [on, setOn] = useState(() => new Set(initial));
+  const [failed, setFailed] = useState(false);
+  const toggle = async (id: string) => {
+    const next = !on.has(id);
+    const flip = (value: boolean) =>
+      setOn((old) => {
+        const copy = new Set(old);
+        if (value) copy.add(id);
+        else copy.delete(id);
+        return copy;
+      });
+    flip(next);
+    setFailed(false);
+    const ok = await setQuizClassroom(quizId, id, next).catch(() => false);
+    if (!ok) {
+      flip(!next);
+      setFailed(true);
+    }
+  };
+  return (
+    <section
+      aria-labelledby="quiz-classrooms"
+      className={`flex flex-col gap-2.5 rounded-panel border p-4 ${on.size ? "border-line bg-surface" : "border-marker/60 bg-marker-soft/40"}`}
+    >
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <h2
+          id="quiz-classrooms"
+          className="flex items-center gap-2 text-[15px] font-semibold"
+        >
+          <School size={16} aria-hidden className="text-accent" />
+          {t.inClassrooms}
+        </h2>
+        <span className="text-[13px] text-ink-muted">
+          {on.size ? t.inClassroomsHint : t.notInClassroom}
+        </span>
+      </div>
+      {classrooms.length ? (
+        <ul className="flex flex-wrap gap-2">
+          {classrooms.map((c) => {
+            const active = on.has(c.id);
+            return (
+              <li key={c.id}>
+                <button
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => toggle(c.id)}
+                  className={`inline-flex h-9 max-w-[220px] items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+                    active
+                      ? "border-accent bg-accent text-white"
+                      : "border-line bg-surface text-ink hover:border-accent"
+                  }`}
+                >
+                  {active ? (
+                    <Check size={15} aria-hidden />
+                  ) : (
+                    <Plus size={15} aria-hidden className="text-ink-muted" />
+                  )}
+                  <span className="truncate">{c.name}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <p className="text-sm text-ink-muted">{t.noClassroomsYet}</p>
+      )}
+      {failed && (
+        <p role="alert" className="text-[13px] text-danger">
+          {t.classroomNotSaved}
+        </p>
+      )}
+    </section>
   );
 }

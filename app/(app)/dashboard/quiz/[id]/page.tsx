@@ -30,7 +30,17 @@ export default function QuizPage({ params }: PageProps<"/dashboard/quiz/[id]">) 
 async function Quiz({ params }: Pick<PageProps<"/dashboard/quiz/[id]">, "params">) {
   const { id } = await params;
   const supabase = await createClient();
-  const { data } = await supabase.from("quizzes").select("id, title, questions").eq("id", id).maybeSingle();
+  const [{ data }, { data: classrooms }, { data: links }] = await Promise.all([
+    supabase.from("quizzes").select("id, title, questions").eq("id", id).maybeSingle(),
+    supabase.from("lessons").select("id, title").eq("kind", "student").order("title"),
+    supabase.from("quiz_classrooms").select("lesson_id").eq("quiz_id", id),
+  ]);
   if (!data) notFound();
-  return <QuizEditor quiz={{ id: data.id, title: data.title, questions: cleanQuestions(data.questions) }} />;
+  return (
+    <QuizEditor
+      quiz={{ id: data.id, title: data.title, questions: cleanQuestions(data.questions) }}
+      classrooms={(classrooms ?? []).map((c) => ({ id: c.id, name: c.title }))}
+      inClassrooms={(links ?? []).map((l) => l.lesson_id)}
+    />
+  );
 }

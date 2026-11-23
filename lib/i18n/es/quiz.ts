@@ -3,7 +3,7 @@ import type { quiz as en } from "../en/quiz";
 export const quiz: typeof en = {
   // Dashboard
   yourQuizzes: "Tus Quizzes",
-  quizzesIntro: "Prepara un Quiz una vez y úsalo con cualquier estudiante: arrástralo a la clase como un archivo.",
+  quizzesIntro: "Prepara un Quiz una vez, añádelo a los Classrooms de tus estudiantes y arrástralo a la clase como un archivo.",
   newQuiz: "Nuevo Quiz",
   creating: "Creando…",
   noQuizzesYet: "Aún no hay Quizzes. Siete tipos de pregunta, listos en unos minutos.",
@@ -68,9 +68,9 @@ export const quiz: typeof en = {
   gapTextLabel: "Texto",
   gapTextPlaceholder: "Ayer [fui] al cine y [vi/miré] una película.",
   gapHint: "Pon cada respuesta entre [corchetes]. Varias respuestas correctas: [vi/miré].",
-  selectTextPlaceholder: "El verano pasado [volamos|volimos|volar] a Lisboa y [comimos|comemos] pescado.",
+  selectTextPlaceholder: "El verano pasado [volamos/volimos/volar] a Lisboa y [comimos/comemos] pescado.",
   selectHint:
-    "Pon las opciones entre [corchetes] separadas por |. La primera es la correcta; tu estudiante las ve mezcladas.",
+    "Pon las opciones entre [corchetes] separadas por /. La primera es la correcta; tu estudiante las ve mezcladas.",
   pairsLabel: "Parejas",
   pairsHint: "Tu estudiante ve el lado derecho mezclado.",
   leftPlaceholder: (n: number) => `Izquierda ${n}`,
@@ -101,13 +101,29 @@ export const quiz: typeof en = {
     noGap: "Pon al menos una respuesta entre [corchetes].",
     emptyGap: "Un hueco [ ] está vacío.",
     tooManyGaps: "Como máximo 20 huecos por texto.",
-    selectNeedsTwo: "Cada hueco necesita al menos dos opciones, como [fui|fue].",
+    selectNeedsTwo: "Cada hueco necesita al menos dos opciones, como [fui/fue].",
     emptyPair: "Rellena los dos lados de cada pareja o quita la vacía.",
     orderTooShort: "Escribe al menos dos palabras o líneas.",
     orderTooLong: "Como máximo 15 palabras o líneas.",
   },
   notInLesson: "No aparece en las clases hasta que esté completa.",
   maxQuestions: (max: number) => `El máximo es ${max} preguntas por Quiz.`,
+
+  // Classrooms (Q1b)
+  inClassrooms: "En estos Classrooms",
+  inClassroomsHint: "Puedes abrirlo en sus clases.",
+  notInClassroom: "Añádelo a un Classroom para usarlo en una clase.",
+  noClassroomsYet: "Primero crea un Classroom en el panel.",
+  classroomNotSaved: "No se guardó. Inténtalo de nuevo.",
+  classroomCount: (n: number) => (n === 1 ? "1 Classroom" : `${n} Classrooms`),
+  notInClassroomShort: "Aún no está en un Classroom",
+  takeOut: (title: string) => `Quitar «${title}» de este Classroom`,
+  noQuizzesHere: "Aún no hay quizzes en este Classroom. Añade uno para abrirlo en la clase.",
+  addQuizLabel: "Añadir un quiz a este Classroom",
+  chooseQuiz: "Elige un quiz…",
+  add: "Añadir",
+  adding: "Añadiendo…",
+  newQuizHere: "Nuevo quiz para este Classroom",
 
   // Lesson room
   quizzes: "Quizzes",
