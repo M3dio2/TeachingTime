@@ -1,4 +1,4 @@
-import { ListChecks, Trash2, Video } from "lucide-react";
+import { ListChecks, Plus, Trash2, Video, X } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -9,14 +9,17 @@ import ClassroomFiles, { type Resource } from "@/components/classroom/ClassroomF
 import { StorageCard } from "@/components/classroom/FileUpload";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
 import { buttonClass } from "@/components/ui/Button";
+import { inputClass } from "@/components/ui/Field";
+import SubmitButton from "@/components/ui/SubmitButton";
 import Wordmark from "@/components/ui/Wordmark";
+import { cleanQuestions, playable } from "@/lib/quiz";
 import { createClient } from "@/lib/supabase/server";
 import { getT } from "@/lib/i18n/server";
 import type { Messages } from "@/lib/i18n/messages";
 
 type T = Messages["dashboard"];
 import { removeLesson } from "../actions";
-import { removeQuizResult } from "../quiz/actions";
+import { classroomQuizForm, createQuiz, removeQuizResult } from "../quiz/actions";
 
 // Private: never listed by search engines.
 export const metadata: Metadata = { title: "Classroom", robots: { index: false, follow: false } };
@@ -43,7 +46,15 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
   const { id } = await params;
   const [supabase, { dashboard: t, quiz: tq }] = await Promise.all([createClient(), getT()]);
 
-  const [{ data: auth }, { data: student }, { data: files }, { data: usedBytes }, { data: results }] = await Promise.all([
+  const [
+    { data: auth },
+    { data: student },
+    { data: files },
+    { data: usedBytes },
+    { data: results },
+    { data: allQuizzes },
+    { data: links },
+  ] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("lessons")
@@ -63,6 +74,8 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
       .eq("lesson_id", id)
       .order("created_at", { ascending: false })
       .limit(20),
+    supabase.from("quizzes").select("id, title, questions").order("title"),
+    supabase.from("quiz_classrooms").select("quiz_id").eq("lesson_id", id),
   ]);
   if (!student || !auth.user) notFound();
 
@@ -107,6 +120,12 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           <StudentLink t={t} slug={student.invite_slug} name={student.title} />
         </section>
         <StorageCard usedBytes={Number(usedBytes ?? 0)} />
+        <ClassroomQuizzes
+          t={tq}
+          lessonId={student.id}
+          quizzes={(allQuizzes ?? []).map((q) => ({ id: q.id, title: q.title, ready: playable(cleanQuestions(q.questions)).length }))}
+          added={new Set((links ?? []).map((l) => l.quiz_id))}
+        />
         <QuizResults t={tq} lessonId={student.id} results={(results ?? []) as QuizResult[]} />
         <RemoveClassroom t={t} id={student.id} name={student.title} className="hidden md:flex" />
       </aside>
@@ -194,6 +213,116 @@ function QuizResults({ t, lessonId, results }: { t: Messages["quiz"]; lessonId: 
       ) : (
         <p className="text-sm text-ink-muted">{t.noResults}</p>
       )}
+    </section>
+  );
+}
+
+// Q1b: the quizzes added to this Classroom (only these are in its lessons), and adding one.
+function ClassroomQuizzes({
+  t,
+  lessonId,
+  quizzes,
+  added,
+}: {
+  t: Messages["quiz"];
+  lessonId: string;
+  quizzes: { id: string; title: string; ready: number }[];
+  added: Set<string>;
+}) {
+  const inHere = quizzes.filter((q) => added.has(q.id));
+  const others = quizzes.filter((q) => !added.has(q.id));
+  return (
+    <section
+      aria-labelledby="classroom-quizzes"
+      className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-5"
+    >
+      <h2
+        id="classroom-quizzes"
+        className="flex items-center gap-2 text-[15px] font-semibold"
+      >
+        <ListChecks size={16} aria-hidden className="text-accent" />
+        {t.quizzes}
+      </h2>
+      {inHere.length ? (
+        <ul className="flex flex-col">
+          {inHere.map((q) => (
+            <li
+              key={q.id}
+              className="flex items-center gap-2 border-t border-line py-2 first:border-t-0 first:pt-0"
+            >
+              <Link
+                href={`/dashboard/quiz/${q.id}`}
+                className="flex min-w-0 flex-1 flex-col rounded-md hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+              >
+                <span className="truncate text-sm font-medium">{q.title}</span>
+                <span
+                  className={`text-[13px] ${q.ready ? "text-ink-muted" : "text-warn"}`}
+                >
+                  {q.ready ? t.questionCount(q.ready) : t.noneReady}
+                </span>
+              </Link>
+              <form action={classroomQuizForm}>
+                <input type="hidden" name="quizId" value={q.id} />
+                <input type="hidden" name="lessonId" value={lessonId} />
+                <input type="hidden" name="on" value="0" />
+                <button
+                  aria-label={t.takeOut(q.title)}
+                  title={t.takeOut(q.title)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md text-ink-muted hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                >
+                  <X size={15} aria-hidden />
+                </button>
+              </form>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-ink-muted">{t.noQuizzesHere}</p>
+      )}
+      {others.length > 0 && (
+        <form action={classroomQuizForm} className="flex gap-2">
+          <input type="hidden" name="lessonId" value={lessonId} />
+          <input type="hidden" name="on" value="1" />
+          <label htmlFor="add-quiz" className="sr-only">
+            {t.addQuizLabel}
+          </label>
+          <select
+            id="add-quiz"
+            name="quizId"
+            required
+            defaultValue=""
+            className={`${inputClass()} !h-10 min-w-0 flex-1 py-0`}
+          >
+            <option value="" disabled>
+              {t.chooseQuiz}
+            </option>
+            {others.map((q) => (
+              <option key={q.id} value={q.id}>
+                {q.title}
+              </option>
+            ))}
+          </select>
+          <SubmitButton
+            variant="secondary"
+            className="h-10 px-3.5 font-semibold"
+            pending={t.adding}
+          >
+            <Plus size={15} aria-hidden />
+            {t.add}
+          </SubmitButton>
+        </form>
+      )}
+      <form action={createQuiz}>
+        <input type="hidden" name="lessonId" value={lessonId} />
+        <SubmitButton
+          variant="ghost"
+          className="h-9 px-2 text-sm font-semibold !text-accent"
+          pending={t.creating}
+        >
+          <Plus size={15} aria-hidden />
+          {t.newQuizHere}
+        </SubmitButton>
+      </form>
     </section>
   );
 }

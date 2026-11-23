@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { joinAsStudent, logIn, openTestClassroom } from "./helpers";
+import { joinAsStudent, logIn, openTestClassroom, TEST_CLASSROOM } from "./helpers";
 
 // Q1: the teacher makes a quiz in the dashboard, drags it into the lesson, the student answers
 // live, the teacher checks; the result is saved in the Classroom. The quiz is called "e2e-…"
@@ -81,13 +81,29 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   await card(1).getByRole("button", { name: "False" }).click();
   await expect(page.getByRole("status")).toHaveText("Saved", { timeout: 15_000 });
 
+  // Not in a Classroom yet; the pill adds it to the test Classroom.
+  const rooms = page.getByRole("region", { name: "In these Classrooms" });
+  await expect(rooms).toContainText("Add it to a Classroom to use it in a lesson.");
+  await rooms.getByRole("button", { name: TEST_CLASSROOM }).click();
+  await expect(rooms.getByRole("button", { name: TEST_CLASSROOM })).toHaveAttribute("aria-pressed", "true");
+  await expect(rooms).toContainText("You can open it in their lessons.");
+
   // It's on the dashboard.
   await page.goto("/dashboard");
-  await expect(page.getByRole("link", { name: `Edit the quiz ${TITLE}` })).toContainText("7 questions");
+  const quizCard = page.getByRole("link", { name: `Edit the quiz ${TITLE}` });
+  await expect(quizCard).toContainText("7 questions");
+  await expect(quizCard).toContainText("1 Classroom");
 
   // In the lesson: drag it from the files panel onto the stage.
   // (startTestLesson logs in again, which a logged-in teacher can't: the steps by hand.)
   await openTestClassroom(page);
+  // The Classroom lists it; taking it out and adding it back from here works too.
+  const here = page.getByRole("region", { name: "Quizzes" });
+  await here.getByRole("button", { name: `Take “${TITLE}” out of this Classroom` }).click();
+  await expect(here.getByRole("link", { name: new RegExp(TITLE) })).toHaveCount(0);
+  await here.getByLabel("Add a quiz to this Classroom").selectOption({ label: TITLE });
+  await here.getByRole("button", { name: "Add", exact: true }).click();
+  await expect(here.getByRole("link", { name: new RegExp(TITLE) })).toContainText("7 questions");
   const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
   await page.getByRole("link", { name: "Start lesson" }).click();
   await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });

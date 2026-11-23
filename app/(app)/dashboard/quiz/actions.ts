@@ -7,7 +7,8 @@ import { cleanQuestions, cleanTitle, emptyChoice, MAX_QUIZZES, MAX_TITLE } from 
 import { createClient } from "@/lib/supabase/server";
 
 // "New quiz" on the dashboard: an untitled quiz with one empty question, opened in the editor.
-export async function createQuiz() {
+export async function createQuiz(formData?: FormData) {
+  const inClassroom = formData ? String(formData.get("lessonId") ?? "") : "";
   const t = await getT();
   const supabase = await createClient();
   const { count } = await supabase.from("quizzes").select("id", { count: "exact", head: true });
@@ -18,6 +19,7 @@ export async function createQuiz() {
     .select("id")
     .single();
   if (error) throw new Error(error.message);
+  if (inClassroom) await supabase.from("quiz_classrooms").insert({ quiz_id: data.id, lesson_id: inClassroom });
   revalidatePath("/dashboard");
   redirect(`/dashboard/quiz/${data.id}`);
 }
@@ -62,6 +64,30 @@ export async function deleteQuiz(formData: FormData) {
   await supabase.from("quizzes").delete().eq("id", id);
   revalidatePath("/dashboard");
   if (formData.get("then") === "dashboard") redirect("/dashboard");
+}
+
+// Q1b: add the quiz to a Classroom or take it out again (RLS: her own quiz, her own Classroom).
+export async function setQuizClassroom(quizId: string, lessonId: string, on: boolean): Promise<boolean> {
+  const supabase = await createClient();
+  const { error } = on
+    ? await supabase.from("quiz_classrooms").upsert({ quiz_id: quizId, lesson_id: lessonId }, { ignoreDuplicates: true })
+    : await supabase.from("quiz_classrooms").delete().eq("quiz_id", quizId).eq("lesson_id", lessonId);
+  if (error) {
+    console.error("quiz classroom:", error.message);
+    return false;
+  }
+  revalidatePath("/dashboard");
+  revalidatePath(`/dashboard/${lessonId}`);
+  revalidatePath(`/dashboard/quiz/${quizId}`);
+  return true;
+}
+
+// The same from the Classroom page (a form: add the chosen quiz, or remove one).
+export async function classroomQuizForm(formData: FormData) {
+  const quizId = String(formData.get("quizId") ?? "");
+  const lessonId = String(formData.get("lessonId") ?? "");
+  if (!quizId || !lessonId) return;
+  await setQuizClassroom(quizId, lessonId, formData.get("on") === "1");
 }
 
 // The teacher checked a quiz in a lesson: the result goes into the student's Classroom.

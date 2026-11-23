@@ -33,7 +33,7 @@ async function Lesson({ params }: Pick<PageProps<"/lesson/[id]">, "params">) {
   if (!lesson) notFound();
   const files =
     lesson.kind === "student"
-      ? [...(await loadFiles(supabase, lesson.id)), ...(await loadQuizzes(supabase))]
+      ? [...(await loadFiles(supabase, lesson.id)), ...(await loadQuizzes(supabase, lesson.id))]
       : undefined;
 
   // Read-only on purpose (links may be prefetched); last_active_at is written by the
@@ -83,8 +83,13 @@ async function loadFiles(supabase: Awaited<ReturnType<typeof createClient>>, les
 }
 
 // Q1: the teacher's quizzes, listed in the files panel of every student lesson.
-async function loadQuizzes(supabase: Awaited<ReturnType<typeof createClient>>) {
-  const { data } = await supabase.from("quizzes").select("id, title, questions").order("title");
+// Q1b: the quizzes added to this Classroom.
+async function loadQuizzes(supabase: Awaited<ReturnType<typeof createClient>>, lessonId: string) {
+  const { data } = await supabase
+    .from("quizzes")
+    .select("id, title, questions, quiz_classrooms!inner(lesson_id)")
+    .eq("quiz_classrooms.lesson_id", lessonId)
+    .order("title");
   // Only quizzes with at least one complete question (incomplete ones are drafts).
   return (data ?? [])
     .map((q) => ({ id: q.id, title: q.title, questions: cleanQuestions(q.questions) }))

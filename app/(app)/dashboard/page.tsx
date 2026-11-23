@@ -1,4 +1,4 @@
-import { ListChecks, Plus, Video } from "lucide-react";
+import { ListChecks, Plus, School, Video } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -60,7 +60,7 @@ async function Dashboard() {
       .order("title"),
     supabase.from("resources").select("lesson_id, kind"),
     occupiedLessons(),
-    supabase.from("quizzes").select("id, title, questions, updated_at").order("updated_at", { ascending: false }),
+    supabase.from("quizzes").select("id, title, questions, updated_at, quiz_classrooms(count)").order("updated_at", { ascending: false }),
   ]);
   const teacherName: string = auth.user?.user_metadata.display_name ?? "";
   const occupied = occupiedOrUnknown ?? new Set<string>();
@@ -401,7 +401,13 @@ function Paperclip() {
   );
 }
 
-type QuizRow = { id: string; title: string; questions: unknown; updated_at: string };
+type QuizRow = {
+  id: string;
+  title: string;
+  questions: unknown;
+  updated_at: string;
+  quiz_classrooms: { count: number }[];
+};
 
 // Q1: the teacher's quizzes, under her Classrooms. Each card opens the editor.
 function Quizzes({ t, quizzes }: { t: Messages["quiz"]; quizzes: QuizRow[] }) {
@@ -431,6 +437,7 @@ function Quizzes({ t, quizzes }: { t: Messages["quiz"]; quizzes: QuizRow[] }) {
             const questions = cleanQuestions(q.questions);
             const ready = playable(questions).length;
             const incomplete = questions.length - ready;
+            const rooms = q.quiz_classrooms?.[0]?.count ?? 0;
             return (
               <li key={q.id}>
                 <Link
@@ -446,12 +453,22 @@ function Quizzes({ t, quizzes }: { t: Messages["quiz"]; quizzes: QuizRow[] }) {
                     <span className="text-[13px] text-ink-muted">
                       {t.questionCount(ready)} · <LocalDate iso={q.updated_at} />
                     </span>
-                    {incomplete > 0 && (
-                      <span className="mt-1 inline-flex items-center gap-1.5 self-start rounded-full bg-warn-soft px-2 py-0.5 text-[12px] font-semibold text-warn">
-                        <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-warn" />
-                        {ready === 0 ? t.noneReady : t.incompleteCount(incomplete)}
+                    <span className="mt-1 flex flex-wrap gap-1.5">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[12px] font-semibold ${
+                          rooms ? "bg-surface-2 text-ink-muted" : "bg-marker-soft text-marker-ink"
+                        }`}
+                      >
+                        <School size={12} aria-hidden />
+                        {rooms ? t.classroomCount(rooms) : t.notInClassroomShort}
                       </span>
-                    )}
+                      {incomplete > 0 && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-warn-soft px-2 py-0.5 text-[12px] font-semibold text-warn">
+                          <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-warn" />
+                          {ready === 0 ? t.noneReady : t.incompleteCount(incomplete)}
+                        </span>
+                      )}
+                    </span>
                   </span>
                 </Link>
               </li>
