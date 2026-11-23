@@ -6,12 +6,25 @@ import LoadingScreen from "@/components/room/LoadingScreen";
 import SubmitButton from "@/components/ui/SubmitButton";
 import { useLocale, useT } from "@/lib/i18n/client";
 
-// Re-fetches the dashboard every 15 s so "Waiting" badges appear without reloading.
-export function AutoRefresh({ seconds = 15 }: { seconds?: number }) {
+// Re-fetches the dashboard every 10 s so "Waiting" badges appear without reloading, and at
+// once when the tab comes back to the front (browsers slow down timers in background tabs).
+// No checks while the tab is hidden.
+export function AutoRefresh({ seconds = 10 }: { seconds?: number }) {
   const router = useRouter();
   useEffect(() => {
-    const id = setInterval(() => router.refresh(), seconds * 1000);
-    return () => clearInterval(id);
+    const id = setInterval(() => {
+      if (document.visibilityState === "visible") router.refresh();
+    }, seconds * 1000);
+    const onShow = () => {
+      if (document.visibilityState === "visible") router.refresh();
+    };
+    document.addEventListener("visibilitychange", onShow);
+    window.addEventListener("focus", onShow);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onShow);
+      window.removeEventListener("focus", onShow);
+    };
   }, [router, seconds]);
   return null;
 }
