@@ -10,7 +10,7 @@ test("G1: open sign-up, legal pages, 404", async ({ page }) => {
   await expect(page.getByRole("textbox", { name: "Invite code" })).toHaveCount(0);
   await page.getByRole("link", { name: "privacy policy" }).click();
   await expect(page.getByRole("heading", { name: "Privacy policy" })).toBeVisible();
-  await expect(page.getByText("not recorded")).toBeVisible();
+  await expect(page.getByText("not record", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Terms" }).click();
   await expect(page.getByRole("heading", { name: "Terms of use" })).toBeVisible();
   await expect(page.getByText("50 MB of files per teacher")).toBeVisible();

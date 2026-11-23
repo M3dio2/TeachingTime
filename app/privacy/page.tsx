@@ -4,7 +4,7 @@ import { CONTACT_EMAIL, OPERATOR, OPERATOR_ADDRESS } from "@/lib/legal";
 
 export const metadata: Metadata = {
   title: "Privacy policy",
-  description: "What TeachingTime stores, who helps run it, and your rights. Lessons are never recorded.",
+  description: "What TeachingTime stores, who helps run it, and your rights. We never record or store lessons.",
   alternates: { canonical: "/privacy" },
 };
 
@@ -58,7 +58,13 @@ export default function Privacy() {
       <H2>Video and sound</H2>
       <p>
         Camera, microphone and screen sharing go through LiveKit, our video provider, directly between the two
-        people in the lesson. Calls are <strong>not recorded</strong> and not stored.
+        people in the lesson. TeachingTime does <strong>not record</strong> or store calls.
+      </p>
+      <p>
+        A teacher can record a lesson herself, in her own browser. Before it starts, the student is asked and has to
+        agree; both see a red sign while it runs, and either of them can stop it. The recording is saved on the
+        teacher&apos;s device only and never sent to TeachingTime. The teacher is responsible for keeping it safe
+        and for deleting it when asked. For a student under 16, ask a parent too.
       </p>
 
       <H2>Who helps us run it</H2>
