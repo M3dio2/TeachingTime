@@ -44,6 +44,7 @@ import JoinToast from "./JoinToast";
 import LessonTimer from "./LessonTimer";
 import LoadingScreen from "./LoadingScreen";
 import PhoneLayout from "./PhoneLayout";
+import { RecordingProvider } from "./Recording";
 import RoomControls from "./RoomControls";
 import type { Role, RoomModel } from "./roomModel";
 import StatusBanner, { deviceProblemMessage } from "./StatusBanner";
@@ -117,13 +118,15 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
         problem={problem}
         onDismissProblem={() => setProblem(null)}
       />
-      <LessonContent
-        role={role}
-        lesson={lesson}
-        inviteSlug={inviteSlug ?? lesson?.inviteSlug}
-        isPhone={isPhone}
-        onProblem={setProblem}
-      />
+      <RecordingProvider role={role}>
+        <LessonContent
+          role={role}
+          lesson={lesson}
+          inviteSlug={inviteSlug ?? lesson?.inviteSlug}
+          isPhone={isPhone}
+          onProblem={setProblem}
+        />
+      </RecordingProvider>
       <JoinToast />
       <ConnectingScreen />
       <RoomAudioRenderer />

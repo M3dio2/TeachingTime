@@ -88,7 +88,7 @@ const FAQ = [
   },
   {
     q: "Are lessons recorded?",
-    a: "No. Video and sound go between the two of you and are never stored. What stays is what you write and upload, until you delete it.",
+    a: "Not by us: video and sound go between the two of you and are never stored. If you like, you can record a lesson on your own computer, but only after your student agrees, and the file stays with you. What stays on TeachingTime is what you write and upload, until you delete it.",
   },
   {
     q: "Who is it for?",
@@ -251,7 +251,7 @@ export default function Home() {
             <div className="flex min-w-0 flex-[1_1_320px] flex-col gap-2">
               <h2 className="text-xl font-semibold">Calm about privacy, too</h2>
               <p className="leading-relaxed text-ink-muted">
-                Lessons are never recorded. No ads, no tracking cookies. Students don&apos;t need an account, and their
+                We never record or store your lessons. No ads, no tracking cookies. Students don&apos;t need an account, and their
                 name isn&apos;t stored. Made independently in Switzerland.{" "}
                 <Link href="/privacy" className="font-medium text-accent underline-offset-2 hover:underline">
                   Read the privacy policy

@@ -15,6 +15,7 @@ import { useT } from "@/lib/i18n/client";
 import { muteMicrophones } from "@/lib/mute";
 import { useWindowWidth } from "@/lib/useStored";
 import { cap, type RoomModel } from "./roomModel";
+import { RecordButton } from "./Recording";
 import { deviceProblemMessage } from "./StatusBanner";
 
 export function useDeviceErrorHandler(onProblem: (message: string) => void) {
@@ -91,6 +92,7 @@ export default function RoomControls({
         />
         {/* Only the teacher shares her screen (docs/DESIGN.md). */}
         {teacher && <ShareToggle />}
+        {teacher && <RecordButton iconOnly={iconOnly} />}
         <DisconnectButton aria-label={t.room.leaveLesson} title={t.room.leaveLesson}>
           <LogOut size={16} aria-hidden />
           {!iconOnly && t.room.leave}

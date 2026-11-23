@@ -15,6 +15,7 @@ import { CameraRow } from "./CameraTiles";
 import { FileList, useFileOpener } from "./FilesPanel";
 import AudioBar from "./AudioBar";
 import JustTalk from "./JustTalk";
+import { RecordButton } from "./Recording";
 import { MuteStudentButton, useDeviceErrorHandler } from "./RoomControls";
 import { cap, type RoomModel } from "./roomModel";
 import { TabIcon } from "./Stage";
@@ -279,6 +280,10 @@ function TeacherBar({ model, onProblem }: { model: RoomModel; onProblem: (messag
                 className="flex min-h-13 items-center gap-3 px-1 text-left text-base text-ink disabled:text-ink-muted"
               />
             )}
+            <RecordButton
+              iconSize={20}
+              className="flex min-h-13 items-center gap-3 border-b border-line px-1 text-left text-base text-ink disabled:text-ink-muted"
+            />
             <Switch
               checked={model.view.studentCanEdit}
               onChange={actions.setStudentCanEdit}
