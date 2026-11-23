@@ -2,7 +2,7 @@
 export const quiz = {
   // Dashboard
   yourQuizzes: "Your quizzes",
-  quizzesIntro: "Prepare a quiz once and use it with any student: drag it into the lesson like a file.",
+  quizzesIntro: "Prepare a quiz once, add it to your students' Classrooms, and drag it into the lesson like a file.",
   newQuiz: "New quiz",
   creating: "Creating…",
   noQuizzesYet: "No quizzes yet. Seven kinds of question, ready in a few minutes.",

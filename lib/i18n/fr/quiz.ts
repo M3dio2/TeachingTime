@@ -3,7 +3,7 @@ import type { quiz as en } from "../en/quiz";
 export const quiz: typeof en = {
   // Dashboard
   yourQuizzes: "Tes Quiz",
-  quizzesIntro: "Prépare un Quiz une fois et utilise-le avec n’importe quel élève : glisse-le dans le cours comme un fichier.",
+  quizzesIntro: "Prépare un Quiz une fois, ajoute-le aux Classrooms de tes élèves et glisse-le dans le cours comme un fichier.",
   newQuiz: "Nouveau Quiz",
   creating: "Création…",
   noQuizzesYet: "Aucun Quiz pour l’instant. Sept types de questions, prêts en quelques minutes.",

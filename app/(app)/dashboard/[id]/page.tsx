@@ -312,11 +312,11 @@ function ClassroomQuizzes({
           </SubmitButton>
         </form>
       )}
-      <form action={createQuiz}>
+      <form action={createQuiz} className="flex">
         <input type="hidden" name="lessonId" value={lessonId} />
         <SubmitButton
           variant="ghost"
-          className="h-9 px-2 text-sm font-semibold !text-accent"
+          className="-ml-2 h-9 px-2 text-sm font-semibold !text-accent"
           pending={t.creating}
         >
           <Plus size={15} aria-hidden />
