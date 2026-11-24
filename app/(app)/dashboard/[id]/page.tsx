@@ -33,7 +33,9 @@ export default function ClassroomPage({ params }: PageProps<"/dashboard/[id]">) 
         <Wordmark underline="still" />
         <BackToClassrooms />
       </header>
-      <main className="mx-auto flex w-full max-w-[1120px] flex-wrap items-start gap-6 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
+      {/* Two columns only where both fit (lg); narrower, everything is full width and the cards
+          on the left flow into two columns (below). */}
+      <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-6 px-[clamp(16px,4vw,32px)] pt-3 pb-16 lg:flex-row lg:items-start">
         <Suspense fallback={<ClassroomLoading />}>
           <Classroom params={params} />
         </Suspense>
@@ -94,7 +96,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
 
   return (
     <>
-      <aside className="flex min-w-0 flex-[1_1_300px] flex-col gap-4 md:max-w-[380px]">
+      <aside className="min-w-0 gap-4 [column-width:300px] *:mb-4 *:break-inside-avoid lg:flex lg:w-[360px] lg:shrink-0 lg:[column-width:auto] lg:flex-col lg:*:mb-0">
         <section className="flex flex-col gap-[18px] rounded-panel border border-line bg-surface p-5">
           <div className="flex items-center gap-3.5">
             <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-surface-2 font-display text-2xl font-extrabold text-accent">
@@ -127,7 +129,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           added={new Set((links ?? []).map((l) => l.quiz_id))}
         />
         <QuizResults t={tq} lessonId={student.id} results={(results ?? []) as QuizResult[]} />
-        <RemoveClassroom t={t} id={student.id} name={student.title} className="hidden md:flex" />
+        <RemoveClassroom t={t} id={student.id} name={student.title} className="hidden lg:flex" />
       </aside>
       <ClassroomFiles
         files={resources.map((r) => ({ id: r.id, kind: r.kind, name: r.name, size: r.size, created_at: r.created_at, url: r.url ?? undefined }))}
@@ -136,7 +138,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
         usedBytes={Number(usedBytes ?? 0)}
       />
       {/* Phones: Remove sits at the very end of the page, after the files. */}
-      <RemoveClassroom t={t} id={student.id} name={student.title} className="flex md:hidden" />
+      <RemoveClassroom t={t} id={student.id} name={student.title} className="flex lg:hidden" />
     </>
   );
 }

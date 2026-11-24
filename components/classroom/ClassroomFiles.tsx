@@ -60,7 +60,7 @@ export default function ClassroomFiles({
   return (
     <section
       aria-labelledby="files"
-      className="flex min-w-0 flex-[999_1_560px] flex-col gap-5 rounded-panel border border-line bg-surface p-4 md:p-6"
+      className="flex min-w-0 flex-1 flex-col gap-5 rounded-panel border border-line bg-surface p-4 md:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-baseline gap-2.5">
