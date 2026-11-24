@@ -24,19 +24,26 @@ const supabaseWss = supabase ? `wss://${supabase}` : "";
 // and slower. See docs/ARCHITECTURE.md, "Security headers".
 // 'wasm-unsafe-eval': Excalidraw compiles WebAssembly for its fonts. Dev also needs
 // 'unsafe-eval' (React's dev tools) and the hot-reload socket.
+// C1: Google Drive and Dropbox, used from the teacher's browser (lib/cloud).
+const CLOUD_SCRIPTS = "https://accounts.google.com https://apis.google.com https://www.dropbox.com";
+const CLOUD_CONNECT =
+  "https://accounts.google.com https://www.googleapis.com https://content.googleapis.com https://api.dropboxapi.com https://content.dropboxapi.com https://*.dropboxusercontent.com";
+const CLOUD_FRAMES = "https://accounts.google.com https://docs.google.com https://drive.google.com https://content.googleapis.com https://www.dropbox.com";
+
 const csp = [
   "default-src 'self'",
-  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com https://www.youtube.com${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' blob: data: ${supabaseHttps}`,
+  `script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://challenges.cloudflare.com https://www.youtube.com ${CLOUD_SCRIPTS}${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline' https://accounts.google.com",
+  `img-src 'self' blob: data: ${supabaseHttps} https://*.googleusercontent.com https://ssl.gstatic.com`,
   "font-src 'self' data: blob: https://esm.sh", // blob: fonts embedded in Word files
   `media-src 'self' blob: ${supabaseHttps}`,
-  `connect-src 'self' ${supabaseHttps} ${supabaseWss} https://*.livekit.cloud wss://*.livekit.cloud https://esm.sh${
+  `connect-src 'self' ${supabaseHttps} ${supabaseWss} https://*.livekit.cloud wss://*.livekit.cloud https://esm.sh ${CLOUD_CONNECT}${
     isDev ? " ws: http://localhost:*" : ""
   }`,
   "worker-src 'self' blob:",
   // Turnstile (the sign-up check) and YouTube videos in the call (G2, privacy-enhanced mode).
-  "frame-src https://challenges.cloudflare.com https://www.youtube-nocookie.com https://www.youtube.com",
+  // C1: Google's sign-in and file picker; Dropbox's Chooser.
+  `frame-src https://challenges.cloudflare.com https://www.youtube-nocookie.com https://www.youtube.com ${CLOUD_FRAMES}`,
   "manifest-src 'self'",
   "object-src 'none'",
   "base-uri 'self'",
@@ -59,7 +66,8 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(self), microphone=(self), display-capture=(self), geolocation=()",
   },
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  // Allows popups: Google's sign-in window and Dropbox's Chooser report back to this page (C1).
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
 ];
 
 const nextConfig: NextConfig = {

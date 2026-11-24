@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } from "@/components/dashboard/DashboardBits";
-import { CardMenu, FeedbackButton, LanguageMenu, NameChip } from "@/components/dashboard/DashboardMenus";
+import { CardMenu, FeedbackButton, LanguageMenu, NameChip, SettingsLink } from "@/components/dashboard/DashboardMenus";
 import { buttonClass } from "@/components/ui/Button";
 import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
 import Field from "@/components/ui/Field";
@@ -100,6 +100,7 @@ async function Dashboard() {
         <Wordmark underline={firstVisit ? "none" : "still"} />
         <div className="flex items-center gap-2">
           <LanguageMenu />
+          <SettingsLink />
           <FeedbackButton />
           <NameChip name={teacherName} />
           <form action={signOut}>

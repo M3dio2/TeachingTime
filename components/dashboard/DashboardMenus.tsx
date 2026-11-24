@@ -1,6 +1,7 @@
 "use client";
 
-import { Check, Ellipsis, Globe, MessageSquare, Pencil, Trash2 } from "lucide-react";
+import { Check, Ellipsis, Globe, MessageSquare, Pencil, Settings, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
 import { removeLesson, sendFeedback, setLanguage, setTeacherName } from "@/app/(app)/dashboard/actions";
 import { useLocale, useT } from "@/lib/i18n/client";
@@ -255,5 +256,20 @@ function RemoveItem({ name }: { name: string }) {
       <Trash2 size={16} aria-hidden />
       {pending ? t.common.removing : t.dashboard.removeName(name)}
     </button>
+  );
+}
+
+// C1: Settings (connected clouds), next to the language menu.
+export function SettingsLink() {
+  const t = useT().cloud;
+  return (
+    <Link
+      href="/dashboard/settings"
+      aria-label={t.settings}
+      title={t.settings}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+    >
+      <Settings size={17} aria-hidden />
+    </Link>
   );
 }

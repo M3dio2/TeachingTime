@@ -25,6 +25,10 @@ import {
   startRecording,
 } from "@/lib/room/recorder";
 import { isTeacher } from "@/lib/sync/useTeacherSettings";
+import { DropboxMark, GoogleDriveMark } from "@/components/cloud/CloudSettings";
+import { saveToDropbox } from "@/lib/cloud/dropbox";
+import { cachedGoogleToken, googleToken, saveToDrive } from "@/lib/cloud/google";
+import { DROPBOX_CONFIGURED, GOOGLE_CONFIGURED, readCloud, useCloud } from "@/lib/cloud/store";
 import { buttonClass } from "@/components/ui/Button";
 import type { Role } from "./roomModel";
 
@@ -66,6 +70,7 @@ function TeacherRecording({ children }: { children: ReactNode }) {
   const studentName = student?.name || student?.identity || "";
   const [phase, setPhaseState] = useState<Phase>({ phase: "idle" });
   const [note, setNote] = useState<string | null>(null);
+  const [finished, setFinished] = useState<{ file: File; why?: string } | null>(null);
   const [leftovers, setLeftovers] = useState<File[]>([]);
   const phaseRef = useRef(phase);
   useEffect(() => {
@@ -93,12 +98,12 @@ function TeacherRecording({ children }: { children: ReactNode }) {
     setPhase({ phase: "saving" });
     void publish(null);
     const file = await p.recording.stop();
-    download(file);
-    setNote(why ? `${why} ${t.saved(file.name)}` : t.saved(file.name));
-    // Kept in the browser's storage a little longer, in case the download was cancelled.
+    // C1: to the cloud chosen in Settings, else downloaded (AfterRecording).
+    setFinished({ file, why });
+    // Kept in the browser's storage a little longer, in case saving was cancelled.
     setTimeout(() => void forgetRecording(file.name), 10 * 60_000);
     setPhase({ phase: "idle" });
-  }, [publish, setPhase, t]);
+  }, [publish, setPhase]);
 
   const cancelAsking = useCallback(() => {
     const p = phaseRef.current;
@@ -229,7 +234,10 @@ function TeacherRecording({ children }: { children: ReactNode }) {
         </Modal>
       )}
       {phase.phase === "on" && <RecPill since={phase.since} label={t.stop} onStop={() => void stop()} />}
-      {note && phase.phase !== "choosing" && <Toast onClose={() => setNote(null)}>{note}</Toast>}
+      {note && phase.phase !== "choosing" && !finished && <Toast onClose={() => setNote(null)}>{note}</Toast>}
+      {finished && (
+        <AfterRecording key={finished.file.name} file={finished.file} why={finished.why} onClose={() => setFinished(null)} />
+      )}
       {leftovers.length > 0 && phase.phase === "idle" && (
         <Leftovers
           files={leftovers}
@@ -463,13 +471,13 @@ function Modal({ label, onClose, children }: { label: string; onClose?: () => vo
   );
 }
 
-function Toast({ children, onClose }: { children: ReactNode; onClose?: () => void }) {
+function Toast({ children, onClose, stay = false }: { children: ReactNode; onClose?: () => void; stay?: boolean }) {
   const t = useT();
   useEffect(() => {
-    if (!onClose) return;
+    if (!onClose || stay) return;
     const id = setTimeout(onClose, 8000);
     return () => clearTimeout(id);
-  }, [onClose]);
+  }, [onClose, stay]);
   return (
     <div role="status" className="fixed bottom-[84px] left-1/2 z-40 flex max-w-[min(92vw,480px)] -translate-x-1/2 items-start gap-3 rounded-panel bg-video px-4 py-3 text-sm text-white shadow-soft">
       <div className="min-w-0 flex-1">{children}</div>
@@ -479,6 +487,123 @@ function Toast({ children, onClose }: { children: ReactNode; onClose?: () => voi
         </button>
       )}
     </div>
+  );
+}
+
+// C1: where a finished recording goes. Dropbox (and Google with a token from this tab) save
+// by themselves; otherwise it's downloaded, with buttons to save it to a connected cloud too.
+// A failed cloud upload falls back to the download.
+type After =
+  | { phase: "saving"; where: "google" | "dropbox"; percent: number }
+  | { phase: "saved"; where: "google" | "dropbox"; path: string }
+  | { phase: "downloaded"; failed?: "google" | "dropbox" }
+  | { phase: "needsClick" }; // Google without a token: one click (Google's window needs it)
+
+function AfterRecording({ file, why, onClose }: { file: File; why?: string; onClose: () => void }) {
+  const t = useT();
+  const tc = t.cloud;
+  const cloud = useCloud();
+  const [state, setState] = useState<After>(() => {
+    const c = readCloud();
+    if (c.saveTo === "dropbox" && c.dropbox) return { phase: "saving", where: "dropbox", percent: 0 };
+    if (c.saveTo === "google" && c.google) return cachedGoogleToken() ? { phase: "saving", where: "google", percent: 0 } : { phase: "needsClick" };
+    return { phase: "downloaded" };
+  });
+  const name = (w: "google" | "dropbox") => (w === "google" ? tc.google : tc.dropbox);
+
+  const save = useCallback(
+    async (where: "google" | "dropbox", token?: string) => {
+      const onProgress = (share: number) => setState({ phase: "saving", where, percent: Math.round(share * 100) });
+      try {
+        const path = where === "dropbox" ? await saveToDropbox(file, onProgress) : await saveToDrive(file, token ?? (await googleToken()), onProgress);
+        setState({ phase: "saved", where, path });
+        void forgetRecording(file.name);
+      } catch (e) {
+        console.error("save recording:", where, e);
+        download(file);
+        setState({ phase: "downloaded", failed: where });
+      }
+    },
+    [file],
+  );
+
+  // The first state decides: start saving, or download right away.
+  const started = useRef(false);
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    const where = state.phase === "saving" ? state.where : null;
+    if (where) queueMicrotask(() => void save(where, where === "google" ? (cachedGoogleToken() ?? undefined) : undefined));
+    else if (state.phase === "downloaded") download(file);
+  }, [state, save, file]);
+
+  const prefix = why ? `${why} ` : "";
+  const extra = (
+    <span className="mt-2 flex flex-wrap gap-2">
+      {GOOGLE_CONFIGURED && cloud.google && (
+        <button type="button" className={TOAST_BUTTON} onClick={() => void save("google")}>
+          <GoogleDriveMark size={15} />
+          {tc.saveGoogle}
+        </button>
+      )}
+      {DROPBOX_CONFIGURED && cloud.dropbox && (
+        <button type="button" className={TOAST_BUTTON} onClick={() => void save("dropbox")}>
+          <DropboxMark size={15} />
+          {tc.saveDropbox}
+        </button>
+      )}
+    </span>
+  );
+
+  return (
+    <Toast onClose={onClose} stay={state.phase !== "saved" && !(state.phase === "downloaded" && !cloud.google && !cloud.dropbox)}>
+      {state.phase === "saving" && (
+        <span data-testid="rec-saving">
+          {prefix}
+          {tc.savingTo(name(state.where), state.percent)}
+        </span>
+      )}
+      {state.phase === "saved" && (
+        <span>
+          {prefix}
+          {tc.savedTo(name(state.where), state.path)}
+        </span>
+      )}
+      {state.phase === "downloaded" && (
+        <span className="flex flex-col">
+          <span>
+            {prefix}
+            {state.failed ? tc.saveFailed(name(state.failed)) : t.room.rec.saved(file.name)}
+          </span>
+          {extra}
+        </span>
+      )}
+      {state.phase === "needsClick" && (
+        <span className="flex flex-col">
+          <span>
+            {prefix}
+            {file.name}
+          </span>
+          <span className="mt-2 flex flex-wrap gap-2">
+            <button type="button" className={TOAST_BUTTON} onClick={() => void save("google")}>
+              <GoogleDriveMark size={15} />
+              {tc.saveGoogle}
+            </button>
+            <button
+              type="button"
+              className={TOAST_BUTTON}
+              onClick={() => {
+                download(file);
+                setState({ phase: "downloaded" });
+              }}
+            >
+              <Download size={15} aria-hidden />
+              {t.room.rec.download}
+            </button>
+          </span>
+        </span>
+      )}
+    </Toast>
   );
 }
 
