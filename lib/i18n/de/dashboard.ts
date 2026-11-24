@@ -76,6 +76,11 @@ export const dashboard: typeof en = {
   countWord: (n: number) => `${n} Word-${n === 1 ? "Datei" : "Dateien"}`,
   countAudio: (n: number) => `${n} Audio`,
   countLinks: (n: number) => `${n} ${n === 1 ? "Link" : "Links"}`,
+  countDocuments: (n: number) => `${n} ${n === 1 ? "Dokument" : "Dokumente"}`,
+  countVideos: (n: number) => `${n} ${n === 1 ? "Video" : "Videos"}`,
+  groups: { documents: "Dokumente", pictures: "Bilder", videos: "Videos", audio: "Audio", links: "Links" },
+  noFiles: "Noch keine Dateien. Lade Dokumente, Bilder, Audio oder Videos hoch oder füg einen Link hinzu.",
+  kindLabels: { image: "Bild", video: "Video", audio: "Audio" },
 
   // Copy link button
   copyStudentLink: "Link für Schüler kopieren",
@@ -103,7 +108,7 @@ export const dashboard: typeof en = {
   },
   openFile: (name: string) => `${name} öffnen`,
   filesTip:
-    "In der Lektion liegen diese Dateien in der Seitenleiste. Klick auf ein PDF, eine Word-Datei, ein Bild oder einen Link, um es zu zeigen (YouTube-Videos laufen bei euch beiden), drück bei Audio auf Abspielen oder zieh eine Datei auf die Bühne.",
+    "In einer Lektion sind diese Dateien in der Seitenleiste. Klick auf eine, um sie euch beiden zu zeigen (Videos laufen synchron), spiel Audio ab oder zieh sie auf die Bühne.",
   youtubeVideo: "YouTube-Video",
   linkToAdd: "Link zum Hinzufügen",
   linkPlaceholder: "YouTube-Video oder beliebigen Link einfügen",
@@ -122,12 +127,12 @@ export const dashboard: typeof en = {
   uploadFiles: "Dateien hochladen",
   dropToUpload: "Loslassen zum Hochladen",
   dropFilesHere: "Dateien hier ablegen",
-  dropHint: "Bilder, PDFs, Word-Dateien oder Audio, bis zu 10 MB pro Datei",
+  dropHint: "Dokumente, Bilder, Audio oder Videos, bis zu 10 MB pro Datei",
   uploading: (name: string) => `${name} wird hochgeladen…`,
   upload: {
     oldWord: (name: string) =>
       `${name} ist eine alte Word-Datei. Speichere sie in Word als .docx (oder PDF) und lade die hoch.`,
-    wrongType: (name: string) => `${name} ist kein Bild, kein PDF, keine Word- und keine Audiodatei.`,
+    wrongType: (name: string) => `${name}: Diese Art von Datei kann nicht hochgeladen werden.`,
     tooBig: (name: string) => `${name} ist größer als 10 MB.`,
     noRoom: (name: string, mb: number) =>
       `${name} passt nicht mehr: Deine Dateien dürfen zusammen ${mb} MB groß sein. Lösche zuerst ein paar.`,

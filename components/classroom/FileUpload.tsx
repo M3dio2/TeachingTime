@@ -9,6 +9,9 @@ import {
   IMAGE_TYPES,
   MAX_BYTES,
   MB,
+  OTHER_TYPES,
+  TEXT_TYPES,
+  VIDEO_TYPES,
   type ResourceKind,
   TEACHER_BYTES,
   uploadResource,
@@ -36,15 +39,18 @@ const TYPE_BY_EXT: Record<string, string> = {
   opus: "audio/ogg",
   flac: "audio/flac",
   weba: "audio/webm",
+  ...VIDEO_TYPES,
+  ...TEXT_TYPES,
+  ...OTHER_TYPES,
 };
+const ACCEPTED = new Set(Object.values(TYPE_BY_EXT));
 
 function contentTypeOf(file: File, ext: string) {
-  const known =
-    IMAGE_TYPES.includes(file.type) ||
-    file.type === "application/pdf" ||
-    file.type === DOCX_TYPE ||
-    file.type.startsWith("audio/");
-  return known ? file.type : (TYPE_BY_EXT[ext] ?? null);
+  // The extension first: browsers name the same file differently (e.g. .csv as
+  // "application/vnd.ms-excel", .md as ""), and the bucket only takes the types on its list.
+  if (TYPE_BY_EXT[ext]) return TYPE_BY_EXT[ext];
+  const known = IMAGE_TYPES.includes(file.type) || file.type.startsWith("audio/") || ACCEPTED.has(file.type);
+  return known ? file.type : null;
 }
 
 // Uploads straight from the browser to Supabase Storage (server actions cap request bodies),
@@ -74,10 +80,6 @@ export function useFileUpload({
     for (const file of files) {
       const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "";
       const contentType = contentTypeOf(file, ext);
-      if (ext === "doc") {
-        failed.push(t.upload.oldWord(file.name));
-        continue;
-      }
       if (!contentType) {
         failed.push(t.upload.wrongType(file.name));
         continue;
@@ -163,7 +165,7 @@ export function useFileUpload({
         <input
           ref={input}
           type="file"
-          accept={[...IMAGE_TYPES, "application/pdf", DOCX_TYPE, "audio/*", ".jpg,.jpeg,.png,.webp,.gif,.pdf,.docx"].join(",")}
+          accept={[...IMAGE_TYPES, "application/pdf", DOCX_TYPE, "audio/*", "video/*", ...Object.keys(TYPE_BY_EXT).map((e) => `.${e}`)].join(",")}
           multiple
           hidden
           onChange={(e) => {

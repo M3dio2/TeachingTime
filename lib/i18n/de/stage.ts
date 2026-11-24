@@ -11,6 +11,8 @@ export const stage: typeof en = {
     video: "Video",
     link: "Link",
     quiz: "Quiz",
+    txt: "Textdatei",
+    file: "Datei",
   },
   lesson: "Lektion",
   openTabs: "Offene Tabs",
@@ -49,6 +51,8 @@ export const stage: typeof en = {
   stopSharing: "Teilen beenden",
 
   files: {
+    documents: "Dokumente",
+    videos: "Videos",
     pdfs: "PDFs",
     docs: "Word-Dateien",
     pictures: "Bilder",
@@ -63,7 +67,7 @@ export const stage: typeof en = {
     clickOrDrag: "Klicken zum Öffnen oder auf die Bühne ziehen",
     show: (name) => `${name} zeigen`,
     open: (name) => `${name} öffnen`,
-    empty: "Noch keine Dateien. Lade Bilder, PDFs und Audio im Classroom hoch.",
+    empty: "Noch keine Dateien. Lade sie im Classroom hoch.",
     onScreen: "Auf dem Bildschirm",
     inATab: "In einem Tab",
     folded: (title) => `${title}, eingeklappt`,
@@ -72,6 +76,15 @@ export const stage: typeof en = {
     playOrDrag: "Abspielen oder auf die Bühne ziehen",
     playing: "Läuft",
   },
+
+  textFile: { opening: "Text wird geöffnet…", failed: "Diese Textdatei konnte nicht geöffnet werden." },
+  otherFile: {
+    cantShow: "Diese Datei kann in der Lektion nicht angezeigt werden. Ihr könnt sie beide herunterladen.",
+    download: "Herunterladen",
+    opening: "Datei wird geholt…",
+    failed: "Diese Datei konnte nicht geöffnet werden.",
+  },
+  uploadedVideo: { failed: "Dieses Video kann in diesem Browser nicht abgespielt werden." },
 
   picture: {
     failed: "Dieses Bild konnte nicht geöffnet werden.",

@@ -10,6 +10,7 @@ import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
 import Field from "@/components/ui/Field";
 import Marker from "@/components/ui/Marker";
 import Wordmark from "@/components/ui/Wordmark";
+import { type FileGroup, groupOf, type ResourceKind } from "@/lib/files/uploadResource";
 import { occupiedLessons } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
@@ -219,20 +220,21 @@ async function Dashboard() {
 
 // "3 pictures · 2 PDFs · 2 audio" per classroom.
 function countFiles(rows: { lesson_id: string; kind: string }[], t: T) {
-  const byLesson = new Map<string, { image: number; pdf: number; doc: number; audio: number; link: number }>();
+  // F1: by group (YouTube links are counted as links here: the url isn't loaded).
+  const byLesson = new Map<string, Record<FileGroup, number>>();
   for (const r of rows) {
-    const c = byLesson.get(r.lesson_id) ?? { image: 0, pdf: 0, doc: 0, audio: 0, link: 0 };
-    if (r.kind === "image" || r.kind === "pdf" || r.kind === "doc" || r.kind === "audio" || r.kind === "link") c[r.kind]++;
+    const c = byLesson.get(r.lesson_id) ?? { documents: 0, pictures: 0, videos: 0, audio: 0, links: 0 };
+    c[groupOf(r.kind as ResourceKind)]++;
     byLesson.set(r.lesson_id, c);
   }
   const text = new Map<string, string>();
   for (const [id, c] of byLesson) {
     const parts = [
-      c.image && t.countPictures(c.image),
-      c.pdf && t.countPdfs(c.pdf),
-      c.doc && t.countWord(c.doc),
+      c.documents && t.countDocuments(c.documents),
+      c.pictures && t.countPictures(c.pictures),
+      c.videos && t.countVideos(c.videos),
       c.audio && t.countAudio(c.audio),
-      c.link && t.countLinks(c.link),
+      c.links && t.countLinks(c.links),
     ].filter(Boolean);
     if (parts.length) text.set(id, parts.join(" · "));
   }

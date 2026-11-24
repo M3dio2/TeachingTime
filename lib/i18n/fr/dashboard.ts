@@ -76,6 +76,11 @@ export const dashboard: typeof en = {
   countWord: (n: number) => `${n} ${n === 1 ? "fichier" : "fichiers"} Word`,
   countAudio: (n: number) => `${n} audio`,
   countLinks: (n: number) => `${n} ${n === 1 ? "lien" : "liens"}`,
+  countDocuments: (n: number) => `${n} ${n === 1 ? "document" : "documents"}`,
+  countVideos: (n: number) => `${n} ${n === 1 ? "vidéo" : "vidéos"}`,
+  groups: { documents: "Documents", pictures: "Images", videos: "Vidéos", audio: "Audio", links: "Liens" },
+  noFiles: "Aucun fichier pour l’instant. Ajoute des documents, des images, de l’audio ou des vidéos, ou un lien.",
+  kindLabels: { image: "Image", video: "Vidéo", audio: "Audio" },
 
   // Copy link button
   copyStudentLink: "Copier le lien de l’élève",
@@ -103,7 +108,7 @@ export const dashboard: typeof en = {
   },
   openFile: (name: string) => `Ouvrir ${name}`,
   filesTip:
-    "Pendant le cours, ces fichiers se trouvent dans le panneau latéral. Clique sur un PDF, un fichier Word, une image ou un lien pour l’afficher (les vidéos YouTube se lisent pour vous deux), lance la lecture d’un audio, ou glisse un fichier sur la scène.",
+    "Pendant un cours, ces fichiers sont dans le panneau latéral. Clique sur l’un d’eux pour le montrer à vous deux (les vidéos sont synchronisées), lance l’audio, ou fais-le glisser sur la scène.",
   youtubeVideo: "Vidéo YouTube",
   linkToAdd: "Lien à ajouter",
   linkPlaceholder: "Colle une vidéo YouTube ou un lien",
@@ -122,12 +127,12 @@ export const dashboard: typeof en = {
   uploadFiles: "Importer des fichiers",
   dropToUpload: "Relâche pour importer",
   dropFilesHere: "Dépose tes fichiers ici",
-  dropHint: "Images, PDF, fichiers Word ou audio, jusqu’à 10 Mo chacun",
+  dropHint: "Documents, images, audio ou vidéos, jusqu’à 10 Mo chacun",
   uploading: (name: string) => `Import de ${name}…`,
   upload: {
     oldWord: (name: string) =>
       `${name} est un ancien fichier Word. Dans Word, enregistre-le en .docx (ou PDF), puis importe ce fichier.`,
-    wrongType: (name: string) => `${name} n’est ni une image, ni un PDF, ni un fichier Word ou audio.`,
+    wrongType: (name: string) => `${name} : ce type de fichier ne peut pas être ajouté.`,
     tooBig: (name: string) => `${name} dépasse 10 Mo.`,
     noRoom: (name: string, mb: number) =>
       `${name} ne rentre pas : tes fichiers peuvent occuper ${mb} Mo au total. Supprimes-en d’abord quelques-uns.`,

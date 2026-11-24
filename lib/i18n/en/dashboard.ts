@@ -73,6 +73,12 @@ export const dashboard = {
   countWord: (n: number) => `${n} Word ${n === 1 ? "file" : "files"}`,
   countAudio: (n: number) => `${n} audio`,
   countLinks: (n: number) => `${n} ${n === 1 ? "link" : "links"}`,
+  countDocuments: (n: number) => `${n} ${n === 1 ? "document" : "documents"}`,
+  countVideos: (n: number) => `${n} ${n === 1 ? "video" : "videos"}`,
+  // F1: one list of files, with these filters
+  groups: { documents: "Documents", pictures: "Pictures", videos: "Videos", audio: "Audio", links: "Links" },
+  noFiles: "No files yet. Upload documents, pictures, audio or video, or add a link.",
+  kindLabels: { image: "Picture", video: "Video", audio: "Audio" },
 
   // Copy link button
   copyStudentLink: "Copy student link",
@@ -100,7 +106,7 @@ export const dashboard = {
   },
   openFile: (name: string) => `Open ${name}`,
   filesTip:
-    "In a lesson, these files sit in the side panel. Click a PDF, Word file, picture or link to show it (YouTube videos play for both of you), press play for audio, or drag any file onto the stage.",
+    "In a lesson, these files sit in the side panel. Click one to show it to both of you (videos play in sync), press play for audio, or drag it onto the stage.",
   youtubeVideo: "YouTube video",
   linkToAdd: "Link to add",
   linkPlaceholder: "Paste a YouTube video or any link",
@@ -119,12 +125,12 @@ export const dashboard = {
   uploadFiles: "Upload files",
   dropToUpload: "Drop to upload",
   dropFilesHere: "Drop files here",
-  dropHint: "Pictures, PDFs, Word files or audio, up to 10 MB each",
+  dropHint: "Documents, pictures, audio or video, up to 10 MB each",
   uploading: (name: string) => `Uploading ${name}…`,
   // Also used by lib/files/uploadResource.ts (the room's file panel can pass them too).
   upload: {
     oldWord: (name: string) => `${name} is an old Word file. In Word, save it as .docx (or PDF), then upload that.`,
-    wrongType: (name: string) => `${name} is not a picture, PDF, Word or audio file.`,
+    wrongType: (name: string) => `${name}: this kind of file can't be uploaded.`,
     tooBig: (name: string) => `${name} is bigger than 10 MB.`,
     noRoom: (name: string, mb: number) => `${name} doesn't fit: your files can take up ${mb} MB. Delete some first.`,
     notAccepted: (name: string) => `${name}: this kind of file isn't accepted yet.`,

@@ -12,6 +12,8 @@ export const stage = {
     video: "Video",
     link: "Link",
     quiz: "Quiz",
+    txt: "Text file",
+    file: "File",
   },
   lesson: "Lesson",
   openTabs: "Open tabs",
@@ -51,6 +53,8 @@ export const stage = {
   stopSharing: "Stop sharing",
 
   files: {
+    documents: "Documents",
+    videos: "Videos",
     pdfs: "PDFs",
     docs: "Word files",
     pictures: "Pictures",
@@ -64,7 +68,7 @@ export const stage = {
     clickOrDrag: "Click to open, or drag onto the stage",
     show: (name: string) => `Show ${name}`,
     open: (name: string) => `Open ${name}`,
-    empty: "No files yet. Upload pictures, PDFs and audio in the Classroom.",
+    empty: "No files yet. Upload them in the Classroom.",
     onScreen: "On screen",
     inATab: "In a tab",
     folded: (title: string) => `${title}, folded`,
@@ -73,6 +77,16 @@ export const stage = {
     playOrDrag: "Press play, or drag onto the stage",
     playing: "Playing",
   },
+
+  // F1: text files and other files in a tab
+  textFile: { opening: "Opening the text…", failed: "This text file couldn't be opened." },
+  otherFile: {
+    cantShow: "This file can't be shown in the lesson. You can both download it.",
+    download: "Download",
+    opening: "Getting the file…",
+    failed: "This file couldn't be opened.",
+  },
+  uploadedVideo: { failed: "This video can't be played in this browser." },
 
   picture: {
     failed: "This picture couldn't be opened.",

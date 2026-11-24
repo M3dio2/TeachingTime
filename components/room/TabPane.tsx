@@ -10,6 +10,7 @@ import { isFileTab, type TabId } from "@/lib/room/tabs";
 import { clearBoard, clearText } from "@/lib/sync/clearLesson";
 import { isTeacher } from "@/lib/sync/useTeacherSettings";
 import DocPane from "./DocPane";
+import { OtherFilePane, TextFilePane } from "./FileCardPane";
 import LinkPane from "./LinkPane";
 import QuizPane from "./QuizPane";
 import VideoPane from "./VideoPane";
@@ -35,6 +36,8 @@ export default function TabPane({ id, model }: { id: TabId; model: RoomModel }) 
     if (id.startsWith("video:")) return <VideoPane id={id} model={model} />;
     if (id.startsWith("link:")) return <LinkPane id={id} model={model} />;
     if (id.startsWith("quiz:")) return <QuizPane id={id} model={model} />;
+    if (id.startsWith("txt:")) return <TextFilePane id={id} model={model} />;
+    if (id.startsWith("file:")) return <OtherFilePane id={id} model={model} />;
     return <PicturePane id={id} model={model} />;
   }
   const teacher = model.role === "teacher";

@@ -11,6 +11,8 @@ export const stage: typeof en = {
     video: "Video",
     link: "Enlace",
     quiz: "Quiz",
+    txt: "Archivo de texto",
+    file: "Archivo",
   },
   lesson: "Clase",
   openTabs: "Pestañas abiertas",
@@ -49,6 +51,8 @@ export const stage: typeof en = {
   stopSharing: "Dejar de compartir",
 
   files: {
+    documents: "Documentos",
+    videos: "Videos",
     pdfs: "PDF",
     docs: "Archivos de Word",
     pictures: "Imágenes",
@@ -63,7 +67,7 @@ export const stage: typeof en = {
     clickOrDrag: "Haz clic para abrir o arrastra al escenario",
     show: (name) => `Mostrar ${name}`,
     open: (name) => `Abrir ${name}`,
-    empty: "Aún no hay archivos. Sube imágenes, PDF y audio en el Classroom.",
+    empty: "Aún no hay archivos. Súbelos en el Classroom.",
     onScreen: "En pantalla",
     inATab: "En una pestaña",
     folded: (title) => `${title}, ocultos`,
@@ -72,6 +76,15 @@ export const stage: typeof en = {
     playOrDrag: "Pulsa reproducir o arrastra al escenario",
     playing: "Sonando",
   },
+
+  textFile: { opening: "Abriendo el texto…", failed: "No se pudo abrir este archivo de texto." },
+  otherFile: {
+    cantShow: "Este archivo no se puede mostrar en la clase. Los dos pueden descargarlo.",
+    download: "Descargar",
+    opening: "Trayendo el archivo…",
+    failed: "No se pudo abrir este archivo.",
+  },
+  uploadedVideo: { failed: "Este video no se puede reproducir en este navegador." },
 
   picture: {
     failed: "No se pudo abrir esta imagen.",

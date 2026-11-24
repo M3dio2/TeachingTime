@@ -75,6 +75,11 @@ export const dashboard: typeof en = {
   countWord: (n: number) => `${n} ${n === 1 ? "archivo" : "archivos"} Word`,
   countAudio: (n: number) => `${n} ${n === 1 ? "audio" : "audios"}`,
   countLinks: (n: number) => `${n} ${n === 1 ? "enlace" : "enlaces"}`,
+  countDocuments: (n: number) => `${n} ${n === 1 ? "documento" : "documentos"}`,
+  countVideos: (n: number) => `${n} ${n === 1 ? "video" : "videos"}`,
+  groups: { documents: "Documentos", pictures: "Imágenes", videos: "Videos", audio: "Audio", links: "Enlaces" },
+  noFiles: "Aún no hay archivos. Sube documentos, imágenes, audio o videos, o añade un enlace.",
+  kindLabels: { image: "Imagen", video: "Video", audio: "Audio" },
 
   // Copy link button
   copyStudentLink: "Copiar enlace del estudiante",
@@ -102,7 +107,7 @@ export const dashboard: typeof en = {
   },
   openFile: (name: string) => `Abrir ${name}`,
   filesTip:
-    "En la clase, estos archivos están en el panel lateral. Haz clic en un PDF, archivo Word, imagen o enlace para mostrarlo (los videos de YouTube se reproducen para los dos), dale a reproducir en los audios o arrastra cualquier archivo al escenario.",
+    "En una clase, estos archivos están en el panel lateral. Haz clic en uno para mostrárselo a los dos (los videos se reproducen sincronizados), pulsa reproducir para el audio o arrástralo al escenario.",
   youtubeVideo: "Video de YouTube",
   linkToAdd: "Enlace para añadir",
   linkPlaceholder: "Pega un video de YouTube o cualquier enlace",
@@ -121,12 +126,12 @@ export const dashboard: typeof en = {
   uploadFiles: "Subir archivos",
   dropToUpload: "Suelta para subir",
   dropFilesHere: "Suelta archivos aquí",
-  dropHint: "Imágenes, PDF, archivos Word o audio, hasta 10 MB cada uno",
+  dropHint: "Documentos, imágenes, audio o videos, hasta 10 MB cada uno",
   uploading: (name: string) => `Subiendo ${name}…`,
   upload: {
     oldWord: (name: string) =>
       `${name} es un archivo antiguo de Word. En Word, guárdalo como .docx (o PDF) y sube ese.`,
-    wrongType: (name: string) => `${name} no es una imagen, un PDF, un archivo Word ni un audio.`,
+    wrongType: (name: string) => `${name}: este tipo de archivo no se puede subir.`,
     tooBig: (name: string) => `${name} pesa más de 10 MB.`,
     noRoom: (name: string, mb: number) =>
       `${name} no cabe: tus archivos pueden ocupar ${mb} MB en total. Borra algunos primero.`,
