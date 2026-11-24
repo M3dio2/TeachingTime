@@ -67,6 +67,19 @@ export default function Privacy() {
         and for deleting it when asked. For a student under 16, ask a parent too.
       </p>
 
+      <H2>Google Drive and Dropbox</H2>
+      <p>
+        A teacher can connect her Google Drive or Dropbox to add files from it and to save recordings there. This
+        happens in her browser: the access token stays in her browser, and files go directly between her browser and
+        the cloud. TeachingTime only gets access to the files she picks or that it saved (Google: the{" "}
+        <code>drive.file</code> permission; Dropbox: its own app folder), and doesn&apos;t keep or share any of it.
+        Use of information received from Google APIs follows the{" "}
+        <a href="https://developers.google.com/terms/api-services-user-data-policy" className="text-accent underline">
+          Google API Services User Data Policy
+        </a>
+        , including the Limited Use requirements. She can disconnect any time in Settings.
+      </p>
+
       <H2>Who helps us run it</H2>
       <List>
         <li>Vercel (website hosting, and anonymous page-view counts without cookies), USA</li>
@@ -76,6 +89,7 @@ export default function Privacy() {
           YouTube (Google), only when a teacher shows a YouTube video in a lesson: the video loads from YouTube in its
           privacy-enhanced mode, and YouTube sees the viewer&apos;s IP address
         </li>
+        <li>Google Drive and Dropbox, only if a teacher connects them (see above)</li>
         <li>Cloudflare Turnstile (checks that sign-ups and logins aren&apos;t bots)</li>
         <li>Google, only if you choose &quot;Continue with Google&quot;: we receive your name, email and profile picture address</li>
         <li>An email provider, to send sign-up and password emails</li>

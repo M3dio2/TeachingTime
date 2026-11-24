@@ -9,6 +9,7 @@ import { inputClass } from "@/components/ui/Field";
 import { useFormPending } from "@/components/ui/SubmitButton";
 import { useT } from "@/lib/i18n/client";
 import { linkLabel, youtubeId } from "@/lib/room/links";
+import CloudPick from "@/components/cloud/CloudPick";
 import { type ResourceKind, useFileUpload } from "./FileUpload";
 
 export type Resource = {
@@ -70,7 +71,10 @@ export default function ClassroomFiles({
             {t.fileCount(files.length)}
           </span>
         </div>
-        {upload.button}
+        <div className="flex w-full flex-wrap gap-2 md:w-auto">
+          {upload.button}
+          <CloudPick upload={upload.upload} busy={upload.busy} setBusy={upload.setBusy} setError={upload.setError} />
+        </div>
       </div>
       {upload.area}
 

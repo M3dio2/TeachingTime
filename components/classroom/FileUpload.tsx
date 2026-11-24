@@ -111,6 +111,9 @@ export function useFileUpload({
   return {
     busy,
     pick,
+    upload, // C1: files fetched from a cloud go the same way
+    setBusy,
+    setError,
     // "Upload files" (the header button).
     button: (
       <Button
