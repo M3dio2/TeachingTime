@@ -28,8 +28,8 @@ test("S5 classroom: link, storage, filters, drop to upload", async ({ page }) =>
   await area.dispatchEvent("drop", { dataTransfer: drop });
   await expect(page.getByRole("listitem").filter({ hasText: "e2e-dropped.png" })).toBeVisible({ timeout: 30_000 });
 
-  // Filters: PDFs only hides the pictures.
-  await page.getByRole("button", { name: /^PDFs/ }).click();
+  // Filters: Documents only hides the pictures.
+  await page.getByRole("button", { name: /^Documents/ }).click();
   await expect(page.getByRole("listitem").filter({ hasText: "e2e-filter.pdf" })).toBeVisible();
   await expect(page.getByRole("listitem").filter({ hasText: "e2e-dropped.png" })).toHaveCount(0);
   await page.getByRole("button", { name: /^All/ }).click();
