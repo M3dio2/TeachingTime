@@ -2,18 +2,18 @@
 
 import { useState } from "react";
 import { buttonClass } from "@/components/ui/Button";
-import { DOCX_TYPE, IMAGE_TYPES, MAX_BYTES, OTHER_TYPES, TEXT_TYPES, VIDEO_TYPES } from "@/lib/files/uploadResource";
+import { DOCX_TYPE, IMAGE_TYPES, MAX_BYTES, TEXT_TYPES, VIDEO_TYPES } from "@/lib/files/uploadResource";
 import { pickFromDropbox } from "@/lib/cloud/dropbox";
 import { pickFromDrive } from "@/lib/cloud/google";
 import { DROPBOX_CONFIGURED, GOOGLE_CONFIGURED } from "@/lib/cloud/store";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { DropboxMark, GoogleDriveMark } from "./CloudSettings";
 
-const OTHER = [...Object.values(VIDEO_TYPES), ...Object.values(TEXT_TYPES), ...Object.values(OTHER_TYPES)];
+const OTHER = [...Object.values(VIDEO_TYPES), ...Object.values(TEXT_TYPES)] ;
 const DRIVE_TYPES = [...new Set([...IMAGE_TYPES, "application/pdf", DOCX_TYPE, "audio/mpeg", "audio/mp4", "audio/x-m4a", "audio/wav", "audio/x-wav", "audio/ogg", "audio/aac", "audio/flac", "audio/webm", ...OTHER])];
 const DROPBOX_EXTENSIONS = [
   ...[".jpg", ".jpeg", ".png", ".webp", ".gif", ".pdf", ".docx", ".mp3", ".m4a", ".aac", ".wav", ".ogg", ".oga", ".opus", ".flac", ".weba"],
-  ...[...Object.keys(VIDEO_TYPES), ...Object.keys(TEXT_TYPES), ...Object.keys(OTHER_TYPES)].map((e) => `.${e}`),
+  ...[...Object.keys(VIDEO_TYPES), ...Object.keys(TEXT_TYPES)].map((e) => `.${e}`),
 ];
 
 // C1: "From Google Drive" / "From Dropbox" next to "Upload files". The chosen files are fetched

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testDocx, uploadToClassroom } from "./helpers";
 
-// G2: Word files. Uploaded in the classroom, opened in the call
+// G2: Word files. Uploaded in the classroom (old .doc refused with advice), opened in the call
 // for both, the student follows the teacher's scrolling, and "Copy into the text pad" puts the
 // text where both can edit it.
 const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -13,6 +13,9 @@ test("G2: a Word file opens in the call; the student follows; copy into the text
   await page.setViewportSize({ width: 1440, height: 900 });
   const joinPath = await startTestLesson(page, async (p) => {
     await deleteTestFiles(p);
+    // An old .doc is refused with advice; nothing is uploaded.
+    await p.locator('input[type="file"]').setInputFiles({ name: "e2e-old.doc", mimeType: "application/msword", buffer: Buffer.from("x") });
+    await expect(p.getByText("is an old Word file")).toBeVisible();
     await uploadToClassroom(p, name, DOCX, await testDocx(lines, 3));
     // F1: one list; the line says what it is.
     await expect(p.getByRole("listitem").filter({ hasText: name })).toContainText("DOCX ·");

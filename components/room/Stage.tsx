@@ -3,7 +3,6 @@
 import {
   Columns2,
   Eye,
-  File,
   FileText,
   FileType2,
   Link2,
@@ -55,7 +54,6 @@ const ICONS: Record<BuiltInTab | FileTabKind, typeof Monitor> = {
   image: ImageIcon,
   quiz: ListChecks,
   txt: ScrollText,
-  file: File,
 };
 export const TabIcon = ({ id, size = 16 }: { id: TabId; size?: number }) => {
   const Icon = ICONS[id.split(":")[0] as BuiltInTab | FileTabKind];

@@ -3,36 +3,39 @@ import path from "node:path";
 import { expect, test } from "@playwright/test";
 import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, uploadToClassroom } from "./helpers";
 
-// F1: any kind of file in the Classroom. One list with filters; in the lesson a video plays
-// in sync for both, a text file shows as text, and anything else is a card both can download.
-const PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+// F1: videos (MP4, MOV, WebM) and text files in the Classroom. One list with filters; in the
+// lesson a video plays in sync for both and a text file shows as text. Other formats are refused.
 
-test("F1: video, text and other files in the Classroom and the lesson", async ({ page, browser }) => {
+test("F1: videos and text files in the Classroom and the lesson", async ({ page, browser }) => {
   test.setTimeout(240_000);
   const stamp = Date.now();
   const video = `e2e-clip-${stamp}.webm`;
   const text = `e2e-notes-${stamp}.txt`;
-  const slides = `e2e-slides-${stamp}.pptx`;
-  const old = `e2e-old-${stamp}.doc`;
+  const mov = `e2e-phone-${stamp}.mov`;
   await page.setViewportSize({ width: 1440, height: 900 });
   const joinPath = await startTestLesson(page, async (p) => {
     await deleteTestFiles(p);
     await uploadToClassroom(p, video, "video/webm", readFileSync(path.join(__dirname, "fixtures/e2e-clip.webm")));
     await uploadToClassroom(p, text, "text/plain", Buffer.from("Homework\nRead page 12 and write five sentences.\n"));
-    await uploadToClassroom(p, slides, PPTX, Buffer.from("PK fake slides"));
-    // An old Word file is now just a file to download.
-    await uploadToClassroom(p, old, "application/msword", Buffer.from("old word"));
+    // A MOV (from a phone) is a video too. (This test browser can't play MOV/MP4: upload only.)
+    await uploadToClassroom(p, mov, "video/quicktime", readFileSync(path.join(__dirname, "fixtures/e2e-clip.webm")));
+    // Other formats are refused with a message; an old Word file gets advice.
+    const input = p.locator('input[type="file"]');
+    await input.setInputFiles({ name: "e2e-slides.pptx", mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation", buffer: Buffer.from("x") });
+    await expect(p.getByText("e2e-slides.pptx: this kind of file can't be uploaded.")).toBeVisible();
+    await input.setInputFiles({ name: "e2e-old.doc", mimeType: "application/msword", buffer: Buffer.from("x") });
+    await expect(p.getByText("is an old Word file")).toBeVisible();
     const row = (name: string) => p.getByRole("listitem").filter({ hasText: name });
     await expect(row(video)).toContainText("Video ·");
     await expect(row(text)).toContainText("TXT ·");
-    await expect(row(slides)).toContainText("PPTX ·");
+    await expect(row(mov)).toContainText("Video ·");
     // Filters for the groups there are; Videos shows only the video.
     const filters = p.getByRole("group", { name: "Show" });
     await filters.getByRole("button", { name: /^Videos/ }).click();
     await expect(row(text)).toHaveCount(0);
     await expect(row(video)).toBeVisible();
     await filters.getByRole("button", { name: /^Documents/ }).click();
-    await expect(row(slides)).toBeVisible();
+    await expect(row(text)).toBeVisible();
     await expect(row(video)).toHaveCount(0);
     await filters.getByRole("button", { name: /^All/ }).click();
   });
@@ -47,16 +50,8 @@ test("F1: video, text and other files in the Classroom and the lesson", async ({
     await files.getByRole("button", { name: new RegExp(text.replace(/\./g, "\\.")) }).click();
     for (const p of [page, student]) await expect(p.getByTestId("text-file")).toContainText("Read page 12", { timeout: 20_000 });
 
-    // Another file: a card with Download for both (two tabs are open: replace the text file).
-    await page.getByRole("button", { name: `Close ${text}` }).click();
-    await files.getByRole("button", { name: new RegExp(slides.replace(/\./g, "\\.")) }).click();
-    for (const p of [page, student]) {
-      await expect(p.getByText("This file can't be shown in the lesson. You can both download it.")).toBeVisible({ timeout: 20_000 });
-      await expect(p.getByRole("link", { name: "Download" })).toHaveAttribute("download", slides);
-    }
-
     // Video: the teacher plays it, the student's copy plays along; pause too.
-    await page.getByRole("button", { name: `Close ${slides}` }).click();
+    await page.getByRole("button", { name: `Close ${text}` }).click();
     await files.getByRole("button", { name: new RegExp(video.replace(/\./g, "\\.")) }).click();
     const mine = page.getByTestId("uploaded-video");
     const theirs = student.getByTestId("uploaded-video");

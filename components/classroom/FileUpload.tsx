@@ -9,7 +9,6 @@ import {
   IMAGE_TYPES,
   MAX_BYTES,
   MB,
-  OTHER_TYPES,
   TEXT_TYPES,
   VIDEO_TYPES,
   type ResourceKind,
@@ -41,7 +40,6 @@ const TYPE_BY_EXT: Record<string, string> = {
   weba: "audio/webm",
   ...VIDEO_TYPES,
   ...TEXT_TYPES,
-  ...OTHER_TYPES,
 };
 const ACCEPTED = new Set(Object.values(TYPE_BY_EXT));
 
@@ -80,6 +78,10 @@ export function useFileUpload({
     for (const file of files) {
       const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") ?? "";
       const contentType = contentTypeOf(file, ext);
+      if (ext === "doc") {
+        failed.push(t.upload.oldWord(file.name));
+        continue;
+      }
       if (!contentType) {
         failed.push(t.upload.wrongType(file.name));
         continue;

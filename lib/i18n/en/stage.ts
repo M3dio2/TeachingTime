@@ -13,7 +13,6 @@ export const stage = {
     link: "Link",
     quiz: "Quiz",
     txt: "Text file",
-    file: "File",
   },
   lesson: "Lesson",
   openTabs: "Open tabs",
@@ -80,12 +79,6 @@ export const stage = {
 
   // F1: text files and other files in a tab
   textFile: { opening: "Opening the text…", failed: "This text file couldn't be opened." },
-  otherFile: {
-    cantShow: "This file can't be shown in the lesson. You can both download it.",
-    download: "Download",
-    opening: "Getting the file…",
-    failed: "This file couldn't be opened.",
-  },
   uploadedVideo: { failed: "This video can't be played in this browser." },
 
   picture: {

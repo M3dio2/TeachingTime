@@ -27,7 +27,7 @@ import type { RoomModel } from "./roomModel";
 // A classroom file, as the room's files panel lists it (app/lesson/[id]/page.tsx).
 export type RoomFile = {
   id: string;
-  kind: "image" | "pdf" | "doc" | "audio" | "link" | "quiz" | "video" | "text" | "file";
+  kind: "image" | "pdf" | "doc" | "audio" | "link" | "quiz" | "video" | "text";
   name: string;
   previewUrl?: string; // pictures only
   url?: string; // links only

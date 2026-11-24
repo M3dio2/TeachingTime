@@ -4,7 +4,7 @@ import { dashboard as enDashboard } from "@/lib/i18n/en/dashboard";
 // The messages for the teacher, in her language: pass `t.dashboard.upload` (default English).
 export type UploadMessages = typeof enDashboard.upload;
 
-export type ResourceKind = "image" | "pdf" | "audio" | "doc" | "link" | "video" | "text" | "file";
+export type ResourceKind = "image" | "pdf" | "audio" | "doc" | "link" | "video" | "text";
 
 // Same limits and types as the "resources" bucket (supabase/migrations/0004–0006, 0010, 0012).
 export const MB = 1024 * 1024;
@@ -14,22 +14,9 @@ export const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"
 // Word files (G2). Old binary .doc files aren't accepted: browsers can't read them.
 export const DOCX_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
-// F1: everything else the bucket takes (supabase/migrations/0016): by extension → type.
+// F1: videos and text files (supabase/migrations/0016): by extension → type.
 export const VIDEO_TYPES: Record<string, string> = { mp4: "video/mp4", m4v: "video/mp4", webm: "video/webm", mov: "video/quicktime" };
-export const TEXT_TYPES: Record<string, string> = { txt: "text/plain", md: "text/markdown", csv: "text/csv" };
-export const OTHER_TYPES: Record<string, string> = {
-  doc: "application/msword",
-  ppt: "application/vnd.ms-powerpoint",
-  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  xls: "application/vnd.ms-excel",
-  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  odt: "application/vnd.oasis.opendocument.text",
-  odp: "application/vnd.oasis.opendocument.presentation",
-  ods: "application/vnd.oasis.opendocument.spreadsheet",
-  rtf: "application/rtf",
-  epub: "application/epub+zip",
-  zip: "application/zip",
-};
+export const TEXT_TYPES: Record<string, string> = { txt: "text/plain" };
 
 export function kindOf(type: string): ResourceKind {
   if (type.startsWith("image/")) return "image";
@@ -37,8 +24,7 @@ export function kindOf(type: string): ResourceKind {
   if (type === DOCX_TYPE) return "doc";
   if (type.startsWith("video/")) return "video";
   if (type.startsWith("text/")) return "text";
-  if (type.startsWith("audio/")) return "audio";
-  return "file";
+  return "audio";
 }
 
 // How the Classroom page and the lesson's panel group files (F1): one list with filters.

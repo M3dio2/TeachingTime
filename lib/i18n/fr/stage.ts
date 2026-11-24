@@ -12,7 +12,6 @@ export const stage: typeof en = {
     link: "Lien",
     quiz: "Quiz",
     txt: "Fichier texte",
-    file: "Fichier",
   },
   lesson: "Cours",
   openTabs: "Onglets ouverts",
@@ -78,12 +77,6 @@ export const stage: typeof en = {
   },
 
   textFile: { opening: "Ouverture du texte…", failed: "Ce fichier texte n’a pas pu être ouvert." },
-  otherFile: {
-    cantShow: "Ce fichier ne peut pas être affiché pendant le cours. Vous pouvez tous les deux le télécharger.",
-    download: "Télécharger",
-    opening: "Récupération du fichier…",
-    failed: "Ce fichier n’a pas pu être ouvert.",
-  },
   uploadedVideo: { failed: "Cette vidéo ne peut pas être lue dans ce navigateur." },
 
   picture: {

@@ -1,9 +1,6 @@
 import {
-  BookOpen,
   Clapperboard,
   File,
-  FileArchive,
-  FileSpreadsheet,
   FileText,
   FileType2,
   ImageIcon,
@@ -11,13 +8,11 @@ import {
   ListChecks,
   type LucideIcon,
   Music,
-  Presentation,
   ScrollText,
   SquarePlay,
 } from "lucide-react";
 
 // F1: one icon per kind of file, for the Classroom page, the lesson's panel and the tabs.
-// Other files are told apart by their extension.
 export function fileIcon(kind: string, name = "", isYouTube = false): LucideIcon {
   switch (kind) {
     case "pdf":
@@ -38,10 +33,6 @@ export function fileIcon(kind: string, name = "", isYouTube = false): LucideIcon
     case "quiz":
       return ListChecks;
   }
-  const ext = name.split(".").pop()?.toLowerCase() ?? "";
-  if (["ppt", "pptx", "odp"].includes(ext)) return Presentation;
-  if (["xls", "xlsx", "ods", "csv"].includes(ext)) return FileSpreadsheet;
-  if (ext === "zip") return FileArchive;
-  if (ext === "epub") return BookOpen;
+  void name;
   return File;
 }
