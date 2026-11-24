@@ -47,7 +47,8 @@ test("F1: video, text and other files in the Classroom and the lesson", async ({
     await files.getByRole("button", { name: new RegExp(text.replace(/\./g, "\\.")) }).click();
     for (const p of [page, student]) await expect(p.getByTestId("text-file")).toContainText("Read page 12", { timeout: 20_000 });
 
-    // Another file: a card with Download for both.
+    // Another file: a card with Download for both (two tabs are open: replace the text file).
+    await page.getByRole("button", { name: `Close ${text}` }).click();
     await files.getByRole("button", { name: new RegExp(slides.replace(/\./g, "\\.")) }).click();
     for (const p of [page, student]) {
       await expect(p.getByText("This file can't be shown in the lesson. You can both download it.")).toBeVisible({ timeout: 20_000 });
@@ -55,7 +56,7 @@ test("F1: video, text and other files in the Classroom and the lesson", async ({
     }
 
     // Video: the teacher plays it, the student's copy plays along; pause too.
-    await page.getByRole("button", { name: `Close ${text}` }).click();
+    await page.getByRole("button", { name: `Close ${slides}` }).click();
     await files.getByRole("button", { name: new RegExp(video.replace(/\./g, "\\.")) }).click();
     const mine = page.getByTestId("uploaded-video");
     const theirs = student.getByTestId("uploaded-video");
