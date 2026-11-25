@@ -2,6 +2,7 @@
 
 import { isTrackReference, useRoomContext, useTracks, VideoTrack } from "@livekit/components-react";
 import { Track } from "livekit-client";
+import { NotebookPen } from "lucide-react";
 import dynamic from "next/dynamic";
 import TextPad from "@/components/board/TextPad";
 import Chip from "@/components/ui/Chip";
@@ -113,7 +114,19 @@ function TextTab({ model, chip }: { model: RoomModel; chip: React.ReactNode }) {
     <TextPad
       doc={model.doc}
       editable={model.canEdit}
-      chip={chip}
+      chip={
+        model.noteSavedAt ? (
+          <span className="flex items-center gap-2">
+            {chip}
+            <span className="hidden items-center gap-1 text-xs text-ink-muted sm:inline-flex" data-testid="note-saved">
+              <NotebookPen size={13} aria-hidden />
+              {t.plan.savedToNotes}
+            </span>
+          </span>
+        ) : (
+          chip
+        )
+      }
       onClear={teacher ? () => clearText(model.doc) : undefined}
       placeholder={
         teacher

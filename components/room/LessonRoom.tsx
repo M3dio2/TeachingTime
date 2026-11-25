@@ -30,6 +30,7 @@ import {
 import type { VideoState } from "@/lib/room/links";
 import { fromBase64 } from "@/lib/sync/base64";
 import { useLessonPersistence } from "@/lib/sync/useLessonPersistence";
+import { useNoteAutosave } from "@/lib/sync/useNoteAutosave";
 import { isTeacher, type TeacherSettings, useTeacherSettings } from "@/lib/sync/useTeacherSettings";
 import { useViewSync } from "@/lib/sync/useViewSync";
 import { useFileNames } from "@/lib/room/fileCache";
@@ -212,6 +213,8 @@ function LessonContent({
   // (the student's UI is read-only then; this also stops a tampered client).
   useYjsSync(doc, "lesson", teacher ? () => studentCanEdit : undefined);
   useLessonPersistence(doc, lesson?.saveBoard ? lesson.id : undefined);
+  // Review A5: the text pad also becomes a dated note in the Classroom.
+  const noteSavedAt = useNoteAutosave(doc, teacher && lesson?.saveBoard ? lesson.id : undefined);
   useYjsSync(quizDoc, "quiz");
 
   const sync = useViewSync(teacher);
@@ -238,6 +241,7 @@ function LessonContent({
     canEdit: teacher || view.studentCanEdit,
     sharing,
     otherName,
+    noteSavedAt,
     files: studentLesson ? files : undefined,
     addFile: (f) => setFiles((list) => [...list, f]),
     filesTitle: t.room.filesTitle(lesson?.title ?? ""),

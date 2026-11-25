@@ -6,6 +6,7 @@ import CopyLinkButton from "@/components/CopyLinkButton";
 import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } from "@/components/dashboard/DashboardBits";
 import { CardMenu, FeedbackButton, LanguageMenu, NameChip } from "@/components/dashboard/DashboardMenus";
 import GettingStarted from "@/components/dashboard/GettingStarted";
+import { NextLessonLine } from "@/components/classroom/NextLesson";
 import WaitingAlert from "@/components/dashboard/WaitingAlert";
 import { buttonClass } from "@/components/ui/Button";
 import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
@@ -49,6 +50,8 @@ type Lesson = {
   kind: "student" | "quick";
   last_active_at: string | null;
   created_at: string;
+  next_lesson_at: string | null;
+  repeats_weekly: boolean;
 };
 
 async function Dashboard() {
@@ -59,7 +62,7 @@ async function Dashboard() {
     supabase.auth.getUser(),
     supabase
       .from("lessons")
-      .select("id, title, invite_slug, kind, last_active_at, created_at")
+      .select("id, title, invite_slug, kind, last_active_at, created_at, next_lesson_at, repeats_weekly")
       .order("title"),
     supabase.from("resources").select("lesson_id, kind"),
     occupiedLessons(),
@@ -370,6 +373,7 @@ function StudentCard({ t, student, waiting, files }: { t: T; student: Lesson; wa
               t.noLessonsYet
             )}
           </span>
+          <NextLessonLine nextAt={student.next_lesson_at} weekly={student.repeats_weekly} />
         </div>
         {waiting && (
           // Circled by the marker when the student arrives (it mounts then; refreshes keep it).

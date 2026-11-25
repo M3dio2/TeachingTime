@@ -32,6 +32,7 @@ export type RoomModel = {
   sharing: boolean; // someone shares a screen
   actions?: TabActions;
   otherName: string; // the other person: "Anna" for the teacher, "Laura" for the student
+  noteSavedAt?: number | null; // teacher: when the text pad was last saved as a lesson note (A5)
   files?: RoomFile[]; // teacher in a student lesson only
   addFile?: (file: RoomFile) => void; // teacher: a file saved during the lesson (L2b)
   filesTitle: string; // "Anna's files"
