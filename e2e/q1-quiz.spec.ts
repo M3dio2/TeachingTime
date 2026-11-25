@@ -17,7 +17,7 @@ async function deleteE2eQuizzes(page: Page) {
     await page.getByRole("button", { name: "More for this quiz" }).click();
     await page.getByRole("menuitem", { name: "Delete quiz" }).click();
     await confirmYes(page);
-    await page.waitForURL("**/dashboard");
+    await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
   }
 }
 

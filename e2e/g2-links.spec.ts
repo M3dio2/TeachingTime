@@ -67,9 +67,10 @@ test("G2: a YouTube link plays for both; another link is a card", async ({ page,
     for (const name of ["YouTube Developers Live", "example.com/e2e-page"]) {
       const item = page.getByRole("listitem").filter({ hasText: name });
       while (await item.count()) {
+        const before = await item.count();
         await item.first().getByRole("button", { name: /^Delete/ }).click();
         await confirmYes(page);
-        await page.waitForTimeout(1500);
+        await expect(item).toHaveCount(before - 1, { timeout: 20_000 });
       }
     }
   }
