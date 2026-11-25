@@ -4,7 +4,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } from "@/components/dashboard/DashboardBits";
-import { CardMenu, FeedbackButton, LanguageMenu, NameChip, SettingsLink } from "@/components/dashboard/DashboardMenus";
+import { CardMenu, FeedbackButton, LanguageMenu, NameChip } from "@/components/dashboard/DashboardMenus";
+import GettingStarted from "@/components/dashboard/GettingStarted";
+import WaitingAlert from "@/components/dashboard/WaitingAlert";
 import { buttonClass } from "@/components/ui/Button";
 import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
 import Field from "@/components/ui/Field";
@@ -14,7 +16,7 @@ import { type FileGroup, groupOf, type ResourceKind } from "@/lib/files/uploadRe
 import { occupiedLessons } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
-import { addStudent, removeLesson, setTeacherName, signOut, startQuickCall } from "./actions";
+import { addStudent, removeLesson, setTeacherName, startQuickCall } from "./actions";
 import { MAX_CLASSROOMS } from "@/lib/limits";
 import { createQuiz } from "./quiz/actions";
 import { cleanQuestions, MAX_QUIZZES, playable } from "@/lib/quiz";
@@ -101,18 +103,24 @@ async function Dashboard() {
         <Wordmark underline={firstVisit ? "none" : "still"} />
         <div className="flex items-center gap-2">
           <LanguageMenu />
-          <SettingsLink />
           <FeedbackButton />
           <NameChip name={teacherName} />
-          <form action={signOut}>
-            <SubmitButton variant="ghost" size="sm" className="h-9 text-ink!" pending={t.loggingOut}>
-              {t.logOut}
-            </SubmitButton>
-          </form>
         </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-7 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
+        <WaitingAlert
+          waiting={[...students, ...quickCalls]
+            .filter((l) => occupied.has(l.id))
+            .map((l) => ({ id: l.id, name: l.kind === "quick" ? t.quickCallStudent : l.title }))}
+        />
+        {!firstVisit && (
+          <GettingStarted
+            first={students[0] ? { id: students[0].id, name: students[0].title, slug: students[0].invite_slug } : null}
+            hasLesson={students.some((s) => s.last_active_at)}
+            hasFile={(fileRows ?? []).length > 0}
+          />
+        )}
         {firstVisit && <Welcome t={t} common={common} suggested={auth.user?.user_metadata.given_name ?? auth.user?.user_metadata.full_name ?? ""} />}
 
         {quickCalls.map((call) => (
@@ -170,7 +178,7 @@ async function Dashboard() {
           </div>
           <form action={startQuickCall} className="flex w-full flex-col items-stretch gap-1.5 md:w-auto md:items-end">
             <LessonStartScreen />
-            <SubmitButton className="h-12 px-[18px] font-semibold md:h-11" pending={t.starting}>
+            <SubmitButton variant="secondary" className="h-12 px-[18px] font-semibold md:h-11" pending={t.starting}>
               <Video size={16} aria-hidden />
               {quickCalls.length ? t.startNewQuickCall : t.startQuickCall}
             </SubmitButton>
@@ -383,7 +391,7 @@ function StudentCard({ t, student, waiting, files }: { t: T; student: Lesson; wa
       <div className="relative z-10 flex items-center gap-1.5 border-t border-line pt-3">
         <Link
           href={`/lesson/${student.id}`}
-          className={buttonClass(waiting ? "primary" : "secondary", "sm", "h-9 font-semibold whitespace-nowrap")}
+          className={buttonClass("primary", "sm", "h-9 font-semibold whitespace-nowrap")}
         >
           <Video size={16} aria-hidden />
           {t.startLessonShort}

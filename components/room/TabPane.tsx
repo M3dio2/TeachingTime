@@ -42,14 +42,7 @@ export default function TabPane({ id, model }: { id: TabId; model: RoomModel }) 
   const teacher = model.role === "teacher";
   const chip = <WhoWrites model={model} />;
   if (id === "text") {
-    return (
-      <TextPad
-        doc={model.doc}
-        editable={model.canEdit}
-        chip={chip}
-        onClear={teacher ? () => clearText(model.doc) : undefined}
-      />
-    );
+    return <TextTab model={model} chip={chip} />;
   }
   return (
     <Whiteboard
@@ -110,5 +103,25 @@ function ScreenPane({ model }: { model: RoomModel }) {
         </div>
       )}
     </div>
+  );
+}
+
+function TextTab({ model, chip }: { model: RoomModel; chip: React.ReactNode }) {
+  const t = useT();
+  const teacher = model.role === "teacher";
+  return (
+    <TextPad
+      doc={model.doc}
+      editable={model.canEdit}
+      chip={chip}
+      onClear={teacher ? () => clearText(model.doc) : undefined}
+      placeholder={
+        teacher
+          ? t.stage.textPad.emptyTeacher(cap(model.otherName))
+          : model.canEdit
+            ? t.stage.textPad.emptyStudentCanWrite
+            : t.stage.textPad.emptyStudent
+      }
+    />
   );
 }

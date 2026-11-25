@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { PDFDocument } from "pdf-lib";
-import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testPdf, uploadToClassroom } from "./helpers";
+import { confirmYes, deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testPdf, uploadToClassroom } from "./helpers";
 
 // L2b: writing on a PDF tab is shared; "Save as new PDF" puts a copy with the writing in the
 // classroom. Files are uploaded to the "Test" classroom and deleted again.
@@ -64,7 +64,7 @@ test.describe("L2b PDF writing", () => {
       await expect(inkOn(student, 1).getByText("one towel")).toBeAttached({ timeout: 10_000 });
 
       // With "can edit" the student highlights too, and the teacher sees it.
-      await page.getByRole("button", { name: /views only$/ }).click();
+      await page.getByRole("switch", { name: /can write and draw$/ }).click();
       await expect(toolbar(student).getByRole("button", { name: "Highlighter" })).toBeEnabled({ timeout: 10_000 });
       await toolbar(student).getByRole("button", { name: "Highlighter" }).click();
       await strokeOn(student, 1);
@@ -102,8 +102,8 @@ test.describe("L2b PDF writing", () => {
       }
 
       // Clear: the teacher empties this PDF's writing for both.
-      // deleteTestFiles already accepts every confirm on this page.
       await toolbar(page).getByRole("button", { name: /^Clear the writing/ }).click();
+      await confirmYes(page);
       await expect(inkOn(student, 1).locator("path, text")).toHaveCount(0, { timeout: 10_000 });
 
       await student.context().close();

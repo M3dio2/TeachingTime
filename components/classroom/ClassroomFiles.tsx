@@ -6,6 +6,7 @@ import { addLink, removeResource } from "@/app/(app)/dashboard/actions";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
 import Button from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Field";
+import { useConfirmSubmit } from "@/components/ui/Confirm";
 import { useFormPending } from "@/components/ui/SubmitButton";
 import { useT } from "@/lib/i18n/client";
 import { linkLabel, youtubeId } from "@/lib/room/links";
@@ -225,15 +226,15 @@ function DeleteFile({ file }: { file: Resource }) {
 function DeleteFileButton({ name }: { name: string }) {
   const pending = useFormPending();
   const t = useT().dashboard;
+  const tc = useT().common;
+  const confirmSubmit = useConfirmSubmit();
   return (
     <button
       aria-label={t.deleteName(name)}
       title={t.delete}
       disabled={pending}
       aria-busy={pending || undefined}
-      onClick={(e) => {
-        if (!confirm(t.deleteConfirm(name))) e.preventDefault();
-      }}
+      onClick={(e) => confirmSubmit(e, { message: t.deleteConfirm(name), confirmLabel: tc.delete })}
       className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-danger-soft hover:text-danger focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:animate-pulse"
     >
       <Trash2 size={16} aria-hidden />

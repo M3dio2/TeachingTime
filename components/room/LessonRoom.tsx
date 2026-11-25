@@ -119,6 +119,8 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
         onDismissProblem={() => setProblem(null)}
       />
       <RecordingProvider role={role}>
+        {/* Review B17: a main landmark and a heading for screen readers. */}
+        <h1 className="sr-only">{lesson?.title ? t.room.lessonWith(lesson.title) : t.room.yourLesson}</h1>
         <LessonContent
           role={role}
           lesson={lesson}
@@ -267,13 +269,17 @@ function LessonContent({
         : undefined,
   };
 
-  return isPhone ? (
-    <PhoneLayout model={model} onProblem={onProblem} />
-  ) : (
-    <>
-      <DesktopRoom model={model} />
-      <RoomControls model={model} onProblem={onProblem} />
-    </>
+  return (
+    <main className="flex min-h-0 flex-1 flex-col">
+      {isPhone ? (
+        <PhoneLayout model={model} onProblem={onProblem} />
+      ) : (
+        <>
+          <DesktopRoom model={model} />
+          <RoomControls model={model} onProblem={onProblem} />
+        </>
+      )}
+    </main>
   );
 }
 

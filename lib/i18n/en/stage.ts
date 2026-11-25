@@ -154,6 +154,9 @@ export const stage = {
   },
 
   textPad: {
+    emptyTeacher: (name: string) => `Type here. ${name} sees it as you type.`,
+    emptyStudentCanWrite: "Type here. Your teacher sees it as you type.",
+    emptyStudent: "Your teacher writes here. You see it as they type.",
     label: "Text pad",
     bold: "Bold",
     italic: "Italic",

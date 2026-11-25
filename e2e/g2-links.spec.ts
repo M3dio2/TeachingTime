@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson } from "./helpers";
+import { confirmYes, deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson } from "./helpers";
 
 // G2: links in the classroom. A YouTube link is named after the video and plays in the call
 // for both, the student following the teacher's play and pause; any other link is a card both
@@ -64,11 +64,11 @@ test("G2: a YouTube link plays for both; another link is a card", async ({ page,
     }
     await openTestClassroom(page);
     // Links have no "e2e-" file name: remove them by their names.
-    page.on("dialog", (d) => d.accept().catch(() => {}));
     for (const name of ["YouTube Developers Live", "example.com/e2e-page"]) {
       const item = page.getByRole("listitem").filter({ hasText: name });
       while (await item.count()) {
         await item.first().getByRole("button", { name: /^Delete/ }).click();
+        await confirmYes(page);
         await page.waitForTimeout(1500);
       }
     }

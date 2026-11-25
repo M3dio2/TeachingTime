@@ -43,7 +43,7 @@ test("D5d: small actions show a pending state", async ({ page }) => {
     if (route.request().method() === "POST") await new Promise((r) => setTimeout(r, 800));
     await route.continue();
   });
-  await page.getByRole("button", { name: /^Your name in lessons: / }).click();
+  await page.getByRole("button", { name: /^Account: / }).click();
   const field = page.getByRole("textbox", { name: "Your name in lessons" });
   const name = await field.inputValue();
   await field.fill(name); // unchanged

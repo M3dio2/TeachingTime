@@ -239,3 +239,12 @@ body {
     opacity: 0;
   }
 }
+
+/* Review B6: the empty text pad says what it's for. */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--color-ink-muted);
+  pointer-events: none;
+}

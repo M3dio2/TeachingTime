@@ -247,18 +247,29 @@ function StudentCanEditToggle({
   iconOnly: boolean;
 }) {
   const t = useT();
-  const label = canEdit ? t.room.canEdit(cap(name)) : t.room.viewsOnly(cap(name));
+  // Review B5: a switch named for what it allows ("Anna can write and draw", on or off),
+  // instead of a button whose text changed between two states.
+  const label = t.room.canWriteAndDraw(cap(name));
   return (
     <button
       type="button"
+      role="switch"
+      aria-checked={canEdit}
       className={`lk-button student-edit-toggle ${canEdit ? "is-on" : ""}`}
-      title={iconOnly ? t.room.clickToChange(label) : t.room.letWriteAndDraw(name)}
-      aria-label={iconOnly ? label : undefined}
-      aria-pressed={canEdit}
+      title={t.room.letWriteAndDraw(name)}
+      aria-label={label}
       onClick={() => onChange(!canEdit)}
     >
-      {iconOnly && !canEdit ? <PencilOff size={16} aria-hidden /> : <Pencil size={16} aria-hidden />}
-      {!iconOnly && label}
+      {canEdit ? <Pencil size={16} aria-hidden /> : <PencilOff size={16} aria-hidden />}
+      {!iconOnly && <span aria-hidden>{label}</span>}
+      <span
+        aria-hidden
+        className={`relative ml-0.5 inline-block h-4 w-7 shrink-0 rounded-full transition-colors ${canEdit ? "bg-white/90" : "bg-line"}`}
+      >
+        <span
+          className={`absolute top-0.5 h-3 w-3 rounded-full transition-[left] ${canEdit ? "left-3.5 bg-ok" : "left-0.5 bg-ink-muted"}`}
+        />
+      </span>
     </button>
   );
 }

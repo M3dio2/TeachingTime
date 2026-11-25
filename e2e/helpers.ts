@@ -16,7 +16,7 @@ export async function logIn(page: Page) {
   await page.waitForURL("**/dashboard");
   // A fresh test project's account has no name yet: answer the first-visit question once.
   const welcome = page.getByRole("heading", { name: /What should your students call you/ });
-  const chip = page.getByRole("button", { name: /^Your name in lessons: / });
+  const chip = page.getByRole("button", { name: /^Account: / });
   await expect(welcome.or(chip)).toBeVisible({ timeout: 30_000 });
   if (await welcome.isVisible()) {
     await page.getByRole("textbox", { name: "Your name in lessons" }).fill("E2E Teacher");
@@ -110,12 +110,17 @@ export async function uploadToClassroom(page: Page, name: string, mimeType: stri
 }
 
 // Classroom: delete every file whose name starts with "e2e-" (leftovers of earlier runs).
+// Our own confirm dialog (components/ui/Confirm.tsx): press its main button.
+export async function confirmYes(page: Page) {
+  await page.getByTestId("confirm-yes").click();
+}
+
 export async function deleteTestFiles(page: Page) {
-  page.on("dialog", (d) => d.accept().catch(() => {}));
   const leftovers = page.getByRole("listitem").filter({ hasText: /e2e-/ });
   while (await leftovers.count()) {
     const before = await leftovers.count();
     await leftovers.first().getByRole("button", { name: "Delete" }).click();
+    await confirmYes(page);
     await expect.poll(() => leftovers.count(), { timeout: 30_000 }).toBeLessThan(before);
   }
 }

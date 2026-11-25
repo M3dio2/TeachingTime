@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import { buttonClass } from "@/components/ui/Button";
 import { useFormPending } from "@/components/ui/SubmitButton";
+import { useConfirmSubmit } from "@/components/ui/Confirm";
 import { useT } from "@/lib/i18n/client";
 
 const noop = () => () => {};
@@ -42,13 +43,12 @@ export function LinkField({ slug, label }: { slug: string; label: string }) {
 export function RemoveButton({ name }: { name: string }) {
   const pending = useFormPending();
   const t = useT();
+  const confirmSubmit = useConfirmSubmit();
   return (
     <button
       disabled={pending}
       aria-busy={pending || undefined}
-      onClick={(e) => {
-        if (!confirm(t.dashboard.removeConfirm(name))) e.preventDefault();
-      }}
+      onClick={(e) => confirmSubmit(e, { message: t.dashboard.removeConfirm(name), confirmLabel: t.common.remove })}
       className="-ml-2 inline-flex h-9 items-center gap-1.5 self-start rounded-md px-2 text-sm font-medium text-danger hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
     >
       <Trash2 size={16} aria-hidden />

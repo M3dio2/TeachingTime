@@ -77,7 +77,12 @@ export const room = {
 
   // Controls
   lessonWith: (name: string) => `Lesson with ${name}`,
+  yourLesson: "Your lesson",
   microphone: "Microphone",
+  myMicOn: "Mic on",
+  myMicOff: "Mic off",
+  myCamOn: "Camera on",
+  myCamOff: "Camera off",
   camera: "Camera",
   chooseMicrophone: "Choose a microphone",
   chooseCamera: "Choose a camera",

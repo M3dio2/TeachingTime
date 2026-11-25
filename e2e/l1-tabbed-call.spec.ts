@@ -53,9 +53,9 @@ test.describe("L1 tabbed call", () => {
 
     // "Student can edit" travels in the same attributes.
     await expect(student.getByText("View only").first()).toBeVisible();
-    await page.getByRole("button", { name: /views only$/ }).click();
+    await page.getByRole("switch", { name: /can write and draw$/ }).click();
     await expect(student.getByText("You can write here").first()).toBeVisible();
-    await page.getByRole("button", { name: /can edit$/ }).click();
+    await page.getByRole("switch", { name: /can write and draw$/ }).click();
     await expect(student.getByText("View only").first()).toBeVisible();
 
     // Closing a tab: the student follows; the last tab has no ×.
@@ -149,7 +149,7 @@ test.describe("L1 tabbed call", () => {
 
     // The action bar shows icons only here.
     await expect(page.getByRole("button", { name: "Leave the lesson" })).not.toContainText("Leave");
-    await expect(page.getByRole("button", { name: /views only$/ })).toBeVisible();
+    await expect(page.getByRole("switch", { name: /can write and draw$/ })).toHaveAttribute("aria-checked", "false");
 
     // Just talk on a tablet-sized window: one camera big, your own small (alone here: just yours).
     await page.getByRole("button", { name: "Just talk" }).click();

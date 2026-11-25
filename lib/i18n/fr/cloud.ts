@@ -33,4 +33,11 @@ export const cloud: typeof en = {
   finishing: "Connexion à Dropbox…",
   dropboxFailed: "Dropbox n’a pas pu être connecté. Réessaie depuis les Réglages.",
   backToSettings: "Retour aux Réglages",
+  deviceCheck: "Caméra et micro",
+  deviceCheckIntro: "Vérifie ton image et ton son avant un cours. Rien n’est envoyé.",
+  startCheck: "Vérifier la caméra et le micro",
+  stopCheck: "Arrêter la vérification",
+  micLevel: "Niveau du micro",
+  micSaySomething: "Dis quelque chose…",
+  micHeard: "Ton micro fonctionne",
 };

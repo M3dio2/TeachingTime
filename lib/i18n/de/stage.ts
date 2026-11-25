@@ -152,6 +152,9 @@ export const stage: typeof en = {
   },
 
   textPad: {
+    emptyTeacher: (name: string) => `Schreib hier. ${name} sieht es beim Tippen.`,
+    emptyStudentCanWrite: "Schreib hier. Deine Lehrperson sieht es beim Tippen.",
+    emptyStudent: "Hier schreibt deine Lehrperson. Du siehst es beim Tippen.",
     label: "Notizen",
     bold: "Fett",
     italic: "Kursiv",

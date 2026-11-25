@@ -2,9 +2,10 @@
 
 import Collaboration from "@tiptap/extension-collaboration";
 import { EditorContent, useEditor, useEditorState, type Editor } from "@tiptap/react";
+import { Placeholder } from "@tiptap/extensions";
 import StarterKit from "@tiptap/starter-kit";
 import { List, ListOrdered } from "lucide-react";
-import { type ReactNode, useEffect } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 import type * as Y from "yjs";
 import { useT } from "@/lib/i18n/client";
 import { listenForText } from "@/lib/room/textInbox";
@@ -17,13 +18,20 @@ export default function TextPad({
   editable,
   chip,
   onClear,
+  placeholder = "",
 }: {
   doc: Y.Doc;
   editable: boolean;
   chip?: ReactNode;
   onClear?: () => void;
+  placeholder?: string; // review B6: what the empty pad says
 }) {
   const t = useT();
+  // Read by the extension each time the pad is empty (the other person's name can arrive later).
+  const hint = useRef(placeholder);
+  useEffect(() => {
+    hint.current = placeholder;
+  }, [placeholder]);
   const editor = useEditor({
     immediatelyRender: false,
     editable,
@@ -31,6 +39,9 @@ export default function TextPad({
       // Undo/redo comes from the Collaboration extension, so only your own edits are undone.
       StarterKit.configure({ undoRedo: false }),
       Collaboration.configure({ document: doc }),
+      // The function runs later, while the pad is drawn (not during this render).
+      // eslint-disable-next-line react-hooks/refs
+      Placeholder.configure({ placeholder: () => hint.current }),
     ],
     editorProps: {
       attributes: { class: "tiptap min-h-full p-4 text-lg outline-none", "aria-label": t.stage.textPad.label },

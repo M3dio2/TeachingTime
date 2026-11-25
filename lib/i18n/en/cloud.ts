@@ -35,4 +35,12 @@ export const cloud = {
   finishing: "Connecting Dropbox…",
   dropboxFailed: "Dropbox couldn't be connected. Please try again from Settings.",
   backToSettings: "Back to Settings",
+  // Review A3: device check
+  deviceCheck: "Camera and microphone",
+  deviceCheckIntro: "Check how you look and sound before a lesson. Nothing is sent anywhere.",
+  startCheck: "Check camera and microphone",
+  stopCheck: "Stop the check",
+  micLevel: "Microphone level",
+  micSaySomething: "Say something…",
+  micHeard: "Your microphone works",
 };

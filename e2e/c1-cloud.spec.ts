@@ -70,6 +70,7 @@ test("C1: connect Dropbox, add a file from it, save recordings to Dropbox and Go
 
   await logIn(page);
   // Settings: both clouds offered, nothing connected.
+  await page.getByRole("button", { name: /^Account: / }).click();
   await page.getByRole("link", { name: "Settings" }).click();
   await expect(page.getByRole("heading", { name: "Connected clouds" })).toBeVisible();
   const dropbox = page.getByRole("listitem", { name: "Dropbox" });
