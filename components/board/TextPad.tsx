@@ -41,7 +41,7 @@ export default function TextPad({
       Collaboration.configure({ document: doc }),
       // The function runs later, while the pad is drawn (not during this render).
       // eslint-disable-next-line react-hooks/refs
-      Placeholder.configure({ placeholder: () => hint.current }),
+      Placeholder.configure({ placeholder: () => hint.current, showOnlyWhenEditable: false }),
     ],
     editorProps: {
       attributes: { class: "tiptap min-h-full p-4 text-lg outline-none", "aria-label": t.stage.textPad.label },
