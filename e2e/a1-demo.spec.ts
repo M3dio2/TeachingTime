@@ -20,7 +20,7 @@ test("A1: the demo lesson from the start page, with Lucía and the tour", async 
 
   await page.goto("/");
   await page.getByRole("link", { name: "Try a demo lesson", exact: true }).click();
-  await expect(page).toHaveURL(/\/demo$/);
+  await expect(page).toHaveURL(/\/demo$/, { timeout: 30_000 }); // first compile in dev can be slow
 
   // Lucía arrives and says hello; the visitor's own tile is a stand-in (no camera asked for).
   const tour = page.getByTestId("demo-tour");
