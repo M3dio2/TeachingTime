@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { joinAsStudent, logIn, openTestClassroom, TEST_CLASSROOM } from "./helpers";
+import { confirmYes, joinAsStudent, logIn, openTestClassroom, TEST_CLASSROOM } from "./helpers";
 
 // Q1: the teacher makes a quiz in the dashboard, drags it into the lesson, the student answers
 // live, the teacher checks; the result is saved in the Classroom. The quiz is called "e2e-…"
@@ -14,10 +14,10 @@ async function deleteE2eQuizzes(page: Page) {
     const card = page.getByRole("link", { name: /^Edit the quiz e2e-/ }).first();
     if (!(await card.count())) return;
     await page.goto((await card.getAttribute("href"))!);
-    page.once("dialog", (d) => d.accept());
     await page.getByRole("button", { name: "More for this quiz" }).click();
     await page.getByRole("menuitem", { name: "Delete quiz" }).click();
-    await page.waitForURL("**/dashboard");
+    await confirmYes(page);
+    await expect(page).toHaveURL(/\/dashboard$/, { timeout: 30_000 });
   }
 }
 
@@ -106,7 +106,7 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   await expect(here.getByRole("link", { name: new RegExp(TITLE) })).toContainText("7 questions");
   const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
   await page.getByRole("link", { name: "Start lesson" }).click();
-  await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
   const joinPath = new URL(`http://${link}`).pathname;
   const student = await joinAsStudent(browser, joinPath);
   const panel = page.getByRole("complementary", { name: /files$/ });

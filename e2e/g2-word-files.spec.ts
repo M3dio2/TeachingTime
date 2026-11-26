@@ -17,7 +17,8 @@ test("G2: a Word file opens in the call; the student follows; copy into the text
     await p.locator('input[type="file"]').setInputFiles({ name: "e2e-old.doc", mimeType: "application/msword", buffer: Buffer.from("x") });
     await expect(p.getByText("is an old Word file")).toBeVisible();
     await uploadToClassroom(p, name, DOCX, await testDocx(lines, 3));
-    await expect(p.getByRole("heading", { name: "Word files" })).toBeVisible();
+    // F1: one list; the line says what it is.
+    await expect(p.getByRole("listitem").filter({ hasText: name })).toContainText("DOCX ·");
   });
 
   try {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { BackToClassrooms } from "@/components/classroom/ClassroomBits";
 import CloudSettings from "@/components/cloud/CloudSettings";
+import DeviceCheck from "@/components/settings/DeviceCheck";
 import Wordmark from "@/components/ui/Wordmark";
 
 // Private: never listed by search engines.
@@ -16,6 +17,7 @@ export default function SettingsPage() {
       </header>
       <main className="mx-auto flex w-full max-w-[720px] flex-col gap-6 px-[clamp(16px,4vw,32px)] pt-3 pb-24">
         <CloudSettings />
+        <DeviceCheck />
       </main>
     </div>
   );

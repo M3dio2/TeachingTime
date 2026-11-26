@@ -10,7 +10,7 @@ test("D5d: Start a quick call shows the loading screen at once, until connected"
   await page.getByRole("button", { name: /Start a (new )?quick call/ }).click();
   await expect(loading).toBeVisible({ timeout: 2_000 });
   // The same screen until the room is there, never the dashboard again in between.
-  await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
   await expect(loading).toHaveCount(0);
 
   // Leaving (ends the quick call): "Leaving the lesson" until the classrooms are shown.
@@ -33,7 +33,7 @@ test("D5d: Start lesson in a classroom shows the loading screen at once", async 
   await expect(page.getByRole("status").filter({ hasText: "Getting your lesson ready" })).toBeVisible({
     timeout: 2_000,
   });
-  await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
 });
 
 test("D5d: small actions show a pending state", async ({ page }) => {
@@ -43,7 +43,7 @@ test("D5d: small actions show a pending state", async ({ page }) => {
     if (route.request().method() === "POST") await new Promise((r) => setTimeout(r, 800));
     await route.continue();
   });
-  await page.getByRole("button", { name: /^Your name in lessons: / }).click();
+  await page.getByRole("button", { name: /^Account: / }).click();
   const field = page.getByRole("textbox", { name: "Your name in lessons" });
   const name = await field.inputValue();
   await field.fill(name); // unchanged

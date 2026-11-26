@@ -302,11 +302,14 @@ function SaveStatus({ state }: { state: SaveState }) {
 // ⋯ next to the title: duplicate or delete the whole quiz.
 function QuizMenu({ id, title }: { id: string; title: string }) {
   const t = useT().quiz;
+  const tc = useT().common;
   const [open, setOpen] = useState(false);
   const wrap = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!open) return;
-    const down = (e: PointerEvent) => !wrap.current?.contains(e.target as Node) && setOpen(false);
+    // Not while our confirm dialog is up (its form would be gone before it submits).
+    const down = (e: PointerEvent) =>
+      !wrap.current?.contains(e.target as Node) && !(e.target as Element).closest?.("[role=alertdialog]") && setOpen(false);
     const key = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("pointerdown", down);
     window.addEventListener("keydown", key);
@@ -339,15 +342,17 @@ function QuizMenu({ id, title }: { id: string; title: string }) {
               {t.duplicate}
             </SubmitButton>
           </form>
-          <form
-            action={deleteQuiz}
-            onSubmit={(e) => {
-              if (!confirm(t.deleteConfirm(title || t.untitled))) e.preventDefault();
-            }}
-          >
+          <form action={deleteQuiz}>
             <input type="hidden" name="id" value={id} />
             <input type="hidden" name="then" value="dashboard" />
-            <SubmitButton variant="ghost" role="menuitem" className={`${item} justify-start text-danger!`} pending={t.deleting}>
+            <SubmitButton
+              variant="ghost"
+              role="menuitem"
+              className={`${item} justify-start text-danger!`}
+              pending={t.deleting}
+              confirm={t.deleteConfirm(title || t.untitled)}
+              confirmLabel={tc.delete}
+            >
               <Trash2 size={16} aria-hidden />
               {t.deleteQuiz}
             </SubmitButton>

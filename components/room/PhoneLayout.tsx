@@ -1,6 +1,6 @@
 "use client";
 
-import { DisconnectButton, TrackToggle } from "@livekit/components-react";
+import { DisconnectButton, TrackToggle, useLocalParticipant } from "@livekit/components-react";
 import { Track } from "livekit-client";
 import { Ellipsis, Eye, FolderOpen, LogOut, Pencil, Plus, Users, X } from "lucide-react";
 import { useState } from "react";
@@ -181,6 +181,11 @@ function PhoneBar({
 }) {
   const t = useT();
   const onDeviceError = useDeviceErrorHandler(onProblem);
+  // Review B9: the student's bar has room for words, so mic and camera say their state.
+  const { isMicrophoneEnabled: mic, isCameraEnabled: cam } = useLocalParticipant();
+  const words = !children;
+  const micState = mic ? t.room.myMicOn : t.room.myMicOff;
+  const camState = cam ? t.room.myCamOn : t.room.myCamOff;
   return (
     <div
       className={`flex h-[60px] shrink-0 items-center gap-2 px-1 ${children ? "justify-between" : "justify-center gap-3"}`}
@@ -188,17 +193,21 @@ function PhoneBar({
       <TrackToggle
         source={Track.Source.Microphone}
         showIcon
-        style={BAR_BUTTON}
-        aria-label={t.room.microphone}
+        style={words ? { ...BAR_BUTTON, width: "auto", padding: "0 14px" } : BAR_BUTTON}
+        aria-label={`${t.room.microphone}: ${micState}`}
         onDeviceError={(error) => onDeviceError({ source: Track.Source.Microphone, error })}
-      />
+      >
+        {words && <span aria-hidden>{micState}</span>}
+      </TrackToggle>
       <TrackToggle
         source={Track.Source.Camera}
         showIcon
-        style={BAR_BUTTON}
-        aria-label={t.room.camera}
+        style={words ? { ...BAR_BUTTON, width: "auto", padding: "0 14px" } : BAR_BUTTON}
+        aria-label={`${t.room.camera}: ${camState}`}
         onDeviceError={(error) => onDeviceError({ source: Track.Source.Camera, error })}
-      />
+      >
+        {words && <span aria-hidden>{camState}</span>}
+      </TrackToggle>
       {children}
       <DisconnectButton
         aria-label={t.room.leaveLesson}

@@ -14,6 +14,7 @@ import {
   Pencil,
   Plus,
   RefreshCw,
+  ScrollText,
   Square,
   SquarePlus,
   Type,
@@ -52,6 +53,7 @@ const ICONS: Record<BuiltInTab | FileTabKind, typeof Monitor> = {
   link: Link2,
   image: ImageIcon,
   quiz: ListChecks,
+  txt: ScrollText,
 };
 export const TabIcon = ({ id, size = 16 }: { id: TabId; size?: number }) => {
   const Icon = ICONS[id.split(":")[0] as BuiltInTab | FileTabKind];

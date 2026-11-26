@@ -4,16 +4,20 @@ import Link from "next/link";
 import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } from "@/components/dashboard/DashboardBits";
-import { CardMenu, FeedbackButton, LanguageMenu, NameChip, SettingsLink } from "@/components/dashboard/DashboardMenus";
+import { CardMenu, FeedbackButton, LanguageMenu, NameChip } from "@/components/dashboard/DashboardMenus";
+import GettingStarted from "@/components/dashboard/GettingStarted";
+import { NextLessonLine } from "@/components/classroom/NextLesson";
+import WaitingAlert from "@/components/dashboard/WaitingAlert";
 import { buttonClass } from "@/components/ui/Button";
 import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
 import Field from "@/components/ui/Field";
 import Marker from "@/components/ui/Marker";
 import Wordmark from "@/components/ui/Wordmark";
+import { type FileGroup, groupOf, type ResourceKind } from "@/lib/files/uploadResource";
 import { occupiedLessons } from "@/lib/livekit";
 import { createClient } from "@/lib/supabase/server";
 import { isWithin, QUICK_CALL_MAX_AGE_MS } from "@/lib/time";
-import { addStudent, removeLesson, setTeacherName, signOut, startQuickCall } from "./actions";
+import { addStudent, removeLesson, setTeacherName, startQuickCall } from "./actions";
 import { MAX_CLASSROOMS } from "@/lib/limits";
 import { createQuiz } from "./quiz/actions";
 import { cleanQuestions, MAX_QUIZZES, playable } from "@/lib/quiz";
@@ -46,6 +50,8 @@ type Lesson = {
   kind: "student" | "quick";
   last_active_at: string | null;
   created_at: string;
+  next_lesson_at: string | null;
+  repeats_weekly: boolean;
 };
 
 async function Dashboard() {
@@ -56,7 +62,7 @@ async function Dashboard() {
     supabase.auth.getUser(),
     supabase
       .from("lessons")
-      .select("id, title, invite_slug, kind, last_active_at, created_at")
+      .select("id, title, invite_slug, kind, last_active_at, created_at, next_lesson_at, repeats_weekly")
       .order("title"),
     supabase.from("resources").select("lesson_id, kind"),
     occupiedLessons(),
@@ -100,18 +106,24 @@ async function Dashboard() {
         <Wordmark underline={firstVisit ? "none" : "still"} />
         <div className="flex items-center gap-2">
           <LanguageMenu />
-          <SettingsLink />
           <FeedbackButton />
           <NameChip name={teacherName} />
-          <form action={signOut}>
-            <SubmitButton variant="ghost" size="sm" className="h-9 text-ink!" pending={t.loggingOut}>
-              {t.logOut}
-            </SubmitButton>
-          </form>
         </div>
       </header>
 
       <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-7 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
+        <WaitingAlert
+          waiting={[...students, ...quickCalls]
+            .filter((l) => occupied.has(l.id))
+            .map((l) => ({ id: l.id, name: l.kind === "quick" ? t.quickCallStudent : l.title }))}
+        />
+        {!firstVisit && (
+          <GettingStarted
+            first={students[0] ? { id: students[0].id, name: students[0].title, slug: students[0].invite_slug } : null}
+            hasLesson={students.some((s) => s.last_active_at)}
+            hasFile={(fileRows ?? []).length > 0}
+          />
+        )}
         {firstVisit && <Welcome t={t} common={common} suggested={auth.user?.user_metadata.given_name ?? auth.user?.user_metadata.full_name ?? ""} />}
 
         {quickCalls.map((call) => (
@@ -169,7 +181,7 @@ async function Dashboard() {
           </div>
           <form action={startQuickCall} className="flex w-full flex-col items-stretch gap-1.5 md:w-auto md:items-end">
             <LessonStartScreen />
-            <SubmitButton className="h-12 px-[18px] font-semibold md:h-11" pending={t.starting}>
+            <SubmitButton variant="secondary" className="h-12 px-[18px] font-semibold md:h-11" pending={t.starting}>
               <Video size={16} aria-hidden />
               {quickCalls.length ? t.startNewQuickCall : t.startQuickCall}
             </SubmitButton>
@@ -219,20 +231,21 @@ async function Dashboard() {
 
 // "3 pictures · 2 PDFs · 2 audio" per classroom.
 function countFiles(rows: { lesson_id: string; kind: string }[], t: T) {
-  const byLesson = new Map<string, { image: number; pdf: number; doc: number; audio: number; link: number }>();
+  // F1: by group (YouTube links are counted as links here: the url isn't loaded).
+  const byLesson = new Map<string, Record<FileGroup, number>>();
   for (const r of rows) {
-    const c = byLesson.get(r.lesson_id) ?? { image: 0, pdf: 0, doc: 0, audio: 0, link: 0 };
-    if (r.kind === "image" || r.kind === "pdf" || r.kind === "doc" || r.kind === "audio" || r.kind === "link") c[r.kind]++;
+    const c = byLesson.get(r.lesson_id) ?? { documents: 0, pictures: 0, videos: 0, audio: 0, links: 0 };
+    c[groupOf(r.kind as ResourceKind)]++;
     byLesson.set(r.lesson_id, c);
   }
   const text = new Map<string, string>();
   for (const [id, c] of byLesson) {
     const parts = [
-      c.image && t.countPictures(c.image),
-      c.pdf && t.countPdfs(c.pdf),
-      c.doc && t.countWord(c.doc),
+      c.documents && t.countDocuments(c.documents),
+      c.pictures && t.countPictures(c.pictures),
+      c.videos && t.countVideos(c.videos),
       c.audio && t.countAudio(c.audio),
-      c.link && t.countLinks(c.link),
+      c.links && t.countLinks(c.links),
     ].filter(Boolean);
     if (parts.length) text.set(id, parts.join(" · "));
   }
@@ -360,6 +373,7 @@ function StudentCard({ t, student, waiting, files }: { t: T; student: Lesson; wa
               t.noLessonsYet
             )}
           </span>
+          <NextLessonLine nextAt={student.next_lesson_at} weekly={student.repeats_weekly} />
         </div>
         {waiting && (
           // Circled by the marker when the student arrives (it mounts then; refreshes keep it).
@@ -381,7 +395,7 @@ function StudentCard({ t, student, waiting, files }: { t: T; student: Lesson; wa
       <div className="relative z-10 flex items-center gap-1.5 border-t border-line pt-3">
         <Link
           href={`/lesson/${student.id}`}
-          className={buttonClass(waiting ? "primary" : "secondary", "sm", "h-9 font-semibold whitespace-nowrap")}
+          className={buttonClass("primary", "sm", "h-9 font-semibold whitespace-nowrap")}
         >
           <Video size={16} aria-hidden />
           {t.startLessonShort}

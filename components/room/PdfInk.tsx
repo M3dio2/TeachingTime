@@ -14,6 +14,7 @@ import {
   removeInk,
   TEXT_SIZE,
 } from "@/lib/room/pdfInk";
+import { useConfirm } from "@/components/ui/Confirm";
 import { useT } from "@/lib/i18n/client";
 
 // Labels in t.stage.pdf.tools, by id.
@@ -43,6 +44,7 @@ export function InkToolbar({
 }) {
   const t = useT();
   const p = t.stage.pdf;
+  const confirmIt = useConfirm();
   return (
     <div
       role="toolbar"
@@ -77,7 +79,7 @@ export function InkToolbar({
             aria-label={p.clear}
             title={p.clear}
             onClick={() => {
-              if (confirm(p.clearConfirm)) onClear();
+              void confirmIt({ message: p.clearConfirm, confirmLabel: t.common.clear }).then((ok) => ok && onClear());
             }}
             className="inline-flex h-8 w-8 items-center justify-center rounded-md text-danger transition-colors hover:bg-danger hover:text-white focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
           >

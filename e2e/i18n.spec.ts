@@ -32,6 +32,7 @@ test("I1: a Spanish browser joins in Spanish; the teacher switches the dashboard
   await page.getByRole("menuitemradio", { name: "Deutsch" }).click();
   await expect(page.getByRole("heading", { name: "Deine Classrooms", exact: true })).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("lang", "de");
+  await page.getByRole("button", { name: /^Konto: / }).click();
   await expect(page.getByRole("button", { name: "Abmelden" })).toBeVisible();
 
   // Still German after a reload, and on another device (from her account).

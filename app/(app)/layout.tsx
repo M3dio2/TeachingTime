@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { ConfirmProvider } from "@/components/ui/Confirm";
 import { I18nProvider } from "@/lib/i18n/client";
 import { getLocale } from "@/lib/i18n/server";
 
@@ -13,5 +14,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
 }
 
 async function WithLocale({ children }: { children: React.ReactNode }) {
-  return <I18nProvider locale={await getLocale()}>{children}</I18nProvider>;
+  return (
+    <I18nProvider locale={await getLocale()}>
+      <ConfirmProvider>{children}</ConfirmProvider>
+    </I18nProvider>
+  );
 }

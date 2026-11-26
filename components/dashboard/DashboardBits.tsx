@@ -50,8 +50,9 @@ export function ConfirmSubmit({
   pending: ReactNode;
   children: ReactNode;
 }) {
+  const t = useT();
   return (
-    <SubmitButton variant="ghost" size="sm" confirm={message} pending={pending}>
+    <SubmitButton variant="ghost" size="sm" confirm={message} confirmLabel={t.common.endCall} pending={pending}>
       {children}
     </SubmitButton>
   );

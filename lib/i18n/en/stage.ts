@@ -12,6 +12,7 @@ export const stage = {
     video: "Video",
     link: "Link",
     quiz: "Quiz",
+    txt: "Text file",
   },
   lesson: "Lesson",
   openTabs: "Open tabs",
@@ -51,6 +52,8 @@ export const stage = {
   stopSharing: "Stop sharing",
 
   files: {
+    documents: "Documents",
+    videos: "Videos",
     pdfs: "PDFs",
     docs: "Word files",
     pictures: "Pictures",
@@ -64,7 +67,7 @@ export const stage = {
     clickOrDrag: "Click to open, or drag onto the stage",
     show: (name: string) => `Show ${name}`,
     open: (name: string) => `Open ${name}`,
-    empty: "No files yet. Upload pictures, PDFs and audio in the Classroom.",
+    empty: "No files yet. Upload them in the Classroom.",
     onScreen: "On screen",
     inATab: "In a tab",
     folded: (title: string) => `${title}, folded`,
@@ -73,6 +76,10 @@ export const stage = {
     playOrDrag: "Press play, or drag onto the stage",
     playing: "Playing",
   },
+
+  // F1: text files and other files in a tab
+  textFile: { opening: "Opening the text…", failed: "This text file couldn't be opened." },
+  uploadedVideo: { failed: "This video can't be played in this browser." },
 
   picture: {
     failed: "This picture couldn't be opened.",
@@ -147,6 +154,9 @@ export const stage = {
   },
 
   textPad: {
+    emptyTeacher: (name: string) => `Type here. ${name} sees it as you type.`,
+    emptyStudentCanWrite: "Type here. Your teacher sees it as you type.",
+    emptyStudent: "Your teacher writes here. You see it as they type.",
     label: "Text pad",
     bold: "Bold",
     italic: "Italic",

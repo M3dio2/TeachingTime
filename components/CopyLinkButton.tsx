@@ -26,6 +26,9 @@ export default function CopyLinkButton({
   async function copy() {
     await navigator.clipboard.writeText(`${window.location.origin}/join/${slug}`);
     setCopied(true);
+    try {
+      localStorage.setItem("tt-link-copied", "1"); // the dashboard's "Getting started" (A7)
+    } catch {}
     setTimeout(() => setCopied(false), 2000);
   }
 

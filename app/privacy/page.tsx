@@ -38,11 +38,12 @@ export default function Privacy() {
           lessons, and the classrooms you create (a student&apos;s name or nickname, the invite link).
         </li>
         <li>
-          <strong>Lesson content:</strong> the text pad and whiteboard of each classroom, writing on PDFs, and the
-          files you upload (pictures, PDFs, audio), until you delete them or remove the classroom.
+          <strong>Lesson content:</strong> the text pad and whiteboard of each classroom, writing on PDFs, the
+          files you upload (pictures, PDFs, audio, videos, text files), the lesson notes (the text pad of each
+          lesson, with its date) and the planned next lesson, until you delete them or remove the classroom.
         </li>
         <li>
-          <strong>Lesson times:</strong> when each lesson&apos;s call started and ended, to apply the free plan&apos;s
+          <strong>Lesson times:</strong> when each lesson&apos;s call started and ended (shown to you as your past lessons), to apply the free plan&apos;s
           limits.
         </li>
         <li>

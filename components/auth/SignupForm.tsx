@@ -129,7 +129,7 @@ export default function SignupForm() {
       </form>
       <p className="text-[15px] text-ink-muted">
         {t.auth.haveAccount}{" "}
-        <Link href="/login" className={textLink}>
+        <Link href="/login" className={`${textLink} -my-3 inline-block py-3`}>
           {t.auth.logIn}
         </Link>
       </p>

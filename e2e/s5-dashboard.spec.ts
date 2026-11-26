@@ -21,7 +21,7 @@ test("S5 dashboard: classroom card, name chip, ⋯ menu", async ({ page }) => {
   await expect(page.getByRole("menuitem", { name: `Remove ${TEST_CLASSROOM}` })).toHaveCount(0);
 
   // The name chip opens the name form.
-  await page.getByRole("button", { name: /^Your name in lessons: / }).click();
+  await page.getByRole("button", { name: /^Account: / }).click();
   await expect(page.getByRole("textbox", { name: "Your name in lessons" })).toBeVisible();
   await page.keyboard.press("Escape");
 

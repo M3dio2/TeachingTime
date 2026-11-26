@@ -76,7 +76,12 @@ export const room: typeof en = {
   filesTitle: (name) => `Fichiers ${of(name)}`,
 
   lessonWith: (name) => `Cours avec ${name}`,
+  yourLesson: "Ton cours",
   microphone: "Micro",
+  myMicOn: "Micro activé",
+  myMicOff: "Micro coupé",
+  myCamOn: "Caméra activée",
+  myCamOff: "Caméra coupée",
   camera: "Caméra",
   chooseMicrophone: "Choisir un micro",
   chooseCamera: "Choisir une caméra",

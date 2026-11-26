@@ -1,14 +1,15 @@
 "use client";
 
-import { Check, Ellipsis, Globe, MessageSquare, Pencil, Settings, Trash2 } from "lucide-react";
+import { Check, ChevronDown, Ellipsis, Globe, LogOut, MessageSquare, Settings, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { type ReactNode, useEffect, useRef, useState, useTransition } from "react";
-import { removeLesson, sendFeedback, setLanguage, setTeacherName } from "@/app/(app)/dashboard/actions";
+import { removeLesson, sendFeedback, setLanguage, setTeacherName, signOut } from "@/app/(app)/dashboard/actions";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/locales";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
 import Field, { inputClass } from "@/components/ui/Field";
+import { useConfirmSubmit } from "@/components/ui/Confirm";
 import SubmitButton, { useFormPending } from "@/components/ui/SubmitButton";
 
 // A small popover that closes on outside click and Escape.
@@ -18,7 +19,8 @@ function usePopover() {
   useEffect(() => {
     if (!open) return;
     const down = (e: PointerEvent) => {
-      if (!wrap.current?.contains(e.target as Node)) setOpen(false);
+      // Not while our confirm dialog is up (its form would be gone before it submits).
+      if (!wrap.current?.contains(e.target as Node) && !(e.target as Element).closest?.("[role=alertdialog]")) setOpen(false);
     };
     const key = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("pointerdown", down);
@@ -39,8 +41,8 @@ function Popover({ children, className = "" }: { children: ReactNode; className?
   );
 }
 
-// Header: the teacher's initial and name (only the initial on phones). Opens a small form to
-// change the name students see in lessons.
+// Header: the teacher's initial and name (only the initial on phones). Opens her account menu
+// (review B2): the name students see in lessons, Settings, Log out.
 export function NameChip({ name }: { name: string }) {
   const { open, setOpen, wrap } = usePopover();
   const initial = name.trim().charAt(0).toUpperCase() || "?";
@@ -50,7 +52,8 @@ export function NameChip({ name }: { name: string }) {
       <button
         type="button"
         title={t.dashboard.changeNameTitle}
-        aria-label={name ? t.dashboard.nameChipLabel(name) : t.dashboard.addYourName}
+        aria-label={t.dashboard.accountLabel(name || t.dashboard.addYourName)}
+        aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
         className="inline-flex h-9 items-center gap-2 rounded-full border border-line bg-surface px-1 text-sm font-medium hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none md:pr-3"
@@ -59,7 +62,7 @@ export function NameChip({ name }: { name: string }) {
           {initial}
         </span>
         <span className="hidden max-w-40 truncate md:inline">{name || t.dashboard.addYourName}</span>
-        <Pencil size={14} aria-hidden className="hidden text-ink-muted md:inline" />
+        <ChevronDown size={14} aria-hidden className="hidden text-ink-muted md:inline" />
       </button>
       {open && (
         <Popover className="w-72 p-3">
@@ -83,6 +86,26 @@ export function NameChip({ name }: { name: string }) {
               {t.common.save}
             </SubmitButton>
           </form>
+          <div className="-mx-1.5 mt-3 flex flex-col border-t border-line px-1.5 pt-1.5">
+            <Link
+              href="/dashboard/settings"
+              onClick={() => setOpen(false)}
+              className="flex h-11 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+            >
+              <Settings size={16} aria-hidden className="text-ink-muted" />
+              {t.cloud.settings}
+            </Link>
+            <form action={signOut}>
+              <SubmitButton
+                variant="ghost"
+                className="h-11 w-full justify-start gap-2.5 px-2.5 text-ink!"
+                pending={t.dashboard.loggingOut}
+              >
+                <LogOut size={16} aria-hidden className="text-ink-muted" />
+                {t.dashboard.logOut}
+              </SubmitButton>
+            </form>
+          </div>
         </Popover>
       )}
     </div>
@@ -241,35 +264,17 @@ export function CardMenu({ id, name }: { id: string; name: string }) {
 function RemoveItem({ name }: { name: string }) {
   const pending = useFormPending();
   const t = useT();
+  const confirmSubmit = useConfirmSubmit();
   return (
     <button
       role="menuitem"
       disabled={pending}
       aria-busy={pending || undefined}
-      onClick={(e) => {
-        if (!confirm(t.dashboard.removeConfirm(name))) {
-          e.preventDefault();
-        }
-      }}
+      onClick={(e) => confirmSubmit(e, { message: t.dashboard.removeConfirm(name), confirmLabel: t.common.remove })}
       className="flex h-10 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-sm font-medium text-danger hover:bg-danger-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:opacity-60"
     >
       <Trash2 size={16} aria-hidden />
       {pending ? t.common.removing : t.dashboard.removeName(name)}
     </button>
-  );
-}
-
-// C1: Settings (connected clouds), next to the language menu.
-export function SettingsLink() {
-  const t = useT().cloud;
-  return (
-    <Link
-      href="/dashboard/settings"
-      aria-label={t.settings}
-      title={t.settings}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-md text-ink hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-    >
-      <Settings size={17} aria-hidden />
-    </Link>
   );
 }

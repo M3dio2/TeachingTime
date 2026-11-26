@@ -3,7 +3,7 @@
 import { ExternalLink, Volume2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useT } from "@/lib/i18n/client";
-import { useLoadedFile } from "@/lib/room/fileCache";
+import { type LoadedFile, useLoadedFile } from "@/lib/room/fileCache";
 import { videoPosition, type VideoState, youtubeId, youtubeStart } from "@/lib/room/links";
 import type { FileTab } from "@/lib/room/tabs";
 import { cap, type RoomModel } from "./roomModel";
@@ -58,9 +58,15 @@ function loadApi() {
 
 const DRIFT = 1.5; // seconds the student may be off before a jump
 
+// A video tab: a YouTube link (below) or an uploaded video file (F1, UploadedVideo).
 export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel }) {
+  const loaded = useLoadedFile(model.inviteSlug, id);
+  if (loaded.file?.kind === "video" && loaded.file.src) return <UploadedVideo id={id} model={model} src={loaded.file.src} />;
+  return <YouTubeVideo id={id} model={model} file={loaded.file} failed={loaded.failed} />;
+}
+
+function YouTubeVideo({ id, model, file, failed }: { id: FileTab; model: RoomModel; file?: LoadedFile; failed?: boolean }) {
   const t = useT();
-  const { file, failed } = useLoadedFile(model.inviteSlug, id);
   const box = useRef<HTMLDivElement>(null);
   const player = useRef<Player | null>(null);
   const [ready, setReady] = useState(false);
@@ -219,6 +225,99 @@ export default function VideoPane({ id, model }: { id: FileTab; model: RoomModel
             type="button"
             onClick={() => {
               player.current?.unMute();
+              setNeedsTap(false);
+            }}
+            className="absolute bottom-3 left-1/2 inline-flex h-11 -translate-x-1/2 items-center gap-2 rounded-md bg-marker px-4 font-semibold text-ink shadow-soft"
+          >
+            <Volume2 size={18} aria-hidden />
+            {t.stage.video.tapToHear}
+          </button>
+        )}
+      </div>
+      <p className="text-center text-[13px]">{note}</p>
+    </div>
+  );
+}
+
+// F1: an uploaded video (MP4, WebM, MOV). Same idea as YouTube: the teacher's player has the
+// controls and publishes play, pause and jumps in her `video` attribute; the student's player
+// follows, without controls. Each side plays its own copy (downloaded once, lib/room/fileCache).
+function UploadedVideo({ id, model, src }: { id: FileTab; model: RoomModel; src: string }) {
+  const t = useT();
+  const video = useRef<HTMLVideoElement>(null);
+  const [broken, setBroken] = useState(false);
+  const [needsTap, setNeedsTap] = useState(false);
+  const teacher = model.role === "teacher";
+  const followed = !teacher && model.view.video?.tab === id ? model.view.video : null;
+  const followedRef = useRef<VideoState | null>(null);
+  useEffect(() => {
+    followedRef.current = followed;
+  }, [followed]);
+  const setVideo = model.setVideo;
+
+  // Teacher: every play, pause and jump.
+  useEffect(() => {
+    const v = video.current;
+    if (!teacher || !v || !setVideo) return;
+    const publish = () => setVideo({ tab: id, playing: !v.paused && !v.ended, at: v.currentTime, ts: Date.now() });
+    const events = ["play", "pause", "seeked", "ended", "loadedmetadata"] as const;
+    events.forEach((e) => v.addEventListener(e, publish));
+    publish();
+    return () => events.forEach((e) => v.removeEventListener(e, publish));
+  }, [teacher, setVideo, id]);
+
+  // Student: follow on every change and every 2 seconds against drift.
+  useEffect(() => {
+    if (teacher) return;
+    const follow = () => {
+      const v = video.current;
+      const s = followedRef.current;
+      if (!v || !s || !v.duration) return;
+      const target = Math.min(videoPosition(s), v.duration);
+      if (Math.abs(v.currentTime - target) > DRIFT) v.currentTime = target;
+      if (s.playing && v.paused) {
+        v.play().catch(() => {
+          // Blocked with sound (no tap on this page yet): play muted and offer the sound.
+          v.muted = true;
+          setNeedsTap(true);
+          void v.play().catch(() => {});
+        });
+      }
+      if (!s.playing && !v.paused) v.pause();
+    };
+    follow();
+    const timer = setInterval(follow, 2000);
+    return () => clearInterval(timer);
+  }, [teacher, followed]);
+
+  if (broken) {
+    return (
+      <div className="flex h-full items-center justify-center bg-video p-4 text-center text-sm text-surface-2">
+        {t.stage.uploadedVideo.failed}
+      </div>
+    );
+  }
+  const note = teacher ? t.stage.video.teacherNote(cap(model.otherName)) : t.stage.video.studentNote(cap(model.otherName));
+  return (
+    <div className="flex h-full flex-col gap-3 bg-video p-3 text-surface-2">
+      <div className="relative min-h-0 w-full flex-1">
+        <video
+          ref={video}
+          src={src}
+          controls={teacher}
+          playsInline
+          preload="auto"
+          onError={() => setBroken(true)}
+          data-testid="uploaded-video"
+          data-following={followed ? (followed.playing ? "playing" : "paused") : "none"}
+          className="absolute inset-0 h-full w-full object-contain"
+        />
+        {!teacher && <div className="absolute inset-0" aria-hidden />}
+        {needsTap && (
+          <button
+            type="button"
+            onClick={() => {
+              if (video.current) video.current.muted = false;
               setNeedsTap(false);
             }}
             className="absolute bottom-3 left-1/2 inline-flex h-11 -translate-x-1/2 items-center gap-2 rounded-md bg-marker px-4 font-semibold text-ink shadow-soft"

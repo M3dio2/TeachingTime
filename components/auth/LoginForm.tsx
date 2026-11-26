@@ -68,7 +68,7 @@ export default function LoginForm() {
           label={t.auth.password}
           placeholder={t.auth.passwordPlaceholder}
           aside={
-            <Link href="/forgot-password" className={`${textLink} text-sm`}>
+            <Link href="/forgot-password" className={`${textLink} -my-3 inline-block py-3 text-sm`}>
               {t.auth.forgotPasswordLink}
             </Link>
           }
@@ -86,7 +86,7 @@ export default function LoginForm() {
       </form>
       <p className="text-[15px] text-ink-muted">
         {t.auth.newHere}{" "}
-        <Link href="/signup" className={textLink}>
+        <Link href="/signup" className={`${textLink} -my-3 inline-block py-3`}>
           {t.auth.createTeacherAccount}
         </Link>
       </p>

@@ -11,6 +11,7 @@ export const stage: typeof en = {
     video: "Video",
     link: "Link",
     quiz: "Quiz",
+    txt: "Textdatei",
   },
   lesson: "Lektion",
   openTabs: "Offene Tabs",
@@ -49,6 +50,8 @@ export const stage: typeof en = {
   stopSharing: "Teilen beenden",
 
   files: {
+    documents: "Dokumente",
+    videos: "Videos",
     pdfs: "PDFs",
     docs: "Word-Dateien",
     pictures: "Bilder",
@@ -63,7 +66,7 @@ export const stage: typeof en = {
     clickOrDrag: "Klicken zum Öffnen oder auf die Bühne ziehen",
     show: (name) => `${name} zeigen`,
     open: (name) => `${name} öffnen`,
-    empty: "Noch keine Dateien. Lade Bilder, PDFs und Audio im Classroom hoch.",
+    empty: "Noch keine Dateien. Lade sie im Classroom hoch.",
     onScreen: "Auf dem Bildschirm",
     inATab: "In einem Tab",
     folded: (title) => `${title}, eingeklappt`,
@@ -72,6 +75,9 @@ export const stage: typeof en = {
     playOrDrag: "Abspielen oder auf die Bühne ziehen",
     playing: "Läuft",
   },
+
+  textFile: { opening: "Text wird geöffnet…", failed: "Diese Textdatei konnte nicht geöffnet werden." },
+  uploadedVideo: { failed: "Dieses Video kann in diesem Browser nicht abgespielt werden." },
 
   picture: {
     failed: "Dieses Bild konnte nicht geöffnet werden.",
@@ -146,6 +152,9 @@ export const stage: typeof en = {
   },
 
   textPad: {
+    emptyTeacher: (name: string) => `Schreib hier. ${name} sieht es beim Tippen.`,
+    emptyStudentCanWrite: "Schreib hier. Deine Lehrperson sieht es beim Tippen.",
+    emptyStudent: "Hier schreibt deine Lehrperson. Du siehst es beim Tippen.",
     label: "Notizen",
     bold: "Fett",
     italic: "Kursiv",

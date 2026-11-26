@@ -2,6 +2,7 @@
 
 import { isTrackReference, useRoomContext, useTracks, VideoTrack } from "@livekit/components-react";
 import { Track } from "livekit-client";
+import { NotebookPen } from "lucide-react";
 import dynamic from "next/dynamic";
 import TextPad from "@/components/board/TextPad";
 import Chip from "@/components/ui/Chip";
@@ -10,6 +11,7 @@ import { isFileTab, type TabId } from "@/lib/room/tabs";
 import { clearBoard, clearText } from "@/lib/sync/clearLesson";
 import { isTeacher } from "@/lib/sync/useTeacherSettings";
 import DocPane from "./DocPane";
+import { TextFilePane } from "./FileCardPane";
 import LinkPane from "./LinkPane";
 import QuizPane from "./QuizPane";
 import VideoPane from "./VideoPane";
@@ -35,19 +37,13 @@ export default function TabPane({ id, model }: { id: TabId; model: RoomModel }) 
     if (id.startsWith("video:")) return <VideoPane id={id} model={model} />;
     if (id.startsWith("link:")) return <LinkPane id={id} model={model} />;
     if (id.startsWith("quiz:")) return <QuizPane id={id} model={model} />;
+    if (id.startsWith("txt:")) return <TextFilePane id={id} model={model} />;
     return <PicturePane id={id} model={model} />;
   }
   const teacher = model.role === "teacher";
   const chip = <WhoWrites model={model} />;
   if (id === "text") {
-    return (
-      <TextPad
-        doc={model.doc}
-        editable={model.canEdit}
-        chip={chip}
-        onClear={teacher ? () => clearText(model.doc) : undefined}
-      />
-    );
+    return <TextTab model={model} chip={chip} />;
   }
   return (
     <Whiteboard
@@ -108,5 +104,37 @@ function ScreenPane({ model }: { model: RoomModel }) {
         </div>
       )}
     </div>
+  );
+}
+
+function TextTab({ model, chip }: { model: RoomModel; chip: React.ReactNode }) {
+  const t = useT();
+  const teacher = model.role === "teacher";
+  return (
+    <TextPad
+      doc={model.doc}
+      editable={model.canEdit}
+      chip={
+        model.noteSavedAt ? (
+          <span className="flex items-center gap-2">
+            {chip}
+            <span className="hidden items-center gap-1 text-xs text-ink-muted sm:inline-flex" data-testid="note-saved">
+              <NotebookPen size={13} aria-hidden />
+              {t.plan.savedToNotes}
+            </span>
+          </span>
+        ) : (
+          chip
+        )
+      }
+      onClear={teacher ? () => clearText(model.doc) : undefined}
+      placeholder={
+        teacher
+          ? t.stage.textPad.emptyTeacher(cap(model.otherName))
+          : model.canEdit
+            ? t.stage.textPad.emptyStudentCanWrite
+            : t.stage.textPad.emptyStudent
+      }
+    />
   );
 }

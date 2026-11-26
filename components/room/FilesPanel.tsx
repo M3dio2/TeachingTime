@@ -1,8 +1,8 @@
 "use client";
 
 import {
+  Clapperboard,
   FileText,
-  FileType2,
   GripVertical,
   ImageIcon,
   Link2,
@@ -13,10 +13,11 @@ import {
   PanelRightOpen,
   Pause,
   Play,
-  SquarePlay,
   type LucideIcon,
 } from "lucide-react";
 import { useRef, useState } from "react";
+import { fileIcon } from "@/components/files/fileIcon";
+import { type FileGroup, groupOf } from "@/lib/files/uploadResource";
 import { useT } from "@/lib/i18n/client";
 import { youtubeId } from "@/lib/room/links";
 import type { Quiz } from "@/lib/quiz";
@@ -26,33 +27,34 @@ import type { RoomModel } from "./roomModel";
 // A classroom file, as the room's files panel lists it (app/lesson/[id]/page.tsx).
 export type RoomFile = {
   id: string;
-  kind: "image" | "pdf" | "doc" | "audio" | "link" | "quiz";
+  kind: "image" | "pdf" | "doc" | "audio" | "link" | "quiz" | "video" | "text";
   name: string;
   previewUrl?: string; // pictures only
   url?: string; // links only
   quiz?: Quiz; // quizzes only (Q1): the teacher's quiz, with the answers
 };
 
-// `title` names the heading in t.stage.files.
-const SECTIONS: {
-  kind: RoomFile["kind"];
-  title: "pdfs" | "docs" | "pictures" | "audio" | "links" | "quizzes";
-  Icon: LucideIcon;
-}[] = [
-  { kind: "pdf", title: "pdfs", Icon: FileText },
-  { kind: "doc", title: "docs", Icon: FileType2 },
-  { kind: "image", title: "pictures", Icon: ImageIcon },
-  { kind: "audio", title: "audio", Icon: Music },
-  { kind: "link", title: "links", Icon: Link2 },
-  { kind: "quiz", title: "quizzes", Icon: ListChecks },
+// F1: the panel groups files like the Classroom page; `title` names the heading in t.stage.files.
+type PanelGroup = FileGroup | "quizzes";
+const GROUPS: { group: PanelGroup; Icon: LucideIcon }[] = [
+  { group: "documents", Icon: FileText },
+  { group: "pictures", Icon: ImageIcon },
+  { group: "videos", Icon: Clapperboard },
+  { group: "audio", Icon: Music },
+  { group: "links", Icon: Link2 },
+  { group: "quizzes", Icon: ListChecks },
 ];
+const isYouTube = (f: RoomFile) => f.kind === "link" && !!f.url && !!youtubeId(f.url);
+const groupOfFile = (f: RoomFile): PanelGroup => (f.kind === "quiz" ? "quizzes" : groupOf(f.kind, isYouTube(f)));
 
 export const tabOf = (f: RoomFile): FileTab | null =>
   f.kind === "audio"
     ? null
     : f.kind === "link"
       ? fileTabId(f.url && youtubeId(f.url) ? "video" : "link", f.id)
-      : fileTabId(f.kind, f.id);
+      : f.kind === "text"
+        ? fileTabId("txt", f.id)
+        : fileTabId(f.kind, f.id);
 
 // Opening a file from the panel or the phone sheet (docs/design/HANDOFF.md, "Opening files"):
 // already open → it becomes active; one tab open → it opens beside; two open → nothing changes
@@ -183,14 +185,14 @@ export function FileList({
   }
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-5 overflow-auto px-2 py-3">
-      {SECTIONS.map(({ kind, title: key, Icon }) => {
-        const title = ft[key];
-        const items = files.filter((f) => f.kind === kind);
+      {GROUPS.map(({ group, Icon }) => {
+        const title = ft[group];
+        const items = files.filter((f) => groupOfFile(f) === group);
         if (!items.length) return null;
         return (
-          <section key={kind} aria-label={title} className="flex flex-col gap-1">
+          <section key={group} aria-label={title} className="flex flex-col gap-1">
             <h3 className="px-2 pb-1 text-[13px] font-semibold text-ink-muted">{title}</h3>
-            {kind === "image" ? (
+            {group === "pictures" ? (
               <ul className="grid grid-cols-3 gap-2 px-2">
                 {items.map((f) => {
                   const status = fileStatus(model, tabOf(f)!);
@@ -227,7 +229,7 @@ export function FileList({
             ) : (
               <ul className="flex flex-col">
                 {items.map((f) => {
-                  const RowIcon = f.kind === "link" && f.url && youtubeId(f.url) ? SquarePlay : Icon;
+                  const RowIcon = fileIcon(f.kind, f.name, isYouTube(f));
                   const row = (
                     <>
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-surface-2 text-accent">
@@ -236,7 +238,7 @@ export function FileList({
                       <span className="min-w-0 flex-1 truncate text-sm font-medium">{f.name}</span>
                     </>
                   );
-                  if (kind === "audio") {
+                  if (f.kind === "audio") {
                     return <AudioRow key={f.id} file={f} model={model} drag={onDrag ? dragProps(f) : undefined} />;
                   }
                   const status = fileStatus(model, tabOf(f)!);
@@ -289,12 +291,12 @@ export function FilesStrip({ title, onUnfold }: { title: string; onUnfold: () =>
         <PanelRightOpen size={16} aria-hidden />
       </button>
       <span aria-hidden className="my-1 h-px w-6 bg-line" />
-      {SECTIONS.map(({ kind, title: key, Icon }) => (
+      {GROUPS.map(({ group, Icon }) => (
         <button
-          key={kind}
+          key={group}
           type="button"
-          aria-label={t.stage.files[key]}
-          title={t.stage.files[key]}
+          aria-label={t.stage.files[group]}
+          title={t.stage.files[group]}
           onClick={onUnfold}
           className={`${button} text-accent`}
         >

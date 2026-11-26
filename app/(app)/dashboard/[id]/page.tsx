@@ -6,6 +6,8 @@ import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import { BackToClassrooms, ClassroomLoading, LinkField, RemoveButton } from "@/components/classroom/ClassroomBits";
 import ClassroomFiles, { type Resource } from "@/components/classroom/ClassroomFiles";
+import LessonNotes, { type Note } from "@/components/classroom/LessonNotes";
+import NextLesson from "@/components/classroom/NextLesson";
 import { StorageCard } from "@/components/classroom/FileUpload";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
 import { buttonClass } from "@/components/ui/Button";
@@ -33,7 +35,9 @@ export default function ClassroomPage({ params }: PageProps<"/dashboard/[id]">) 
         <Wordmark underline="still" />
         <BackToClassrooms />
       </header>
-      <main className="mx-auto flex w-full max-w-[1120px] flex-wrap items-start gap-6 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
+      {/* Two columns only where both fit (lg); narrower, everything is full width and the cards
+          on the left flow into two columns (below). */}
+      <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-6 px-[clamp(16px,4vw,32px)] pt-3 pb-16 lg:flex-row lg:items-start">
         <Suspense fallback={<ClassroomLoading />}>
           <Classroom params={params} />
         </Suspense>
@@ -54,11 +58,13 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
     { data: results },
     { data: allQuizzes },
     { data: links },
+    { data: notes },
+    { data: sessions },
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("lessons")
-      .select("id, title, invite_slug, last_active_at")
+      .select("id, title, invite_slug, last_active_at, next_lesson_at, repeats_weekly")
       .eq("id", id)
       .eq("kind", "student")
       .maybeSingle(),
@@ -76,6 +82,20 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
       .limit(20),
     supabase.from("quizzes").select("id, title, questions").order("title"),
     supabase.from("quiz_classrooms").select("quiz_id").eq("lesson_id", id),
+    supabase
+      .from("lesson_notes")
+      .select("id, lesson_date, body")
+      .eq("lesson_id", id)
+      .order("lesson_date", { ascending: false })
+      .order("created_at", { ascending: false })
+      .limit(100),
+    supabase
+      .from("lesson_sessions")
+      .select("started_at, ended_at")
+      .eq("lesson_id", id)
+      .not("ended_at", "is", null)
+      .order("started_at", { ascending: false })
+      .limit(30),
   ]);
   if (!student || !auth.user) notFound();
 
@@ -94,7 +114,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
 
   return (
     <>
-      <aside className="flex min-w-0 flex-[1_1_300px] flex-col gap-4 md:max-w-[380px]">
+      <aside className="min-w-0 gap-4 [column-width:300px] *:mb-4 *:break-inside-avoid lg:flex lg:w-[360px] lg:shrink-0 lg:[column-width:auto] lg:flex-col lg:*:mb-0">
         <section className="flex flex-col gap-[18px] rounded-panel border border-line bg-surface p-5">
           <div className="flex items-center gap-3.5">
             <span className="inline-flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-surface-2 font-display text-2xl font-extrabold text-accent">
@@ -119,6 +139,13 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           </Link>
           <StudentLink t={t} slug={student.invite_slug} name={student.title} />
         </section>
+        <NextLesson
+          lessonId={student.id}
+          name={student.title}
+          slug={student.invite_slug}
+          nextAt={student.next_lesson_at}
+          weekly={student.repeats_weekly}
+        />
         <StorageCard usedBytes={Number(usedBytes ?? 0)} />
         <ClassroomQuizzes
           t={tq}
@@ -127,16 +154,26 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           added={new Set((links ?? []).map((l) => l.quiz_id))}
         />
         <QuizResults t={tq} lessonId={student.id} results={(results ?? []) as QuizResult[]} />
-        <RemoveClassroom t={t} id={student.id} name={student.title} className="hidden md:flex" />
+        <RemoveClassroom t={t} id={student.id} name={student.title} className="hidden lg:flex" />
       </aside>
-      <ClassroomFiles
-        files={resources.map((r) => ({ id: r.id, kind: r.kind, name: r.name, size: r.size, created_at: r.created_at, url: r.url ?? undefined }))}
-        teacherId={auth.user.id}
-        lessonId={student.id}
-        usedBytes={Number(usedBytes ?? 0)}
-      />
+      <div className="flex min-w-0 flex-1 flex-col gap-6">
+        <ClassroomFiles
+          files={resources.map((r) => ({ id: r.id, kind: r.kind, name: r.name, size: r.size, created_at: r.created_at, url: r.url ?? undefined }))}
+          teacherId={auth.user.id}
+          lessonId={student.id}
+          usedBytes={Number(usedBytes ?? 0)}
+        />
+        <LessonNotes
+          lessonId={student.id}
+          notes={(notes ?? []) as Note[]}
+          past={(sessions ?? []).map((s) => ({
+            started_at: s.started_at,
+            minutes: Math.max(1, Math.round((new Date(s.ended_at!).getTime() - new Date(s.started_at).getTime()) / 60000)),
+          }))}
+        />
+      </div>
       {/* Phones: Remove sits at the very end of the page, after the files. */}
-      <RemoveClassroom t={t} id={student.id} name={student.title} className="flex md:hidden" />
+      <RemoveClassroom t={t} id={student.id} name={student.title} className="flex lg:hidden" />
     </>
   );
 }

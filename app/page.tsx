@@ -140,7 +140,6 @@ export default function Home() {
       <header className={`${section} flex items-center justify-between gap-4 py-5`}>
         <Link
           href="/"
-          aria-label="TeachingTime, start page"
           className="rounded-md focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
         >
           <Wordmark underline="none" />
@@ -177,9 +176,10 @@ export default function Home() {
                 Create your free Classroom
                 <ArrowRight size={18} aria-hidden />
               </Link>
-              <Link href="/login" className={buttonClass("secondary", "md", "h-12 px-5 text-base")}>
-                Log in
-              </Link>
+              {/* Review B13: the header already has Log in; here, a look at how it works. */}
+              <a href="#how" className={buttonClass("ghost", "md", "h-12 px-4 text-base text-ink!")}>
+                How it works
+              </a>
             </div>
             <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-muted">
               {["Free while it's new", "Nothing to install", "Students need no account"].map((t) => (
@@ -298,13 +298,13 @@ export default function Home() {
         <div className={`${section} flex flex-wrap items-center justify-between gap-4 py-8 text-sm text-ink-muted`}>
           <Wordmark size="sm" underline="none" />
           <nav aria-label="About" className="flex flex-wrap gap-x-5 gap-y-2">
-            <Link href="/privacy" className="hover:text-ink">
+            <Link href="/privacy" className="-my-3 inline-block py-3 hover:text-ink">
               Privacy
             </Link>
-            <Link href="/terms" className="hover:text-ink">
+            <Link href="/terms" className="-my-3 inline-block py-3 hover:text-ink">
               Terms
             </Link>
-            <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-ink">
+            <a href={`mailto:${CONTACT_EMAIL}`} className="-my-3 inline-block py-3 hover:text-ink">
               {CONTACT_EMAIL}
             </a>
             <span>Made in Switzerland</span>
