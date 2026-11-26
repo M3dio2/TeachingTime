@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TeachingTime · Calendar, Library, Slides · concepts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Tokens lifted from app/globals.css */
+  :root {
+    --paper:#faf6f0; --surface:#fff; --surface-2:#f3ebe0; --line:#e6d9c8; --ink:#3b2a1e; --muted:#76604f;
+    --accent:#8b5e3c; --accent-h:#6f4a2e; --danger:#b4442f; --ok:#52703f; --video:#2e2620;
+    --marker:#f4d35e; --marker-soft:#fbedb5; --marker-ink:#6b4e0e; --r:10px; --shadow:0 6px 20px rgb(59 42 30 / .12);
+    --display:"Bricolage Grotesque", Geist, system-ui, sans-serif; --sans:Geist, system-ui, sans-serif;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:#e9e1d6; color:var(--ink); font:15px/1.45 var(--sans); }
+  button { font:inherit; color:inherit; cursor:pointer; }
+  /* Prototype chrome (not part of the design) */
+  .chrome { position:sticky; top:0; z-index:50; background:#2b221c; color:#f3ebe0; padding:10px 16px; display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+  .chrome b { font-family:var(--display); margin-right:10px; }
+  .chrome button { background:transparent; border:1px solid #5b4a3d; color:#f3ebe0; border-radius:999px; padding:5px 11px; font-size:13px; }
+  .chrome button[aria-pressed=true] { background:var(--marker); color:var(--ink); border-color:var(--marker); }
+  .note { max-width:1180px; margin:18px auto 0; padding:0 16px; color:#5a4636; font-size:14px; }
+  .note strong { color:var(--ink); }
+  .screen { display:none; padding:18px 16px 60px; }
+  .screen.on { display:block; }
+  .frame { max-width:1180px; margin:0 auto; background:var(--paper); border-radius:14px; box-shadow:0 20px 50px rgb(59 42 30 / .18); overflow:hidden; }
+  .phone { width:390px; margin:0 auto; background:var(--paper); border-radius:34px; box-shadow:0 20px 50px rgb(59 42 30 / .25); overflow:hidden; border:10px solid #1f1814; min-height:780px; }
+  /* App bits */
+  header.app { display:flex; align-items:center; justify-content:space-between; padding:18px 28px; }
+  .wordmark { display:flex; gap:8px; align-items:center; font:800 20px var(--display); letter-spacing:-.01em; }
+  .tile { width:24px; height:24px; border-radius:6px; background:var(--ink); color:var(--marker); display:grid; place-items:center; font-size:14px; }
+  .hdr-right { display:flex; gap:8px; align-items:center; }
+  .chip { display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 12px; border:1px solid var(--line); border-radius:999px; background:var(--surface); font-size:14px; }
+  .avatar { width:28px; height:28px; border-radius:50%; background:var(--surface-2); color:var(--accent); display:grid; place-items:center; font:800 14px var(--display); }
+  nav.tabs { display:flex; gap:4px; padding:0 28px; border-bottom:1px solid var(--line); }
+  nav.tabs a { padding:10px 14px; font-weight:600; color:var(--muted); text-decoration:none; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  nav.tabs a.cur { color:var(--ink); border-color:var(--ink); }
+  main { padding:22px 28px 32px; }
+  h1 { font:800 32px/1.1 var(--display); letter-spacing:-.02em; margin:0; }
+  h2 { font:600 19px/1.2 var(--sans); margin:0; }
+  .muted { color:var(--muted); }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; height:40px; padding:0 16px; border-radius:6px; font-weight:600; border:1px solid transparent; white-space:nowrap; }
+  .btn.primary { background:var(--accent); color:#fff; } .btn.primary:hover { background:var(--accent-h); }
+  .btn.secondary { background:var(--surface); border-color:var(--line); } .btn.secondary:hover { background:var(--surface-2); }
+  .btn.ghost { background:transparent; } .btn.ghost:hover { background:var(--surface-2); }
+  .btn.sm { height:34px; padding:0 12px; font-size:14px; }
+  .btn.marker { background:var(--marker); color:var(--ink); }
+  .panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); }
+  .row { display:flex; align-items:center; gap:12px; }
+  .grid-cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:14px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:var(--r); padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .card .name { font-weight:600; font-size:17px; }
+  .next { font-size:14px; font-weight:500; display:flex; gap:6px; align-items:center; }
+  .dot { width:8px; height:8px; border-radius:50%; display:inline-block; }
+  .waiting { border-color:var(--ink); box-shadow:3px 3px 0 var(--marker); }
+  .badge-wait { background:var(--marker-soft); color:var(--marker-ink); font-size:12px; font-weight:600; padding:2px 9px; border-radius:999px; }
+  /* Agenda */
+  .agenda { display:flex; flex-direction:column; }
+  .agenda .item { display:grid; grid-template-columns:64px 1fr auto; gap:14px; align-items:center; padding:12px 0; border-top:1px solid var(--line); }
+  .agenda .item:first-child { border-top:0; }
+  .time { font:600 15px var(--sans); font-variant-numeric:tabular-nums; }
+  .time small { display:block; color:var(--muted); font-weight:400; font-size:12px; }
+  .now-line { position:relative; height:0; border-top:2px solid var(--danger); margin:2px 0; }
+  .now-line::before { content:""; position:absolute; left:-5px; top:-6px; width:10px; height:10px; border-radius:50%; background:var(--danger); }
+  .day-h { font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:16px 0 4px; }
+  /* Week grid */
+  .week { display:grid; grid-template-columns:56px repeat(7,1fr); border-top:1px solid var(--line); position:relative; }
+  .week .dh { padding:10px 8px; border-left:1px solid var(--line); font-size:13px; color:var(--muted); }
+  .week .dh b { display:block; font:600 20px var(--sans); color:var(--ink); }
+  .week .dh.today b { background:var(--ink); color:var(--marker); width:34px; height:34px; border-radius:50%; display:grid; place-items:center; }
+  .hours { position:relative; }
+  .hcell { height:48px; border-top:1px solid var(--line); font-size:11px; color:var(--muted); padding:2px 6px 0 0; text-align:right; }
+  .col { position:relative; border-left:1px solid var(--line); }
+  .col .slot { height:48px; border-top:1px solid var(--line); }
+  .col .slot:hover { background:rgb(244 211 94 / .18); }
+  .ev { position:absolute; left:4px; right:4px; border-radius:6px; padding:5px 7px; font-size:12.5px; line-height:1.25; overflow:hidden; border:1px solid; cursor:pointer; }
+  .ev b { display:block; font-size:13px; }
+  .ev.s1 { background:#f6e7d8; border-color:#e3c7a9; } .ev.s2 { background:#e8efdf; border-color:#c6d6b3; }
+  .ev.s3 { background:#efe3ef; border-color:#d9c2d9; } .ev.s4 { background:#e2ebf0; border-color:#bfd0db; } .ev.s5 { background:#f3e6c8; border-color:#e2cb94; }
+  .ev.live { box-shadow:0 0 0 2px var(--ink), 3px 3px 0 2px var(--marker); }
+  .ev.cancelled { background:repeating-linear-gradient(-45deg,#f5efe7,#f5efe7 6px,#eee4d7 6px,#eee4d7 12px); color:var(--muted); text-decoration:line-through; border-color:var(--line); }
+  .now { position:absolute; left:0; right:0; border-top:2px solid var(--danger); z-index:3; }
+  .now::before { content:""; position:absolute; left:-5px; top:-6px; width:10px; height:10px; border-radius:50%; background:var(--danger); }
+  /* Popover */
+  .pop { position:absolute; z-index:10; width:330px; background:var(--surface); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow); padding:16px; display:flex; flex-direction:column; gap:12px; }
+  .field { display:flex; flex-direction:column; gap:5px; font-size:14px; font-weight:500; }
+  .input { height:40px; border:1px solid var(--line); border-radius:6px; padding:0 10px; background:var(--surface); display:flex; align-items:center; justify-content:space-between; font-weight:400; }
+  .seg { display:flex; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  .seg span { flex:1; text-align:center; padding:8px 0; font-size:14px; border-left:1px solid var(--line); }
+  .seg span:first-child { border-left:0; } .seg span.on { background:var(--ink); color:var(--paper); font-weight:600; }
+  .check { display:flex; gap:9px; align-items:center; }
+  .box { width:20px; height:20px; border-radius:5px; border:2px solid var(--accent); background:var(--accent); display:grid; place-items:center; color:#fff; font-size:12px; }
+  .box.off { background:var(--surface); }
+  .menu-item { display:flex; align-items:center; gap:10px; height:40px; padding:0 8px; border-radius:6px; font-size:14px; }
+  .menu-item:hover { background:var(--surface-2); }
+  .sep { height:1px; background:var(--line); }
+  .pill-toggle { display:inline-flex; gap:6px; align-items:center; height:30px; padding:0 10px; border-radius:999px; border:1px solid var(--line); font-size:13px; background:var(--surface); }
+  .pill-toggle.on { background:var(--marker-soft); border-color:var(--marker); color:var(--marker-ink); font-weight:600; }
+  .anno { background:var(--video); color:#f3ebe0; border-radius:10px; padding:12px 14px; font-size:13.5px; line-height:1.5; }
+  .anno b { color:var(--marker); }
+  .two { display:grid; grid-template-columns:1fr 360px; gap:22px; align-items:start; }
+  .file { display:grid; grid-template-columns:36px 1fr auto; gap:12px; align-items:center; padding:10px 0; border-top:1px solid var(--line); }
+  .ficon { width:36px; height:44px; border-radius:5px; background:var(--surface-2); display:grid; place-items:center; font:700 10px var(--sans); color:var(--accent); }
+  .stage { background:#efe7dc; border-radius:10px; display:grid; place-items:center; position:relative; }
+  .slide { background:#fff; aspect-ratio:16/9; width:min(88%, 760px); border-radius:4px; box-shadow:0 4px 14px rgb(0 0 0 / .12); padding:6% 7%; display:flex; flex-direction:column; gap:14px; }
+  @media (prefers-reduced-motion:no-preference) { .ev, .btn { transition:background .15s, box-shadow .15s; } }
+  @media (max-width:900px) { .two { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="chrome" role="toolbar" aria-label="Screens">
+  <b>TeachingTime concepts</b>
+  <button data-s="dashA" aria-pressed="true">1 · Dashboard A</button>
+  <button data-s="dashB">2 · Dashboard B</button>
+  <button data-s="dashC">3 · Dashboard C</button>
+  <button data-s="week">4 · Calendar week</button>
+  <button data-s="lessonPop">5 · A lesson</button>
+  <button data-s="phone">6 · Phone</button>
+  <button data-s="student">7 · Student link</button>
+  <button data-s="library">8 · Library</button>
+  <button data-s="libLesson">9 · Library in a lesson</button>
+  <button data-s="slides">10 · Slides</button>
+</div>
+
+<!-- ============ 1 · Dashboard A (conservative) ============ -->
+<section class="screen on" id="dashA">
+  <p class="note"><strong>Option A · “Today” on top (closest to now).</strong> The dashboard stays the Classrooms page; a short “Today” list sits above it with Start buttons. The week view is its own page (“Calendar” tab). Least change, but planning means switching pages.</p>
+  <div class="frame" style="margin-top:12px">
+    <header class="app"><div class="wordmark"><span class="tile">T</span>TeachingTime</div>
+      <div class="hdr-right"><span class="chip">English ▾</span><span class="chip">Feedback</span><span class="chip"><span class="avatar">R</span>Ms. Rivera ▾</span></div></header>
+    <nav class="tabs"><a class="cur" href="#">Classrooms</a><a href="#">Calendar</a><a href="#">Library</a><a href="#">Quizzes</a></nav>
+    <main>
+      <div class="row" style="justify-content:space-between;align-items:end;margin-bottom:14px"><div><h1>Today</h1><span class="muted">Thursday, 26 November · 3 lessons</span></div><button class="btn secondary sm">Open the calendar</button></div>
+      <div class="panel" style="padding:4px 18px;margin-bottom:28px">
+        <div class="agenda">
+          <div class="item"><div class="time">09:00<small>60 min</small></div><div><b>Tom</b> <span class="muted">· German A2</span></div><span class="muted" style="font-size:14px">Done · 58 min</span></div>
+          <div class="now-line"></div>
+          <div class="item"><div class="time">17:00<small>45 min</small></div><div class="row" style="gap:8px"><b>Lucía</b><span class="badge-wait">Waiting</span></div><button class="btn primary sm">Start lesson</button></div>
+          <div class="item"><div class="time">18:30<small>60 min</small></div><div><b>Amélie</b> <span class="muted">· every Thursday</span></div><button class="btn secondary sm">Start lesson</button></div>
+        </div>
+      </div>
+      <div class="row" style="justify-content:space-between;margin-bottom:12px"><h2>Your Classrooms</h2><button class="btn secondary sm">Start a quick call</button></div>
+      <div class="grid-cards">
+        <div class="card waiting"><div class="row"><span class="avatar" style="width:44px;height:44px;font-size:20px">L</span><div><div class="name">Lucía</div><div class="next">Today 17:00 · Mon &amp; Thu</div></div></div><div class="row"><button class="btn primary sm" style="flex:1">Start lesson</button><button class="btn secondary sm">Copy link</button></div></div>
+        <div class="card"><div class="row"><span class="avatar" style="width:44px;height:44px;font-size:20px">T</span><div><div class="name">Tom</div><div class="next muted">Tue 09:00 · every week</div></div></div><div class="row"><button class="btn primary sm" style="flex:1">Start lesson</button><button class="btn secondary sm">Copy link</button></div></div>
+        <div class="card"><div class="row"><span class="avatar" style="width:44px;height:44px;font-size:20px">W</span><div><div class="name">Wei</div><div class="next muted">Fri 20:00 · every week</div></div></div><div class="row"><button class="btn primary sm" style="flex:1">Start lesson</button><button class="btn secondary sm">Copy link</button></div></div>
+        <div class="card"><div class="row"><span class="avatar" style="width:44px;height:44px;font-size:20px">K</span><div><div class="name">Kenji</div><div class="next muted">Not planned</div></div></div><div class="row"><button class="btn primary sm" style="flex:1">Start lesson</button><button class="btn secondary sm">Copy link</button></div></div>
+      </div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ 2 · Dashboard B (strong fit) ============ -->
+<section class="screen" id="dashB">
+  <p class="note"><strong>Option B · the week beside the Classrooms (my recommendation).</strong> One page: Classrooms on the left as today, “This week” on the right as a running list with Start buttons that light up when it’s time. Planning a lesson happens right on a Classroom card (“Plan”) or in the full calendar for moving things around. On phones the week list comes first.</p>
+  <div class="frame" style="margin-top:12px">
+    <header class="app"><div class="wordmark"><span class="tile">T</span>TeachingTime</div>
+      <div class="hdr-right"><span class="chip">English ▾</span><span class="chip">Feedback</span><span class="chip"><span class="avatar">R</span>Ms. Rivera ▾</span></div></header>
+    <nav class="tabs"><a class="cur" href="#">Classrooms</a><a href="#">Calendar</a><a href="#">Library</a><a href="#">Quizzes</a></nav>
+    <main class="two">
+      <div>
+        <div class="row" style="justify-content:space-between;margin-bottom:14px"><h1>Your Classrooms</h1><button class="btn secondary sm">Start a quick call</button></div>
+        <div class="grid-cards" style="grid-template-columns:repeat(auto-fill,minmax(230px,1fr))">
+          <div class="card waiting"><div class="row"><span class="avatar" style="width:44px;height:44px;font-size:20px">L</span><div><div class="row" style="gap:8px"><span class="name">Lucía</span><span class="badge-wait">Waiting</span></div><div class="next">Today 17:00</div></div></div><div class="row"><button class="btn primary sm" style="flex:1">Start lesson</button><button class="btn secondary sm">⋯</button></div></div>
+          <div class="card"><div class="row"><span class="avatar" style="width:44px;height:44px;font-size:20px">A</span><div><div class="name">Amélie</div><div class="next muted">Today 18:30</div></div></div><div class="row"><button class="btn primary sm" style="flex:1">Start lesson</button><button class="btn secondary sm">⋯</button></div></div>
+          <div class="card"><div class="row"><span class="avatar" style="width:44px;height:44px;font-size:20px">W</span><div><div class="name">Wei</div><div class="next muted">Fri 20:00</div></div></div><div class="row"><button class="btn primary sm" style="flex:1">Start lesson</button><button class="btn secondary sm">⋯</button></div></div>
+          <div class="card"><div class="row"><span class="avatar" style="width:44px;height:44px;font-size:20px">K</span><div><div class="name">Kenji</div><div class="next muted">Not planned · <u style="color:var(--accent)">Plan</u></div></div></div><div class="row"><button class="btn primary sm" style="flex:1">Start lesson</button><button class="btn secondary sm">⋯</button></div></div>
+        </div>
+      </div>
+      <aside class="panel" style="padding:16px 18px">
+        <div class="row" style="justify-content:space-between"><h2>This week</h2><a href="#" class="muted" style="font-size:14px">Calendar →</a></div>
+        <div class="day-h">Today · Thu 26</div>
+        <div class="agenda">
+          <div class="item" style="grid-template-columns:52px 1fr auto"><div class="time">17:00</div><div><b>Lucía</b><div class="muted" style="font-size:13px">now · waiting</div></div><button class="btn primary sm">Start</button></div>
+          <div class="item" style="grid-template-columns:52px 1fr auto"><div class="time">18:30</div><div><b>Amélie</b><div class="muted" style="font-size:13px">in 1 h 20 min</div></div><button class="btn secondary sm">Start</button></div>
+        </div>
+        <div class="day-h">Fri 27</div>
+        <div class="agenda"><div class="item" style="grid-template-columns:52px 1fr auto"><div class="time">20:00</div><div><b>Wei</b><div class="muted" style="font-size:13px">13:00 for Wei (Beijing)</div></div><span></span></div></div>
+        <div class="day-h">Sat 28</div>
+        <div class="agenda"><div class="item" style="grid-template-columns:52px 1fr auto"><div class="time muted" style="text-decoration:line-through">08:00</div><div><b class="muted" style="text-decoration:line-through">Kenji</b><div class="muted" style="font-size:13px">cancelled this week</div></div><span></span></div></div>
+        <div class="day-h">Mon 30</div>
+        <div class="agenda"><div class="item" style="grid-template-columns:52px 1fr auto"><div class="time">17:00</div><div><b>Lucía</b></div><span></span></div></div>
+        <button class="btn ghost sm" style="margin-top:8px;width:100%;border:1px dashed var(--line)">+ Plan a lesson</button>
+      </aside>
+    </main>
+  </div>
+</section>
+
+<!-- ============ 3 · Dashboard C (divergent) ============ -->
+<section class="screen" id="dashC">
+  <p class="note"><strong>Option C · the calendar is home.</strong> Opening TeachingTime shows the week, like Google Calendar; the Classrooms become a side list you drag onto the week to plan. Strong for teachers with 15+ students, but it changes the app’s first impression from “my students” to “my schedule”, and phones get a cramped week.</p>
+  <div class="frame" style="margin-top:12px">
+    <header class="app"><div class="wordmark"><span class="tile">T</span>TeachingTime</div>
+      <div class="hdr-right"><button class="btn secondary sm">‹</button><b>23 – 29 Nov 2026</b><button class="btn secondary sm">›</button><button class="btn secondary sm">Today</button><span class="chip"><span class="avatar">R</span>Ms. Rivera ▾</span></div></header>
+    <main style="display:grid;grid-template-columns:220px 1fr;gap:18px;padding-top:6px">
+      <aside><h2 style="font-size:15px;margin-bottom:8px">Classrooms</h2>
+        <div class="agenda" style="font-size:14px">
+          <div class="item" style="grid-template-columns:28px 1fr;padding:8px 0"><span class="avatar">L</span><span>Lucía <span class="muted">· drag to plan</span></span></div>
+          <div class="item" style="grid-template-columns:28px 1fr;padding:8px 0"><span class="avatar">T</span><span>Tom</span></div>
+          <div class="item" style="grid-template-columns:28px 1fr;padding:8px 0"><span class="avatar">A</span><span>Amélie</span></div>
+          <div class="item" style="grid-template-columns:28px 1fr;padding:8px 0"><span class="avatar">W</span><span>Wei</span></div>
+          <div class="item" style="grid-template-columns:28px 1fr;padding:8px 0"><span class="avatar">K</span><span>Kenji</span></div>
+        </div>
+        <button class="btn secondary sm" style="width:100%;margin-top:10px">+ New Classroom</button>
+      </aside>
+      <div class="panel" style="overflow:hidden" id="weekC"></div>
+    </main>
+  </div>
+</section>
+
+<!-- ============ 4 · Calendar week + New lesson ============ -->
+<section class="screen" id="week">
+  <p class="note"><strong>The calendar page (any option).</strong> A week, 07:00–22:00, in the teacher’s time zone. Click an empty spot → “New lesson” right there: who, when, how long, every week or once. That’s all; a student in another time zone sees their own time on their link.</p>
+  <div class="frame" style="margin-top:12px;position:relative">
+    <header class="app"><div class="wordmark"><span class="tile">T</span>TeachingTime</div>
+      <div class="hdr-right"><span class="chip"><span class="avatar">R</span>Ms. Rivera ▾</span></div></header>
+    <nav class="tabs"><a href="#">Classrooms</a><a class="cur" href="#">Calendar</a><a href="#">Library</a><a href="#">Quizzes</a></nav>
+    <div class="row" style="justify-content:space-between;padding:14px 28px">
+      <div class="row"><button class="btn secondary sm">‹</button><button class="btn secondary sm">Today</button><button class="btn secondary sm">›</button><h2 style="margin-left:6px">23 – 29 November 2026</h2></div>
+      <div class="row"><span class="muted" style="font-size:14px">Times: Europe/Zurich</span><button class="btn secondary sm">Add to Google / Apple calendar</button></div>
+    </div>
+    <div id="weekMain" style="margin:0 28px 28px" class="panel"></div>
+    <div class="pop" style="right:210px;top:370px">
+      <div class="row" style="justify-content:space-between"><h2>New lesson</h2><button class="btn ghost sm" aria-label="Close">✕</button></div>
+      <label class="field">Student<span class="input">Kenji <span class="muted">▾</span></span></label>
+      <div class="row" style="gap:10px"><label class="field" style="flex:1">Day<span class="input">Sun, 29 Nov</span></label><label class="field" style="width:96px">Time<span class="input">10:00</span></label></div>
+      <div class="field">Length<div class="seg"><span>30</span><span>45</span><span class="on">60</span><span>90</span></div></div>
+      <label class="check"><span class="box">✓</span>Every week</label>
+      <div class="anno" style="font-size:13px">Kenji’s time: <b>18:00 in Tokyo</b> (shown on his link)</div>
+      <div class="row" style="justify-content:flex-end"><button class="btn ghost sm">Cancel</button><button class="btn primary sm">Save</button></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 · A lesson popover ============ -->
+<section class="screen" id="lessonPop">
+  <p class="note"><strong>Clicking a lesson in the calendar.</strong> The main thing is the way into the call (“Start lesson”, from 15 min before). Changes ask “only this lesson or every week?” only when it’s a weekly one, like Google Calendar.</p>
+  <div class="frame" style="margin-top:12px;position:relative;min-height:640px">
+    <header class="app"><div class="wordmark"><span class="tile">T</span>TeachingTime</div></header>
+    <nav class="tabs"><a href="#">Classrooms</a><a class="cur" href="#">Calendar</a><a href="#">Library</a><a href="#">Quizzes</a></nav>
+    <div id="weekPop" style="margin:18px 28px 28px;opacity:.55" class="panel"></div>
+    <div class="pop" style="left:calc(50% - 120px);top:190px;width:350px">
+      <div class="row" style="justify-content:space-between;align-items:start"><div><h2 style="font-size:21px">Lucía</h2><div class="muted">Thursday 26 Nov · 17:00–17:45 · every Mon &amp; Thu</div></div><button class="btn ghost sm" aria-label="Close">✕</button></div>
+      <div class="row" style="gap:8px"><span class="badge-wait">Lucía is waiting</span></div>
+      <button class="btn primary" style="width:100%">▶ Start lesson</button>
+      <div class="row" style="gap:8px"><button class="btn secondary sm" style="flex:1">Copy Lucía’s link</button><button class="btn secondary sm" style="flex:1">Open Classroom</button></div>
+      <div class="sep"></div>
+      <div class="menu-item">✎ Change time</div>
+      <div class="menu-item">⨯ Cancel this lesson</div>
+      <div class="anno">Weekly lessons: <b>“Only this lesson / Every week”</b> appears after choosing Change or Cancel. A cancelled lesson stays visible, struck through, so nothing silently disappears.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 · Phone ============ -->
+<section class="screen" id="phone">
+  <p class="note"><strong>Phone.</strong> No week grid: a day-by-day list (like a phone calendar’s agenda). The lesson whose time has come has the big Start button.</p>
+  <div class="phone" style="margin-top:14px">
+    <div style="padding:16px 18px 6px" class="row"><div class="wordmark" style="font-size:17px;flex:1"><span class="tile">T</span>TeachingTime</div><span class="avatar">R</span></div>
+    <nav class="tabs" style="padding:0 10px"><a href="#" class="cur">This week</a><a href="#">Classrooms</a><a href="#">Library</a></nav>
+    <div style="padding:6px 18px 18px">
+      <div class="day-h">Today · Thu 26</div>
+      <div class="panel waiting" style="padding:14px;display:flex;flex-direction:column;gap:10px;margin:6px 0">
+        <div class="row" style="justify-content:space-between"><div><div class="time">17:00 · 45 min</div><b style="font-size:18px">Lucía</b></div><span class="badge-wait">Waiting</span></div>
+        <button class="btn primary" style="height:48px;width:100%">Start lesson</button>
+      </div>
+      <div class="panel" style="padding:14px;margin:6px 0"><div class="time">18:30 · 60 min</div><b style="font-size:18px">Amélie</b> <span class="muted">· in 1 h 20</span></div>
+      <div class="day-h">Fri 27</div>
+      <div class="panel" style="padding:14px;margin:6px 0"><div class="time">20:00 · 60 min</div><b style="font-size:18px">Wei</b></div>
+      <div class="day-h">Sat 28</div>
+      <div class="panel" style="padding:14px;margin:6px 0;color:var(--muted)"><div class="time" style="text-decoration:line-through">08:00</div><b style="text-decoration:line-through">Kenji</b> · cancelled</div>
+      <button class="btn secondary" style="width:100%;margin-top:10px;height:48px">+ Plan a lesson</button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 7 · Student link ============ -->
+<section class="screen" id="student">
+  <p class="note"><strong>What Wei (Beijing) sees on his link.</strong> His own time zone, his next lessons and one “Add to my calendar” (Google, Apple, Outlook, any app). No account. Lessons the teacher cancels disappear here and in his calendar.</p>
+  <div class="phone" style="margin-top:14px">
+    <div style="padding:22px 20px;display:flex;flex-direction:column;gap:16px">
+      <div class="wordmark" style="font-size:16px"><span class="tile">T</span>TeachingTime</div>
+      <div style="background:#2e2620;border-radius:10px;aspect-ratio:4/3;display:grid;place-items:center;color:#cbb9a8;font-size:13px">your camera</div>
+      <h1 style="font-size:30px">Join your <span style="background:linear-gradient(transparent 62%,var(--marker) 62%)">lesson</span></h1>
+      <div class="input" style="height:48px">Your name</div>
+      <button class="btn primary" style="height:48px">Join lesson</button>
+      <div class="panel" style="padding:14px;display:flex;flex-direction:column;gap:8px">
+        <div class="muted" style="font-size:13px">Your lessons with Ms. Rivera · times in Beijing</div>
+        <div class="row" style="justify-content:space-between"><b>Sat 28 Nov · 03:00</b><span class="muted" style="font-size:13px">every week</span></div>
+        <div class="row" style="justify-content:space-between"><span>Sat 5 Dec · 03:00</span></div>
+        <button class="btn secondary sm">Add to my calendar</button>
+      </div>
+      <p class="muted" style="font-size:12px;margin:0">(Fri 20:00 in Zurich = Sat 03:00 in Beijing: the date changes too, and it’s shown that way.)</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 8 · Library ============ -->
+<section class="screen" id="library">
+  <p class="note"><strong>Library: upload once, use in many Classrooms.</strong> Same pattern as quizzes today: a file belongs to the teacher and is switched on for the Classrooms that need it (“All Classrooms” is one switch). A file uploaded inside a Classroom stays that Classroom’s own, and can be moved to the Library later. Stored once, counted once.</p>
+  <div class="frame" style="margin-top:12px">
+    <header class="app"><div class="wordmark"><span class="tile">T</span>TeachingTime</div><div class="hdr-right"><span class="chip"><span class="avatar">R</span>Ms. Rivera ▾</span></div></header>
+    <nav class="tabs"><a href="#">Classrooms</a><a href="#">Calendar</a><a class="cur" href="#">Library</a><a href="#">Quizzes</a></nav>
+    <main class="two">
+      <div>
+        <div class="row" style="justify-content:space-between;margin-bottom:6px"><h1>Library</h1><button class="btn primary sm">+ Add files</button></div>
+        <p class="muted" style="margin:0 0 14px">Files you use with several students. Books up to 100 MB.</p>
+        <div class="row" style="gap:6px;margin-bottom:6px"><span class="pill-toggle on">All</span><span class="pill-toggle">Documents</span><span class="pill-toggle">Pictures</span><span class="pill-toggle">Audio</span><span class="pill-toggle">Videos</span></div>
+        <div>
+          <div class="file"><span class="ficon">PDF</span><div><b>English File – Intermediate (Student’s Book).pdf</b><div class="muted" style="font-size:13px">86 MB · 168 pages · in all Classrooms</div></div><button class="btn secondary sm">Classrooms ▾</button></div>
+          <div class="file" style="background:var(--surface);margin:0 -10px;padding:10px;border-radius:8px;box-shadow:var(--shadow)"><span class="ficon">PDF</span><div><b>Irregular verbs – list.pdf</b><div class="muted" style="font-size:13px">0.4 MB · in 3 of 5 Classrooms</div>
+            <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap"><span class="pill-toggle">All Classrooms</span><span class="pill-toggle on">✓ Lucía</span><span class="pill-toggle on">✓ Tom</span><span class="pill-toggle">Amélie</span><span class="pill-toggle on">✓ Wei</span><span class="pill-toggle">Kenji</span></div></div><span></span></div>
+          <div class="file"><span class="ficon">MP3</span><div><b>Listening – At the airport.mp3</b><div class="muted" style="font-size:13px">3.1 MB · in Lucía, Amélie</div></div><button class="btn secondary sm">Classrooms ▾</button></div>
+          <div class="file"><span class="ficon">IMG</span><div><b>Describe the picture – market.jpg</b><div class="muted" style="font-size:13px">1.2 MB · not in a Classroom yet</div></div><button class="btn secondary sm">Classrooms ▾</button></div>
+        </div>
+      </div>
+      <aside class="panel" style="padding:16px 18px;display:flex;flex-direction:column;gap:12px">
+        <h2>Storage</h2>
+        <div style="height:8px;border-radius:99px;background:var(--surface-2)"><div style="width:38%;height:100%;border-radius:99px;background:var(--accent)"></div></div>
+        <span class="muted" style="font-size:14px">191 of 500 MB · the book counts once, not five times</span>
+        <div class="anno">In a <b>Classroom</b>, files show in two groups: <b>Lucía’s files</b> (only hers: homework, her texts) and <b>From your Library</b>. Dropping a file on the Classroom asks nothing: it’s Lucía’s. “Move to Library” is in its ⋯ menu.</div>
+      </aside>
+    </main>
+  </div>
+</section>
+
+<!-- ============ 9 · Library in a lesson ============ -->
+<section class="screen" id="libLesson">
+  <p class="note"><strong>In the lesson.</strong> The files panel keeps one list, with the Library files below the student’s own. A 168-page book opens at once: only the pages you look at are loaded (the rest stays on the server), and it remembers the page you stopped at last time with this student.</p>
+  <div class="frame" style="margin-top:12px;display:grid;grid-template-columns:200px 1fr 280px;gap:10px;padding:10px;background:#f5efe6;min-height:560px">
+    <div style="display:flex;flex-direction:column;gap:8px"><div style="background:var(--video);border-radius:8px;aspect-ratio:4/3;color:#cbb9a8;display:grid;place-items:center;font-size:12px">Lucía</div><div style="background:var(--video);border-radius:8px;aspect-ratio:4/3;color:#cbb9a8;display:grid;place-items:center;font-size:12px">You</div></div>
+    <div class="stage" style="padding:16px"><div style="background:#fff;width:70%;aspect-ratio:3/4;box-shadow:0 4px 14px rgb(0 0 0 / .12);border-radius:3px;padding:24px;font-size:12px;color:#555"><b style="font-size:16px;color:#222">Unit 7 · Past experiences</b><br><br>7A · Have you ever…?<br><br><span class="muted">page 84 of 168</span></div>
+      <span class="chip" style="position:absolute;top:10px;left:10px">English File – Intermediate · p. 84 ▾</span></div>
+    <div class="panel" style="padding:12px 14px;display:flex;flex-direction:column;gap:2px">
+      <h2 style="font-size:15px">Lucía’s files</h2>
+      <div class="file" style="grid-template-columns:28px 1fr;border:0"><span class="ficon" style="width:28px;height:34px">PDF</span><span style="font-size:14px">Homework 12 – corrected.pdf</span></div>
+      <div class="file" style="grid-template-columns:28px 1fr"><span class="ficon" style="width:28px;height:34px">IMG</span><span style="font-size:14px">Her holiday photo.jpg</span></div>
+      <h2 style="font-size:15px;margin-top:12px">From your Library</h2>
+      <div class="file" style="grid-template-columns:28px 1fr;border:0;background:var(--marker-soft);border-radius:6px;padding:8px"><span class="ficon" style="width:28px;height:34px">PDF</span><span style="font-size:14px"><b>English File – Intermediate</b><br><span class="muted" style="font-size:12px">last time: p. 84</span></span></div>
+      <div class="file" style="grid-template-columns:28px 1fr"><span class="ficon" style="width:28px;height:34px">PDF</span><span style="font-size:14px">Irregular verbs – list.pdf</span></div>
+      <div class="file" style="grid-template-columns:28px 1fr"><span class="ficon" style="width:28px;height:34px">MP3</span><span style="font-size:14px">Listening – At the airport</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 10 · Slides ============ -->
+<section class="screen" id="slides">
+  <p class="note"><strong>Presentations: PDF + a “Slides” view.</strong> PowerPoint, Keynote and Google Slides all export PDF in two clicks (the upload now explains how). In the lesson a PDF gets a “Slides” switch: one slide fills the stage, ← → or the buttons move both screens, and the pen still writes on it. Native .pptx (animations, fonts) would need a paid converter and still look off, so I’d leave it out.</p>
+  <div class="frame" style="margin-top:12px;padding:10px;background:#f5efe6">
+    <div class="stage" style="height:520px">
+      <div class="row" style="position:absolute;top:10px;left:10px;right:10px;justify-content:space-between"><span class="chip">Unit 7 – Past simple.pdf</span><div class="row" style="gap:6px"><span class="pill-toggle">Pages</span><span class="pill-toggle on">Slides</span></div></div>
+      <div class="slide"><span class="muted" style="font-size:13px">Unit 7</span><b style="font:800 36px/1.1 var(--display)">Yesterday I <span style="background:linear-gradient(transparent 60%,var(--marker) 60%)">went</span> …</b><span style="font-size:18px">go → went · buy → bought · see → saw</span><svg viewBox="0 0 300 60" style="width:240px;height:48px" aria-hidden="true"><path d="M10 40 C 60 10, 120 60, 180 25 S 280 35, 290 20" fill="none" stroke="#d9534f" stroke-width="4" stroke-linecap="round"/></svg></div>
+      <div class="row" style="position:absolute;bottom:12px;left:50%;transform:translateX(-50%);gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px"><button class="btn ghost sm">‹</button><span style="font-variant-numeric:tabular-nums">4 / 18</span><button class="btn ghost sm">›</button></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  // Prototype navigation (persisted)
+  const buttons = [...document.querySelectorAll(".chrome button")];
+  const show = (id) => {
+    document.querySelectorAll(".screen").forEach((s) => s.classList.toggle("on", s.id === id));
+    buttons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.s === id)));
+    localStorage.setItem("tt-concept", id);
+  };
+  buttons.forEach((b) => b.addEventListener("click", () => show(b.dataset.s)));
+  const fromHash = location.hash.slice(1);
+  show(document.getElementById(fromHash) ? fromHash : localStorage.getItem("tt-concept") || "dashA");
+  addEventListener("hashchange", () => document.getElementById(location.hash.slice(1)) && show(location.hash.slice(1)));
+
+  // Week grid (shared by screens 3–5)
+  const days = [["Mon", 23], ["Tue", 24], ["Wed", 25], ["Thu", 26], ["Fri", 27], ["Sat", 28], ["Sun", 29]];
+  const START = 7, END = 22, H = 48;
+  const events = [
+    { d: 0, s: 17, m: 45, who: "Lucía", c: "s1" }, { d: 3, s: 17, m: 45, who: "Lucía", c: "s1", live: true },
+    { d: 1, s: 9, m: 60, who: "Tom", c: "s2" }, { d: 3, s: 9, m: 60, who: "Tom", c: "s2", note: "extra" },
+    { d: 3, s: 18.5, m: 60, who: "Amélie", c: "s3" }, { d: 4, s: 20, m: 60, who: "Wei", c: "s4", tz: "Sat 03:00 Beijing" },
+    { d: 5, s: 8, m: 60, who: "Kenji", c: "s5", cancelled: true }, { d: 2, s: 11, m: 30, who: "Trial · Sara", c: "s2" },
+  ];
+  function week(el, opts = {}) {
+    const hoursCol = `<div class="hours">${Array.from({ length: END - START }, (_, i) => `<div class="hcell">${String(START + i).padStart(2, "0")}:00</div>`).join("")}</div>`;
+    const head = `<div></div>${days.map(([n, d], i) => `<div class="dh ${i === 3 ? "today" : ""}">${n}<b>${d}</b></div>`).join("")}`;
+    const cols = days.map((_, i) => {
+      const evs = events.filter((e) => e.d === i).map((e) => {
+        const top = (e.s - START) * H, h = (e.m / 60) * H - 3;
+        const hh = Math.floor(e.s), mm = Math.round((e.s - hh) * 60);
+        const t = `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
+        const short = h < 44;
+        return `<div class="ev ${e.c} ${e.live ? "live" : ""} ${e.cancelled ? "cancelled" : ""}" style="top:${top + 1}px;height:${h}px"><b${short ? ' style="display:inline"' : ""}>${e.who}</b> ${t}${e.tz && h > 60 ? ` · ${e.tz}` : ""}</div>`;
+      }).join("");
+      const now = i === 3 ? `<div class="now" style="top:${(17.2 - START) * H}px"></div>` : "";
+      const ghost = opts.ghost && i === 6 ? `<div class="ev" style="top:${(10 - START) * H + 1}px;height:${H - 3}px;background:var(--marker-soft);border:2px dashed var(--marker-ink);color:var(--marker-ink)"><b>New lesson</b>10:00</div>` : "";
+      return `<div class="col">${Array.from({ length: END - START }, () => `<div class="slot"></div>`).join("")}${evs}${now}${ghost}</div>`;
+    }).join("");
+    el.innerHTML = `<div class="week">${head}${hoursCol}${cols}</div>`;
+  }
+  week(document.getElementById("weekMain"), { ghost: true });
+  week(document.getElementById("weekPop"));
+  week(document.getElementById("weekC"));
+</script>
+</body>
+</html>
