@@ -16,13 +16,26 @@ Tick items off as they're done. One milestone per working session. Details of fi
 # Friends test (date to agree once C1 and L1 show the pace)
 Goal: friends can sign up as teachers and give lessons with their own material. The first plan (by 1 Nov) only had sign-up and audio; after looking at similar products, classrooms, a tabbed call and PDFs come first.
 
-## F2: Fixes from the user (26 Nov 2026), after calendar + Library
-- [ ] Classroom page: drop the "Plan the next lesson" box; just a button to its calendar entry.
-- [ ] Quizzes: a quiz with no finished question isn't created (no empty drafts).
-- [ ] Adding a quiz to a Classroom: the dropdown's design is off.
-- [ ] Lesson notes: don't save a new note every time the teacher leaves and rejoins.
-- [ ] Classroom: files grouped per lesson date (one section per lesson with this student), and
-      the Library visible there.
+## F2: Fixes from the user (26 Nov 2026), branch `fixes-f2` (on top of `calendar-library`)
+- [x] Classroom page: no "Plan the next lesson" box; the next lesson in one line + a button to
+      the calendar (its week, or the plan form when nothing is planned).
+- [x] Quizzes: a quiz with no finished question isn't kept (leaving the editor deletes it; the
+      dashboard hides such drafts and deletes them after 30 min).
+- [x] Adding a quiz to a Classroom: a list dialog instead of the dropdown.
+- [x] Lesson notes: one note per Classroom and day (0020), however often the teacher rejoins.
+- [x] Classroom: files grouped by day (lesson days say so); the Library inside the Files section.
+
+## Waiting for the user (26 Nov 2026)
+- [ ] Run 0019 (Library) again on test, then 0020 (one note per day) on test.
+- [ ] Test site: Vercel Preview env vars → test Supabase/LiveKit, Deployment Protection off,
+      test Supabase redirect URL for previews, Turnstile test key (details in chat 26 Nov).
+- [ ] Look at the calendar/Library/fixes screenshots; OK to merge.
+- [ ] Before merging: run 0018, 0019, 0020 on live.
+- [ ] Real devices: calendar subscription in Google/Apple, week view on iPad, big books on a
+      phone, the drawn waiting circle in Today.
+- [ ] Later (cost): Supabase Pro if books over 50 MB are needed (Free caps one upload at 50 MB).
+- [ ] Legal text check (terms now say 200 MB).
+
 
 ## S1: Speed (was M10)
 Vercel functions ran in North America while Supabase was in US West, so each page waited on several long round trips. Fix: both in the same region. Testing happens in South America, later users are global, so US East is the middle ground (round trips from Chile: São Paulo ~125 ms, US East ~215 ms, Frankfurt ~300 ms). Video is unaffected (LiveKit picks the nearest edge).
