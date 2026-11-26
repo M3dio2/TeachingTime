@@ -157,6 +157,8 @@ export const dashboard = {
   // Also used by lib/files/uploadResource.ts (the room's file panel can pass them too).
   upload: {
     oldWord: (name: string) => `${name} is an old Word file. In Word, save it as .docx (or PDF), then upload that.`,
+    presentation: (name: string) =>
+      `${name} is a presentation. Save it as a PDF first (PowerPoint: File → Export → PDF; Keynote: File → Export To → PDF; Google Slides: File → Download → PDF), then upload the PDF: each slide becomes a page you can show and write on together.`,
     wrongType: (name: string) => `${name}: this kind of file can't be uploaded.`,
     tooBig: (name: string) => `${name} is bigger than 10 MB.`,
     noRoom: (name: string, mb: number) => `${name} doesn't fit: your files can take up ${mb} MB. Delete some first.`,
