@@ -146,7 +146,7 @@ export async function confirmYes(page: Page) {
 
 export async function deleteTestFiles(page: Page) {
   // Only the Files list (quizzes and notes can mention "e2e-" too).
-  const leftovers = page.locator('section[aria-labelledby="files"]').getByRole("listitem").filter({ hasText: /e2e-/ });
+  const leftovers = page.locator('section[aria-labelledby="files"] ul[aria-label^="Files"] > li').filter({ hasText: /e2e-/ });
   while (await leftovers.count()) {
     const before = await leftovers.count();
     await leftovers.first().getByRole("button", { name: "Delete" }).click();

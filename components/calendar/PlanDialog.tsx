@@ -127,7 +127,7 @@ export default function PlanDialog({
               {t.day}
               <input type="date" required value={date} onChange={(e) => setDate(e.target.value)} className={inputClass()} />
             </label>
-            <label className="flex w-[118px] flex-col gap-1 text-sm font-medium">
+            <label className="flex w-[136px] flex-col gap-1 text-sm font-medium">
               {t.time}
               <input type="time" required step={300} value={time} onChange={(e) => setTime(e.target.value)} className={inputClass()} />
             </label>

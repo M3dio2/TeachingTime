@@ -121,6 +121,8 @@ export const dashboard = {
 
   // Files
   files: "Files",
+  filesFromLesson: (day: string) => `Lesson · ${day}`,
+  filesAdded: (day: string) => `Added ${day}`,
   fileCount: (n: number) => `${n} ${n === 1 ? "file" : "files"}`,
   show: "Show",
   all: "All",

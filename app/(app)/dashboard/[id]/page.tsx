@@ -168,19 +168,22 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           teacherId={auth.user.id}
           lessonId={student.id}
           usedBytes={Number(usedBytes ?? 0)}
-        />
-        <ClassroomLibrary
-          lessonId={student.id}
-          name={student.title}
-          files={shared.map((f) => ({
-            id: f.id,
-            kind: f.kind,
-            name: f.name,
-            size: f.size,
-            url: (f.path && urls.get(f.path)) || undefined,
-            all: f.all_classrooms,
-            here: here.has(f.id),
-          }))}
+          lessonDays={(sessions ?? []).map((x) => x.started_at)}
+          library={
+          <ClassroomLibrary
+            lessonId={student.id}
+            name={student.title}
+            files={shared.map((f) => ({
+              id: f.id,
+              kind: f.kind,
+              name: f.name,
+              size: f.size,
+              url: (f.path && urls.get(f.path)) || undefined,
+              all: f.all_classrooms,
+              here: here.has(f.id),
+            }))}
+          />
+          }
         />
         <LessonNotes
           lessonId={student.id}

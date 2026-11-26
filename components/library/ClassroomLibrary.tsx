@@ -26,12 +26,12 @@ export default function ClassroomLibrary({ lessonId, name, files }: { lessonId: 
   const addable = files.filter((f) => !f.all && !f.here);
 
   return (
-    <section aria-labelledby="library-here" className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-4 md:p-6">
+    <section aria-labelledby="library-here" className="flex flex-col gap-2.5 rounded-md border border-marker bg-marker-soft/35 p-3.5">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id="library-here" className="flex items-center gap-2 font-display text-[22px] font-extrabold tracking-[-0.01em]">
-          <Library size={20} aria-hidden className="text-accent" />
+        <h3 id="library-here" className="flex items-center gap-2 text-[16px] font-semibold">
+          <Library size={18} aria-hidden className="text-marker-ink" />
           {t.fromLibrary}
-        </h2>
+        </h3>
         {files.length > 0 ? (
           <button type="button" onClick={() => setPicking(true)} disabled={!addable.length} className={buttonClass("secondary", "sm", "h-9 gap-1.5 px-3 font-semibold")}>
             <Plus size={15} aria-hidden />
@@ -45,7 +45,7 @@ export default function ClassroomLibrary({ lessonId, name, files }: { lessonId: 
       </div>
       <p className="text-sm text-ink-muted">{files.length ? t.fromLibraryHint(name) : t.libraryEmpty}</p>
       {here.length > 0 && (
-        <ul aria-label={t.fromLibrary} className="rounded-md border border-line">
+        <ul aria-label={t.fromLibrary} className="rounded-md border border-line bg-surface">
           {here.map((f, i) => {
             const Icon = fileIcon(f.kind, f.name, false);
             return (

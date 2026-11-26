@@ -2,7 +2,7 @@
 
 import { Info, Library as LibraryIcon, Pause, Play, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { createElement, useEffect, useRef, useState, useSyncExternalStore, useTransition } from "react";
 import { addLink, removeResource } from "@/app/(app)/dashboard/actions";
 import { moveToLibrary } from "@/app/(app)/dashboard/library/actions";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
@@ -10,7 +10,7 @@ import Button from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Field";
 import { useConfirmSubmit } from "@/components/ui/Confirm";
 import { useFormPending } from "@/components/ui/SubmitButton";
-import { useT } from "@/lib/i18n/client";
+import { useLocale, useT } from "@/lib/i18n/client";
 import { linkLabel, youtubeId } from "@/lib/room/links";
 import CloudPick from "@/components/cloud/CloudPick";
 import { fileIcon } from "@/components/files/fileIcon";
@@ -41,13 +41,19 @@ export default function ClassroomFiles({
   teacherId,
   lessonId,
   usedBytes,
+  lessonDays = [],
+  library,
 }: {
   files: Resource[];
   teacherId: string;
   lessonId: string;
   usedBytes: number;
+  lessonDays?: string[]; // when lessons took place (ISO): files are grouped by those days
+  library?: React.ReactNode; // the Library files this Classroom has, shown first
 }) {
   const upload = useFileUpload({ teacherId, lessonId, usedBytes });
+  const mounted = useSyncExternalStore(noopSubscribe, () => true, () => false); // days in her zone
+  const locale = useLocale();
   const t = useT().dashboard;
   const [filter, setFilter] = useState<FileGroup | "all">("all");
   const group = (f: Resource) => groupOf(f.kind, isYouTube(f));
@@ -79,6 +85,7 @@ export default function ClassroomFiles({
       </div>
       {upload.area}
       <AddLink lessonId={lessonId} />
+      {library}
 
       {files.length === 0 ? (
         <p className="text-sm text-ink-muted">{t.noFiles}</p>
@@ -102,51 +109,20 @@ export default function ClassroomFiles({
               ))}
             </div>
           )}
-          <ul aria-label={t.files} className="rounded-md border border-line">
-            {list.map((f, i) => {
-              const Icon = fileIcon(f.kind, f.name, isYouTube(f));
-              return (
-                <li key={f.id} className={`flex items-center gap-3 px-3 py-2.5 ${i ? "border-t border-line" : ""}`}>
-                  {f.kind === "audio" ? (
-                    <Listen file={f} />
-                  ) : f.kind === "image" && f.url ? (
-                    <a
-                      href={f.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      aria-label={t.openFile(f.name)}
-                      className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-line bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-                    >
-                      {/* Signed URLs change on every load, so Next's image optimizer wouldn't help. */}
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={f.url} alt="" loading="lazy" className="h-full w-full object-cover" />
-                    </a>
-                  ) : (
-                    <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2 text-accent">
-                      <Icon size={16} aria-hidden />
-                    </span>
-                  )}
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    {f.url && f.kind !== "audio" ? (
-                      <a
-                        href={f.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="truncate text-[15px] font-medium hover:underline focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-                      >
-                        {f.name}
-                      </a>
-                    ) : (
-                      <span className="truncate text-[15px] font-medium">{f.name}</span>
-                    )}
-                    <Meta file={f} />
-                  </div>
-                  <MoveToLibrary file={f} />
-                  <DeleteFile file={f} />
-                </li>
-              );
-            })}
-          </ul>
+          {groupByDay(list, lessonDays, mounted, locale).map((g) => (
+            <div key={g.key} className="flex flex-col gap-1.5">
+              {g.label !== null && (
+                <h3 className="text-[13px] font-bold tracking-[0.04em] text-ink-muted uppercase" data-testid="files-day">
+                  {g.lesson ? t.filesFromLesson(g.label) : t.filesAdded(g.label)}
+                </h3>
+              )}
+              <ul aria-label={g.label === null ? t.files : `${t.files}: ${g.label}`} className="rounded-md border border-line">
+                {g.files.map((f, i) => (
+                  <FileRow key={f.id} file={f} first={i === 0} />
+                ))}
+              </ul>
+            </div>
+          ))}
         </>
       )}
 
@@ -156,6 +132,76 @@ export default function ClassroomFiles({
       </p>
     </section>
   );
+}
+
+function FileRow({ file: f, first }: { file: Resource; first: boolean }) {
+  const t = useT().dashboard;
+  const icon = createElement(fileIcon(f.kind, f.name, isYouTube(f)), { size: 16, "aria-hidden": true });
+  return (
+    <li className={`flex items-center gap-3 px-3 py-2.5 ${first ? "" : "border-t border-line"}`}>
+      {f.kind === "audio" ? (
+        <Listen file={f} />
+      ) : f.kind === "image" && f.url ? (
+        <a
+          href={f.url}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={t.openFile(f.name)}
+          className="h-9 w-9 shrink-0 overflow-hidden rounded-md border border-line bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+        >
+          {/* Signed URLs change on every load, so Next's image optimizer wouldn't help. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={f.url} alt="" loading="lazy" className="h-full w-full object-cover" />
+        </a>
+      ) : (
+        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-surface-2 text-accent">{icon}</span>
+      )}
+      <div className="flex min-w-0 flex-1 flex-col">
+        {f.url && f.kind !== "audio" ? (
+          <a
+            href={f.url}
+            target="_blank"
+            rel="noreferrer"
+            className="truncate text-[15px] font-medium hover:underline focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+          >
+            {f.name}
+          </a>
+        ) : (
+          <span className="truncate text-[15px] font-medium">{f.name}</span>
+        )}
+        <Meta file={f} />
+      </div>
+      {f.kind !== "link" && <MoveToLibrary file={f} />}
+      <DeleteFile file={f} />
+    </li>
+  );
+}
+
+const noopSubscribe = () => () => {};
+const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+
+// Files by the day they were added, newest first; days with a lesson say so. Before the page
+// knows the browser's time zone (server render): one list.
+function groupByDay(files: Resource[], lessonDays: string[], ready: boolean, locale: string) {
+  if (!ready) return [{ key: "all", label: null as string | null, lesson: false, files }];
+  const lessons = new Set(lessonDays.map((iso) => dayKey(new Date(iso))));
+  const groups: { key: string; label: string | null; lesson: boolean; files: Resource[] }[] = [];
+  for (const f of files) {
+    const d = new Date(f.created_at);
+    const key = dayKey(d);
+    let g = groups.find((x) => x.key === key);
+    if (!g) {
+      g = {
+        key,
+        label: d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric" }),
+        lesson: lessons.has(key),
+        files: [],
+      };
+      groups.push(g);
+    }
+    g.files.push(f);
+  }
+  return groups;
 }
 
 // "PDF · 1.2 MB · Mon, Nov 23", "Picture · 300 KB · …", "YouTube video · …".

@@ -93,7 +93,7 @@ test("L3: a Classroom file moved to the Library stays in the Classroom", async (
   await page.getByRole("button", { name: `Move ${name} to the Library (stays in this Classroom)` }).click();
   const shared = page.getByRole("region", { name: "From your Library" });
   await expect(shared.getByRole("listitem").filter({ hasText: name })).toBeVisible({ timeout: 15_000 });
-  await expect(page.locator('section[aria-labelledby="files"]').getByRole("listitem").filter({ hasText: name })).toHaveCount(0);
+  await expect(page.locator('section[aria-labelledby="files"] ul[aria-label^="Files"] > li').filter({ hasText: name })).toHaveCount(0);
 
   await page.goto("/dashboard/library");
   const row = page.getByRole("list", { name: "Library" }).getByRole("listitem").filter({ hasText: name });
