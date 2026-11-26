@@ -17,6 +17,7 @@ export function useNoteAutosave(doc: Y.Doc, lessonId: string | undefined) {
     const fragment = doc.getXmlFragment("default"); // Tiptap Collaboration's default field
     last.current = fragmentText(fragment); // what was there when the lesson opened
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const openedAt = Date.now();
     const save = () => {
       clearTimeout(timer);
       const text = fragmentText(fragment);
@@ -24,8 +25,14 @@ export function useNoteAutosave(doc: Y.Doc, lessonId: string | undefined) {
       last.current = text;
       void saveLessonNote(lessonId, text).then((ok) => ok && setSavedAt(Date.now()));
     };
+    // The editor tidies the loaded pad in its first moments (an empty paragraph, the snapshot):
+    // that's not a change to save, it becomes the starting point.
     const changed = () => {
       clearTimeout(timer);
+      if (Date.now() - openedAt < 2_000) {
+        last.current = fragmentText(fragment);
+        return;
+      }
       timer = setTimeout(save, SAVE_AFTER_MS);
     };
     fragment.observeDeep(changed);
