@@ -7,6 +7,7 @@ import {
   TEST_PNG,
   testPdf,
   uploadToClassroom,
+  pdfAt,
 } from "./helpers";
 
 // L2a: PDFs and pictures from the files panel open as tabs for both; the PDF's scroll follows
@@ -38,7 +39,7 @@ test.describe("L2a file tabs", () => {
       await files.getByRole("button", { name: new RegExp(pdfName) }).click();
       for (const p of [page, student]) {
         await expect(tabs(p)).toHaveText(["Text", pdfName], { timeout: 20_000 });
-        await expect(p.getByText("Page 1 of 3")).toBeVisible({ timeout: 30_000 });
+        await expect(pdfAt(p)).toHaveAttribute("data-at", "1/3", { timeout: 30_000 });
       }
       await expect(files.getByRole("button", { name: new RegExp(pdfName) })).toContainText("On screen");
       await expect(student.getByText(/chooses the page$/)).toBeVisible();
@@ -48,9 +49,27 @@ test.describe("L2a file tabs", () => {
         const second = el.querySelector('[data-page="2"]') as HTMLElement;
         el.scrollTop = second.offsetTop + 40;
       });
-      await expect(page.getByText("Page 2 of 3")).toBeVisible();
-      await expect(student.getByText("Page 2 of 3")).toBeVisible({ timeout: 10_000 });
+      await expect(pdfAt(page)).toHaveAttribute("data-at", "2/3");
+      await expect(pdfAt(student)).toHaveAttribute("data-at", "2/3", { timeout: 10_000 });
       await expect(page.getByText(/sees page 2$/)).toBeVisible();
+
+      // Type a page number: both jump there.
+      const jumpTo = page.getByRole("spinbutton", { name: "Go to page (1 to 3)" });
+      await jumpTo.fill("3");
+      await jumpTo.press("Enter");
+      await expect(pdfAt(page)).toHaveAttribute("data-at", "3/3");
+      await expect(pdfAt(student)).toHaveAttribute("data-at", "3/3", { timeout: 10_000 });
+
+      // Slides: one page fills the stage for both; the arrows move both.
+      await page.getByRole("button", { name: "Slides", exact: true }).click();
+      for (const p of [page, student]) await expect(p.getByTestId("pdf-slides")).toBeVisible({ timeout: 10_000 });
+      await expect(student.locator('[data-page="3"]')).toBeVisible();
+      await page.getByRole("button", { name: "Previous slide" }).click();
+      await expect(student.locator('[data-page="2"]')).toBeVisible({ timeout: 10_000 });
+      await expect(pdfAt(student)).toHaveAttribute("data-at", "2/3");
+      await page.getByRole("button", { name: "Pages", exact: true }).click();
+      for (const p of [page, student]) await expect(p.getByTestId("pdf-scroller")).toBeVisible({ timeout: 10_000 });
+      await expect(pdfAt(student)).toHaveAttribute("data-at", "2/3");
 
       // Two tabs: a click only shows the hint …
       await files.getByRole("button", { name: `Open ${pngName}` }).click();
@@ -86,6 +105,51 @@ test.describe("L2a file tabs", () => {
     } finally {
       await page.mouse.up().catch(() => {}); // in case a drag was left half-done
       // Leave properly first: the room sends the teacher to the dashboard when it disconnects.
+      const leave = page.getByRole("button", { name: "Leave the lesson" });
+      if (await leave.count()) {
+        await leave.click();
+        await page.waitForURL("**/dashboard");
+      } else {
+        await page.goto("/dashboard");
+      }
+      await openTestClassroom(page);
+      await deleteTestFiles(page);
+    }
+  });
+
+  test("a landscape PDF opens as slides and folds the files away while it's shown", async ({ page, browser }) => {
+    const name = `e2e-${Date.now()}-slides.pdf`;
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const joinPath = await startTestLesson(page, async (p) => {
+      await deleteTestFiles(p);
+      await uploadToClassroom(p, name, "application/pdf", testPdf(4, true));
+    });
+    try {
+      const student = await joinAsStudent(browser, joinPath);
+      const files = page.getByRole("complementary", { name: "Test's files", exact: true });
+      const folded = page.getByRole("complementary", { name: "Test's files, folded" });
+      await expect(files).toBeVisible();
+      await files.getByRole("button", { name: new RegExp(name) }).click();
+
+      // Slides for both, alone on the stage, the files folded for the teacher.
+      for (const p of [page, student]) await expect(p.getByTestId("pdf-slides")).toBeVisible({ timeout: 30_000 });
+      for (const p of [page, student]) await expect(p.getByTestId("stage")).toHaveAttribute("data-layout", "single");
+      await expect(folded).toBeVisible();
+      await expect(files).toHaveCount(0);
+
+      // She unfolds them by hand: they stay open during this presentation.
+      await folded.getByRole("button", { name: "Show Test's files" }).click();
+      await expect(files).toBeVisible();
+      await page.getByRole("button", { name: "Next slide" }).click();
+      await expect(pdfAt(student)).toHaveAttribute("data-at", "2/4", { timeout: 10_000 });
+      await expect(files).toBeVisible();
+
+      // Closing the PDF: as before (open at this width).
+      await page.getByRole("button", { name: `Close ${name}` }).click();
+      await expect(files).toBeVisible();
+      await expect(page.getByTestId("pdf-slides")).toHaveCount(0);
+      await student.context().close();
+    } finally {
       const leave = page.getByRole("button", { name: "Leave the lesson" });
       if (await leave.count()) {
         await leave.click();
