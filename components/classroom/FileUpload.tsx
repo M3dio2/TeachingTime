@@ -82,6 +82,11 @@ export function useFileUpload({
         failed.push(t.upload.oldWord(file.name));
         continue;
       }
+      // Presentations: as a PDF they work in the lesson (pages, writing on them, in sync).
+      if (["pptx", "ppt", "key", "odp", "pps", "ppsx"].includes(ext)) {
+        failed.push(t.upload.presentation(file.name));
+        continue;
+      }
       if (!contentType) {
         failed.push(t.upload.wrongType(file.name));
         continue;

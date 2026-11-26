@@ -157,6 +157,8 @@ export const dashboard: typeof en = {
   upload: {
     oldWord: (name: string) =>
       `${name} est un ancien fichier Word. Dans Word, enregistre-le en .docx (ou PDF), puis importe ce fichier.`,
+    presentation: (name) =>
+      `${name} est une présentation. Enregistre-la d’abord en PDF (PowerPoint : Fichier → Exporter → PDF ; Keynote : Fichier → Exporter vers → PDF ; Google Slides : Fichier → Télécharger → PDF), puis importe le PDF : chaque diapo devient une page à montrer et annoter ensemble.`,
     wrongType: (name: string) => `${name} : ce type de fichier ne peut pas être ajouté.`,
     tooBig: (name: string) => `${name} dépasse 10 Mo.`,
     noRoom: (name: string, mb: number) =>

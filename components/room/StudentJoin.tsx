@@ -10,6 +10,8 @@ import Wordmark from "@/components/ui/Wordmark";
 import { useLocale, useT } from "@/lib/i18n/client";
 import { downloadIcs, formatLesson, icsFile, upcoming } from "@/lib/schedule";
 import { CameraPreview, type PreJoinTracks, useCameraCheck } from "./CameraCheck";
+import ConnectionTest from "./ConnectionTest";
+import InAppNotice from "./InAppNotice";
 import LessonRoom from "./LessonRoom";
 import RoomMessage from "./RoomMessage";
 
@@ -141,6 +143,7 @@ function JoinCard({
         className="flex w-full max-w-[440px] flex-col gap-5 rounded-panel border border-line bg-surface p-6"
       >
         <Wordmark size="sm" underline="none" />
+        <InAppNotice />
         <CameraPreview check={check} />
         <div className="flex flex-col gap-1.5">
           <h1 className="text-[32px] leading-[1.1] tracking-[-0.02em]">
@@ -177,6 +180,7 @@ function JoinCard({
         <p className="text-center text-[13px] leading-snug text-ink-muted">
           {t.room.allowDevices}
         </p>
+        <ConnectionTest />
         {next && <StudentNextLesson next={next} slug={slug} />}
       </form>
     </main>

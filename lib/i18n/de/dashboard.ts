@@ -157,6 +157,8 @@ export const dashboard: typeof en = {
   upload: {
     oldWord: (name: string) =>
       `${name} ist eine alte Word-Datei. Speichere sie in Word als .docx (oder PDF) und lade die hoch.`,
+    presentation: (name) =>
+      `${name} ist eine Präsentation. Speichere sie zuerst als PDF (PowerPoint: Datei → Exportieren → PDF; Keynote: Ablage → Exportieren → PDF; Google Präsentationen: Datei → Herunterladen → PDF) und lade dann das PDF hoch: Jede Folie wird eine Seite, die ihr zusammen anschauen und beschriften könnt.`,
     wrongType: (name: string) => `${name}: Diese Art von Datei kann nicht hochgeladen werden.`,
     tooBig: (name: string) => `${name} ist größer als 10 MB.`,
     noRoom: (name: string, mb: number) =>

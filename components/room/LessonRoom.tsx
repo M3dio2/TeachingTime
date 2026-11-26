@@ -50,6 +50,7 @@ import { RecordingProvider } from "./Recording";
 import RoomControls from "./RoomControls";
 import type { Role, RoomModel } from "./roomModel";
 import StatusBanner, { deviceProblemMessage } from "./StatusBanner";
+import WeakConnection from "./WeakConnection";
 
 export type { Role } from "./roomModel";
 
@@ -83,7 +84,15 @@ const ROOM_OPTIONS: RoomOptions = {
   adaptiveStream: true,
   dynacast: true,
   videoCaptureDefaults: { resolution: VideoPresets.h720.resolution },
-  publishDefaults: { simulcast: true, videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360] },
+  // Asia: 720p at most 1 Mbit/s and 24 fps (plenty for a face; long routes keep up better), audio
+  // with redundancy (RED) and silence suppression (DTX) so lost packets don't cut words.
+  publishDefaults: {
+    simulcast: true,
+    videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360],
+    videoEncoding: { maxBitrate: 1_000_000, maxFramerate: 24 },
+    red: true,
+    dtx: true,
+  },
 };
 
 export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, tracks, demo = false }: Props) {
@@ -137,6 +146,7 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
         />
       </RecordingProvider>
       {!demo && <JoinToast />}
+      {!demo && <WeakConnection />}
       {!demo && <ConnectingScreen />}
       <RoomAudioRenderer />
       {tracks && <PublishTracks tracks={tracks} />}

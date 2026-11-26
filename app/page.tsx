@@ -85,7 +85,11 @@ const FAQ = [
   },
   {
     q: "Which files can I use?",
-    a: "PDFs, Word files (.docx), pictures (JPG, PNG, WebP, GIF) and audio (MP3, M4A, WAV and more), up to 10 MB each. Plus links: YouTube videos play for both of you, in sync.",
+    a: "PDFs, Word files (.docx), pictures (JPG, PNG, WebP, GIF), audio (MP3, M4A, WAV and more), videos (MP4, MOV, WebM) and text files, up to 10 MB each. Plus links: YouTube videos play for both of you, in sync.",
+  },
+  {
+    q: "Does it work with students in China or far away?",
+    a: "Usually yes: email login, files, the text pad, whiteboard and quizzes work, and video adapts to the connection (on a weak line the picture gets smaller first, so the sound stays clear). Students can run “Test my connection” on their join page before the first lesson. Not available in mainland China: Google sign-in, Google Drive, Dropbox and YouTube links. Tip: if the link opens inside WeChat or LINE, open it in Safari or Chrome for the camera to work.",
   },
   {
     q: "Are lessons recorded?",

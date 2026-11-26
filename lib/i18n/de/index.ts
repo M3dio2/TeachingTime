@@ -3,9 +3,10 @@ import { cloud } from "./cloud";
 import { common } from "./common";
 import { dashboard } from "./dashboard";
 import { demo } from "./demo";
+import { net } from "./net";
 import { plan } from "./plan";
 import { quiz } from "./quiz";
 import { room } from "./room";
 import { stage } from "./stage";
 
-export const de = { common, auth, dashboard, room, stage, quiz, cloud, plan, demo };
+export const de = { common, auth, dashboard, room, stage, quiz, cloud, plan, demo, net };

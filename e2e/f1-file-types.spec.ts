@@ -19,10 +19,12 @@ test("F1: videos and text files in the Classroom and the lesson", async ({ page,
     await uploadToClassroom(p, text, "text/plain", Buffer.from("Homework\nRead page 12 and write five sentences.\n"));
     // A MOV (from a phone) is a video too. (This test browser can't play MOV/MP4: upload only.)
     await uploadToClassroom(p, mov, "video/quicktime", readFileSync(path.join(__dirname, "fixtures/e2e-clip.webm")));
-    // Other formats are refused with a message; an old Word file gets advice.
+    // Other formats are refused with a message; an old Word file and a presentation get advice.
     const input = p.locator('input[type="file"]');
     await input.setInputFiles({ name: "e2e-slides.pptx", mimeType: "application/vnd.openxmlformats-officedocument.presentationml.presentation", buffer: Buffer.from("x") });
-    await expect(p.getByText("e2e-slides.pptx: this kind of file can't be uploaded.")).toBeVisible();
+    await expect(p.getByText("e2e-slides.pptx is a presentation. Save it as a PDF first")).toBeVisible();
+    await input.setInputFiles({ name: "e2e-sheet.xlsx", mimeType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", buffer: Buffer.from("x") });
+    await expect(p.getByText("e2e-sheet.xlsx: this kind of file can't be uploaded.")).toBeVisible();
     await input.setInputFiles({ name: "e2e-old.doc", mimeType: "application/msword", buffer: Buffer.from("x") });
     await expect(p.getByText("is an old Word file")).toBeVisible();
     const row = (name: string) => p.getByRole("listitem").filter({ hasText: name });
