@@ -248,3 +248,18 @@ body {
   color: var(--color-ink-muted);
   pointer-events: none;
 }
+
+/* A1: the demo student blinks and talks. */
+@keyframes demo-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes demo-talk {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1.1); }
+}
+.demo-blink { transform-box: fill-box; transform-origin: center; animation: demo-blink 4.5s infinite; }
+.demo-talk { transform-box: fill-box; transform-origin: center; animation: demo-talk 0.28s infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .demo-blink, .demo-talk { animation: none; }
+}

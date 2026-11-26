@@ -4,6 +4,7 @@ import { DisconnectButton, TrackToggle, useLocalParticipant } from "@livekit/com
 import { Track } from "livekit-client";
 import { Ellipsis, Eye, FolderOpen, LogOut, Pencil, Plus, Users, X } from "lucide-react";
 import { useState } from "react";
+import { useDemo } from "@/components/demo/DemoContext";
 import Chip from "@/components/ui/Chip";
 import Segmented from "@/components/ui/Segmented";
 import Sheet from "@/components/ui/Sheet";
@@ -186,6 +187,26 @@ function PhoneBar({
   const words = !children;
   const micState = mic ? t.room.myMicOn : t.room.myMicOff;
   const camState = cam ? t.room.myCamOn : t.room.myCamOff;
+  const demo = useDemo();
+  if (demo) {
+    return (
+      <div className="flex h-[60px] shrink-0 items-center justify-between gap-2 px-1">
+        <span className="inline-flex h-9 items-center rounded-full bg-marker-soft px-3 text-sm font-semibold text-marker-ink">
+          {t.demo.badge}
+        </span>
+        {children}
+        <button
+          type="button"
+          className="lk-button"
+          aria-label={t.demo.leave}
+          onClick={demo.onLeave}
+          style={{ height: 48, width: 56, padding: 0, borderRadius: 6 }}
+        >
+          <LogOut size={18} aria-hidden />
+        </button>
+      </div>
+    );
+  }
   return (
     <div
       className={`flex h-[60px] shrink-0 items-center gap-2 px-1 ${children ? "justify-between" : "justify-center gap-3"}`}

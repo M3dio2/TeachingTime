@@ -11,27 +11,48 @@ import { MicOff } from "lucide-react";
 import type { CSSProperties } from "react";
 import Button from "@/components/ui/Button";
 import { useT } from "@/lib/i18n/client";
+import { useDemo } from "@/components/demo/DemoContext";
+import { LuciaTile, SelfDemoTile } from "@/components/demo/DemoTiles";
 import Floating from "./Floating";
 
 // Inline sizes everywhere: LiveKit's unlayered CSS beats Tailwind on .lk-* (docs/DESIGN.md).
 const FILL: CSSProperties = { width: "100%", height: "100%" };
 
-// The other person's camera and your own (placeholders while a camera is off).
+// The other person's camera and your own (placeholders while a camera is off). In the demo
+// lesson (A1) two stand-ins: Lucía and the visitor (components/demo/DemoTiles.tsx).
+const DEMO_OTHER = { participant: { identity: "demo-student", isLocal: false }, demo: "student" } as unknown as TrackReferenceOrPlaceholder;
+const DEMO_SELF = { participant: { identity: "demo-self", isLocal: true }, demo: "self" } as unknown as TrackReferenceOrPlaceholder;
+const demoOf = (ref: TrackReferenceOrPlaceholder) => (ref as { demo?: "student" | "self" }).demo;
+
 export function useCameras() {
+  const demo = useDemo();
   const cameras = useTracks([{ source: Track.Source.Camera, withPlaceholder: true }], {
     onlySubscribed: false,
   });
+  if (demo) return { other: demo.here ? DEMO_OTHER : undefined, self: DEMO_SELF };
   return {
     other: cameras.find((c) => !c.participant.isLocal),
     self: cameras.find((c) => c.participant.isLocal),
   };
 }
 
+// LiveKit's tile, or the demo's stand-in.
+function Tile({ trackRef, style, small }: { trackRef: TrackReferenceOrPlaceholder; style?: CSSProperties; small?: boolean }) {
+  const demo = demoOf(trackRef);
+  if (demo === "student") return <LuciaTile style={{ ...FILL, ...style }} small={small} />;
+  if (demo === "self") return <SelfDemoTile style={{ ...FILL, ...style }} small={small} />;
+  return <ParticipantTile trackRef={trackRef} style={{ ...FILL, ...style }} />;
+}
+
 export type OnMute = (identity: string) => void;
 
 // A camera tile. For the teacher, the other person's tile shows a mute button on hover while
 // their microphone is on (LiveKit can mute a microphone, but not switch it back on).
-export function CameraTile({
+export function CameraTile(props: { trackRef: TrackReferenceOrPlaceholder; style?: CSSProperties; onMute?: OnMute }) {
+  return demoOf(props.trackRef) ? <Tile trackRef={props.trackRef} style={props.style} /> : <LiveCameraTile {...props} />;
+}
+
+function LiveCameraTile({
   trackRef,
   style,
   onMute,
@@ -112,7 +133,7 @@ export function SpotlightCameras({ onMute }: { onMute?: OnMute }) {
           className="w-[22%] max-w-60 min-w-36 overflow-hidden rounded-md border-2 border-surface shadow-soft"
         >
           <div className="pointer-events-none" style={{ aspectRatio: "16 / 9" }}>
-            <ParticipantTile trackRef={self} style={FILL} />
+            <Tile trackRef={self} small />
           </div>
         </Floating>
       )}
@@ -142,7 +163,7 @@ export function CameraRow({ height, onMute }: { height?: number; onMute?: OnMute
     <div className="grid shrink-0 grid-cols-2 gap-2">
       {cams.map((cam) => (
         <div key={cam.participant.identity} style={{ aspectRatio: "16 / 9" }}>
-          <ParticipantTile trackRef={cam} style={FILL} />
+          <Tile trackRef={cam} small />
         </div>
       ))}
     </div>

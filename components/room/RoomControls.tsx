@@ -11,6 +11,7 @@ import {
 import { MediaDeviceFailure, type Participant, Track } from "livekit-client";
 import { LogOut, MicOff, Pencil, PencilOff } from "lucide-react";
 import { useState } from "react";
+import { useDemo } from "@/components/demo/DemoContext";
 import { useT } from "@/lib/i18n/client";
 import { muteMicrophones } from "@/lib/mute";
 import { useWindowWidth } from "@/lib/useStored";
@@ -44,6 +45,7 @@ export default function RoomControls({
   const onDeviceError = useDeviceErrorHandler(onProblem);
   // Tablet-sized windows: icons only (each keeps its tooltip and label).
   const iconOnly = useWindowWidth() < 1024;
+  const demo = useDemo();
 
   return (
     <div className="room-controls flex h-14 shrink-0 items-center gap-2 px-2">
@@ -76,27 +78,42 @@ export default function RoomControls({
             <span aria-hidden className="mx-1 h-6 w-px bg-line" />
           </>
         )}
-        <DeviceToggle
-          source={Track.Source.Microphone}
-          kind="audioinput"
-          label={t.room.microphone}
-          menuLabel={t.room.chooseMicrophone}
-          onDeviceError={onDeviceError}
-        />
-        <DeviceToggle
-          source={Track.Source.Camera}
-          kind="videoinput"
-          label={t.room.camera}
-          menuLabel={t.room.chooseCamera}
-          onDeviceError={onDeviceError}
-        />
-        {/* Only the teacher shares her screen (docs/DESIGN.md). */}
-        {teacher && <ShareToggle />}
-        {teacher && <RecordButton iconOnly={iconOnly} />}
-        <DisconnectButton aria-label={t.room.leaveLesson} title={t.room.leaveLesson}>
-          <LogOut size={16} aria-hidden />
-          {!iconOnly && t.room.leave}
-        </DisconnectButton>
+        {demo ? (
+          // A1: the demo has no call: no devices, sharing or recording.
+          <>
+            <span className="inline-flex h-9 items-center rounded-full bg-marker-soft px-3 text-sm font-semibold text-marker-ink">
+              {t.demo.badge}
+            </span>
+            <button type="button" className="lk-button" aria-label={t.demo.leave} title={t.demo.leave} onClick={demo.onLeave}>
+              <LogOut size={16} aria-hidden />
+              {!iconOnly && t.demo.leave}
+            </button>
+          </>
+        ) : (
+          <>
+            <DeviceToggle
+              source={Track.Source.Microphone}
+              kind="audioinput"
+              label={t.room.microphone}
+              menuLabel={t.room.chooseMicrophone}
+              onDeviceError={onDeviceError}
+            />
+            <DeviceToggle
+              source={Track.Source.Camera}
+              kind="videoinput"
+              label={t.room.camera}
+              menuLabel={t.room.chooseCamera}
+              onDeviceError={onDeviceError}
+            />
+            {/* Only the teacher shares her screen (docs/DESIGN.md). */}
+            {teacher && <ShareToggle />}
+            {teacher && <RecordButton iconOnly={iconOnly} />}
+            <DisconnectButton aria-label={t.room.leaveLesson} title={t.room.leaveLesson}>
+              <LogOut size={16} aria-hidden />
+              {!iconOnly && t.room.leave}
+            </DisconnectButton>
+          </>
+        )}
       </div>
       <span className="flex-1" />
     </div>

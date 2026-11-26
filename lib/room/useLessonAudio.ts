@@ -95,7 +95,8 @@ export function useLessonAudio(slug: string | undefined): LessonAudio {
         setState({ id: file.id, name: loaded.name, duration, startedAt: Date.now(), pausedAt: null });
         audio.onloadedmetadata = () =>
           setState((s) => (s && el.current === audio ? { ...s, duration: audio.duration } : s));
-        if (!publication.current) {
+        // (Not connected: the demo lesson, where only the teacher hears it.)
+        if (!publication.current && room.state === "connected") {
           publication.current = await room.localParticipant.publishTrack(dest.stream.getAudioTracks()[0], {
             name: "lesson-audio",
             source: Track.Source.Unknown,
