@@ -1,5 +1,5 @@
 import { expect, type Page, test } from "@playwright/test";
-import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testPdf, uploadToClassroom } from "./helpers";
+import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testPdf, uploadToClassroom, pdfAt } from "./helpers";
 
 // User report: what's written, drawn or written on a PDF must survive closing or replacing
 // its tab, and come back when the tab is opened again (both sides).
@@ -57,7 +57,7 @@ test("closing or replacing a tab keeps its text, drawing and PDF writing", async
     const files = page.getByRole("complementary", { name: "Test's files" });
     await dragFileOnto(page, files.getByRole("button", { name: new RegExp(pdfName) }), "drop-0");
     for (const p of [page, student]) await expect(tabs(p)).toHaveText([pdfName, "Draw"], { timeout: 20_000 });
-    await expect(page.getByText("Page 1 of 1")).toBeVisible({ timeout: 30_000 });
+    await expect(pdfAt(page)).toHaveAttribute("data-at", "1/1", { timeout: 30_000 });
     const toolbar = page.getByRole("toolbar", { name: "Write on the PDF" });
     await toolbar.getByRole("button", { name: "Pen" }).click();
     const ink = (await page.getByTestId("ink-page-1").boundingBox())!;

@@ -1,6 +1,6 @@
 import { expect, type Page, test } from "@playwright/test";
 import { PDFDocument } from "pdf-lib";
-import { confirmYes, deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testPdf, uploadToClassroom } from "./helpers";
+import { confirmYes, deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testPdf, uploadToClassroom, pdfAt } from "./helpers";
 
 // L2b: writing on a PDF tab is shared; "Save as new PDF" puts a copy with the writing in the
 // classroom. Files are uploaded to the "Test" classroom and deleted again.
@@ -45,7 +45,7 @@ test.describe("L2b PDF writing", () => {
       const student = await joinAsStudent(browser, joinPath);
       const files = page.getByRole("complementary", { name: "Test's files" });
       await files.getByRole("button", { name: new RegExp(pdfName) }).click();
-      for (const p of [page, student]) await expect(p.getByText("Page 1 of 2")).toBeVisible({ timeout: 30_000 });
+      for (const p of [page, student]) await expect(pdfAt(p)).toHaveAttribute("data-at", "1/2", { timeout: 30_000 });
 
       // Scroll is the default; the student's tools are off without "can edit".
       await expect(toolbar(page).getByRole("button", { name: "Scroll" })).toHaveAttribute("aria-pressed", "true");

@@ -111,6 +111,11 @@ export async function uploadToClassroom(page: Page, name: string, mimeType: stri
 
 // Classroom: delete every file whose name starts with "e2e-" (leftovers of earlier runs).
 // Our own confirm dialog (components/ui/Confirm.tsx): press its main button.
+// The PDF's page, for teacher ("Page [2] of 3", an input) and student ("Page 2 of 3") alike.
+export function pdfAt(page: Page) {
+  return page.getByTestId("pdf-page");
+}
+
 export async function confirmYes(page: Page) {
   await page.getByTestId("confirm-yes").click();
 }
