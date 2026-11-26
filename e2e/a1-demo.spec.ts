@@ -12,7 +12,6 @@ test("A1: the demo lesson from the start page, with Lucía and the tour", async 
     const url = r.url();
     if (url.includes("livekit.cloud") || url.includes("/api/") || (url.includes("supabase") && r.method() !== "GET")) calls.push(url);
   });
-  const violations: string[] = [];
   await page.addInitScript(() => {
     document.addEventListener("securitypolicyviolation", (e) =>
       ((window as unknown as { __v: string[] }).__v ??= []).push(`${e.violatedDirective} ${e.blockedURI}`),
