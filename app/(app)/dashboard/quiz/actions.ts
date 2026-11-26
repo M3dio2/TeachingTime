@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getT } from "@/lib/i18n/server";
-import { cleanQuestions, cleanTitle, emptyChoice, MAX_QUIZZES, MAX_TITLE } from "@/lib/quiz";
+import { cleanQuestions, cleanTitle, emptyChoice, MAX_QUIZZES, MAX_TITLE, playable } from "@/lib/quiz";
 import { createClient } from "@/lib/supabase/server";
 
 // "New quiz" on the dashboard: an untitled quiz with one empty question, opened in the editor.
@@ -122,4 +122,13 @@ export async function removeQuizResult(formData: FormData) {
   const supabase = await createClient();
   await supabase.from("quiz_results").delete().eq("id", id);
   revalidatePath(`/dashboard/${lessonId}`);
+}
+
+// Leaving the editor without one finished question: the quiz isn't kept (user, Nov 2026).
+export async function discardIfEmpty(id: string) {
+  const supabase = await createClient();
+  const { data: quiz } = await supabase.from("quizzes").select("id, questions").eq("id", id).maybeSingle();
+  if (!quiz || playable(cleanQuestions(quiz.questions)).length) return;
+  await supabase.from("quizzes").delete().eq("id", id);
+  revalidatePath("/dashboard");
 }

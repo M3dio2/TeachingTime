@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { type ReactNode, useEffect, useRef, useState } from "react";
-import { deleteQuiz, duplicateQuiz, saveQuiz, setQuizClassroom } from "@/app/(app)/dashboard/quiz/actions";
+import { deleteQuiz, discardIfEmpty, duplicateQuiz, saveQuiz, setQuizClassroom } from "@/app/(app)/dashboard/quiz/actions";
 import { inputClass } from "@/components/ui/Field";
 import Segmented from "@/components/ui/Segmented";
 import Sheet from "@/components/ui/Sheet";
@@ -38,6 +38,7 @@ import {
   QUESTION_TYPES,
   type QuestionType,
   type Quiz,
+  playable,
 } from "@/lib/quiz";
 import { TYPE_ICONS } from "./QuestionTypes";
 
@@ -51,6 +52,9 @@ type Dragging = { block: QuestionType } | { move: string } | null;
 // opens when clicked: its fields, then its options right beneath; the ones below move down.
 // Every change is saved a moment later. Phones: no block column; "+ Add a question" opens
 // the blocks in a sheet.
+// Editors open per quiz, so leaving one only discards an empty quiz nobody is editing.
+const openEditors = new Map<string, number>();
+
 export default function QuizEditor({
   quiz,
   classrooms,
@@ -88,6 +92,20 @@ export default function QuizEditor({
     }, SAVE_AFTER_MS);
     return () => clearTimeout(timer);
   }, [version, quiz.id]);
+
+  // Leaving with no finished question: the quiz isn't kept (a closed tab: the dashboard
+  // tidies it up later).
+  useEffect(() => {
+    const id = quiz.id;
+    openEditors.set(id, (openEditors.get(id) ?? 0) + 1);
+    return () => {
+      openEditors.set(id, (openEditors.get(id) ?? 1) - 1);
+      // Later, and only if it wasn't opened again (React's dev double mount, a fast return).
+      setTimeout(() => {
+        if (!openEditors.get(id) && !playable(latest.current.questions).length) void discardIfEmpty(id);
+      }, 1000);
+    };
+  }, [quiz.id]);
 
   useEffect(() => {
     if (state === "saved") return;

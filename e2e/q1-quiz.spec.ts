@@ -177,3 +177,24 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   }
   await deleteE2eQuizzes(page);
 });
+
+test("Q1: a quiz left without a finished question isn't kept", async ({ page }) => {
+  test.setTimeout(90_000);
+  await logIn(page);
+  await page.goto("/dashboard");
+  const before = await page.getByRole("link", { name: /^Edit the quiz / }).count();
+  await page.getByRole("button", { name: "New quiz" }).click();
+  await page.waitForURL(/\/dashboard\/quiz\/[0-9a-f-]+$/);
+  const url = page.url();
+  await page.getByLabel("Quiz title").fill(`e2e-Empty ${Date.now()}`);
+  await page.waitForTimeout(2500); // saved
+  await page.getByRole("link", { name: "Your Classrooms" }).click();
+  await page.waitForURL(/\/dashboard$/);
+  await page.waitForTimeout(2000);
+  await page.goto("/dashboard");
+  await expect(page.getByRole("heading", { name: "Your quizzes" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("link", { name: /^Edit the quiz / })).toHaveCount(before);
+  // Gone, not just hidden: its editor page has nothing to edit.
+  await page.goto(url);
+  await expect(page.getByLabel("Quiz title")).toHaveCount(0, { timeout: 15_000 });
+});

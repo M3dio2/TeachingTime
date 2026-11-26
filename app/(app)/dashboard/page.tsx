@@ -94,6 +94,14 @@ async function Dashboard() {
     lessons = lessons.filter((l) => !over.includes(l));
   }
 
+  // Quizzes without one finished question aren't kept: hidden here, and deleted once nobody
+  // has edited them for 30 minutes (a tab closed in the editor).
+  const allQuizzes = (quizRows ?? []) as QuizRow[];
+  const emptyQuizzes = allQuizzes.filter((q) => !playable(cleanQuestions(q.questions)).length);
+  const stale = emptyQuizzes.filter((q) => !isWithin(q.updated_at, 30 * 60 * 1000)).map((q) => q.id);
+  if (stale.length) await supabase.from("quizzes").delete().in("id", stale);
+  const quizzes = allQuizzes.filter((q) => !emptyQuizzes.includes(q));
+
   const quickCalls = lessons.filter((l) => l.kind === "quick");
   const students = lessons.filter((l) => l.kind === "student");
   const firstVisit = !teacherName;
@@ -237,7 +245,7 @@ async function Dashboard() {
           )}
         </ul>
 
-        <Quizzes t={tq} quizzes={(quizRows ?? []) as QuizRow[]} />
+        <Quizzes t={tq} quizzes={quizzes} />
         </div>
       </main>
     </div>
