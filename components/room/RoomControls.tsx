@@ -272,7 +272,7 @@ function StudentCanEditToggle({
       type="button"
       role="switch"
       aria-checked={canEdit}
-      className={`lk-button student-edit-toggle ${canEdit ? "is-on" : ""}`}
+      className={`lk-button student-edit-toggle group ${canEdit ? "is-on" : ""}`}
       title={t.room.letWriteAndDraw(name)}
       aria-label={label}
       onClick={() => onChange(!canEdit)}
@@ -281,10 +281,10 @@ function StudentCanEditToggle({
       {!iconOnly && <span aria-hidden>{label}</span>}
       <span
         aria-hidden
-        className={`relative ml-0.5 inline-block h-4 w-7 shrink-0 rounded-full transition-colors ${canEdit ? "bg-white/90" : "bg-line"}`}
+        className={`relative ml-0.5 inline-block h-4 w-7 shrink-0 rounded-full transition-colors ${canEdit ? "bg-marker group-hover:bg-marker-soft" : "bg-line"}`}
       >
         <span
-          className={`absolute top-0.5 h-3 w-3 rounded-full transition-[left] ${canEdit ? "left-3.5 bg-ok" : "left-0.5 bg-ink-muted"}`}
+          className={`absolute top-0.5 h-3 w-3 rounded-full transition-[left] ${canEdit ? "left-3.5 bg-marker-ink" : "left-0.5 bg-ink-muted"}`}
         />
       </span>
     </button>

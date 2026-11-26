@@ -96,15 +96,13 @@ export function CameraColumn({ width, onMute }: { width: number; onMute?: OnMute
       style={{ width }}
       data-testid="camera-column"
     >
-      {/* Review B4: the other person big; your own camera smaller, under it on the right
-          (full width while you're alone). */}
+      {/* Both cameras the same size (tester feedback, undoing review B4). */}
       {[other, self].map(
         (cam) =>
           cam && (
             <div
               key={cam.participant.identity}
               data-testid={cam === self ? "self-camera" : undefined}
-              className={cam === self && other ? "w-[62%] self-end" : undefined}
               style={{ aspectRatio: "4 / 3" }}
             >
               <CameraTile trackRef={cam} onMute={onMute} />

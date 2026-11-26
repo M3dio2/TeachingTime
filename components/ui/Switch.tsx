@@ -27,10 +27,10 @@ export default function Switch({
       <span className="flex-1">{children}</span>
       <span
         aria-hidden
-        className={`relative h-[26px] w-11 shrink-0 rounded-full transition-colors ${checked ? "bg-ok" : "bg-line"}`}
+        className={`relative h-[26px] w-11 shrink-0 rounded-full transition-colors ${checked ? "bg-marker" : "bg-line"}`}
       >
         <span
-          className={`absolute top-[3px] h-5 w-5 rounded-full bg-surface transition-[left] ${
+          className={`absolute top-[3px] h-5 w-5 rounded-full transition-[left] ${checked ? "bg-marker-ink" : "bg-surface"} ${
             checked ? "left-[21px]" : "left-[3px]"
           }`}
         />

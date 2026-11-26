@@ -63,7 +63,7 @@ export default function Privacy() {
       </p>
       <p>
         A teacher can record a lesson herself, in her own browser. Before it starts, the student is asked and has to
-        agree; both see a red sign while it runs, and either of them can stop it. The recording is saved on the
+        agree; both see a red sign while it runs, the teacher stops it, and it also stops when the student leaves the lesson. The recording is saved on the
         teacher&apos;s device only and never sent to TeachingTime. The teacher is responsible for keeping it safe
         and for deleting it when asked. For a student under 16, ask a parent too.
       </p>
