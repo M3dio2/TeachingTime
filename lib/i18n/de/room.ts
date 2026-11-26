@@ -145,7 +145,7 @@ export const room: typeof en = {
     screenHint: "Dateien, Whiteboard, Text und geteilte Bildschirme. Dein Browser fragt nach dem Tab: Wähl diesen.",
     screenNotHere: "In diesem Browser nicht möglich. Nimm Chrome, Edge oder Firefox auf einem Computer.",
     privacy: (name: string) =>
-      `${name} wird zuerst gefragt. Das Video wird nur auf diesem Gerät gespeichert, TeachingTime bekommt es nie. Du kannst jederzeit stoppen, ${name} auch.`,
+      `${name} wird zuerst gefragt. Das Video wird nur auf diesem Gerät gespeichert, TeachingTime bekommt es nie. Nur du kannst sie stoppen; sie endet auch, wenn ${name} die Lektion verlässt.`,
     needsStudent: "Dein Schüler muss in der Lektion sein.",
     yourStudent: "deinen Schüler",
     yourTeacher: "Deine Lehrperson",
@@ -154,6 +154,7 @@ export const room: typeof en = {
     askingTitle: "Wird gefragt…",
     asking: (name: string) => `Warte, bis ${name} der Aufnahme zustimmt.`,
     studentSaidNo: (name: string) => `${name} möchte keine Aufnahme. Es wurde nichts aufgenommen.`,
+    studentLeftStopped: (name) => `${name} hat die Lektion verlassen, die Aufnahme wurde beendet.`,
     studentStopped: (name: string) => `${name} hat die Aufnahme beendet.`,
     screenRefused: "Der Browser hat die Aufnahme des Tabs nicht erlaubt. Versuch es nochmal oder nimm ohne Lektionsbildschirm auf.",
     failed: "Die Aufnahme konnte in diesem Browser nicht starten.",
@@ -165,7 +166,7 @@ export const room: typeof en = {
     consent: (name: string) => `${name} möchte diese Lektion aufnehmen.`,
     whatIsRecorded: "Aufgenommen wird:",
     consentHint: (name: string) =>
-      `Die Aufnahme wird nur auf dem Gerät von ${name} gespeichert. Solange sie läuft, siehst du ein rotes Zeichen, und du kannst sie jederzeit stoppen.`,
+      `Die Aufnahme wird nur auf dem Gerät von ${name} gespeichert. Solange sie läuft, siehst du ein rotes Zeichen. Nur deine Lehrperson kann sie stoppen; wenn du die Lektion verlässt, endet sie auch.`,
     allow: "Erlauben",
     dontAllow: "Nicht erlauben",
     rec: "REC",
