@@ -11,6 +11,8 @@ export const calendar = {
   noLessonsToday: "No lessons today.",
   nextUp: (when: string, name: string) => `Next: ${when} · ${name}`,
   nothingPlanned: "No lessons planned yet.",
+  openInCalendar: "Open in the calendar",
+  planInCalendar: "Plan in the calendar",
   openCalendar: "Open the calendar",
   planLesson: "Plan a lesson",
   done: "Done",

@@ -148,15 +148,10 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
             {t.startLesson}
           </Link>
           <StudentLink t={t} slug={student.invite_slug} name={student.title} />
+          {/* The next lesson: planned and changed in the calendar (user: no box of its own here). */}
+          <NextLesson lessonId={student.id} slots={plan.slots} changes={plan.changes} />
         </section>
-        <NextLesson
-          lessonId={student.id}
-          name={student.title}
-          slug={student.invite_slug}
-          slots={plan.slots}
-          changes={plan.changes}
-          waiting={false}
-        />
+
         <StorageCard usedBytes={Number(usedBytes ?? 0)} />
         <ClassroomQuizzes
           t={tq}

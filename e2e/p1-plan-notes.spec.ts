@@ -9,12 +9,14 @@ test("P1: next lesson on the Classroom, the dashboard card and the student's joi
   test.setTimeout(120_000);
   await logIn(page);
   await openTestClassroom(page);
-  const card = page.getByRole("region", { name: "Next lesson", exact: true });
   // Leftover from an earlier run: start from "not planned".
   await clearTestLessons(page);
-  await card.getByRole("button", { name: "Plan a lesson" }).click();
-  const dialog = page.getByRole("dialog", { name: /New lesson/ });
-  // Default: every week, 60 minutes.
+  const classroom = page.url();
+  // The Classroom only links to the calendar, which opens with the plan form for it.
+  await page.getByRole("link", { name: "Plan in the calendar" }).click();
+  await page.waitForURL(/\/dashboard\/calendar\?classroom=/);
+  const dialog = page.getByRole("dialog", { name: "New lesson" });
+  await expect(dialog.getByLabel("Classroom")).toHaveValue(/[0-9a-f-]{36}/);
   await expect(dialog.getByLabel("Every week")).toBeChecked();
   await expect(dialog.getByRole("radio", { name: "60 min" })).toBeChecked();
 
@@ -30,20 +32,15 @@ test("P1: next lesson on the Classroom, the dashboard card and the student's joi
   await dialog.getByText("45 min").click();
   await dialog.getByRole("button", { name: "Save" }).click();
   await expect(dialog).toHaveCount(0, { timeout: 15_000 });
-  const when = card.getByTestId("next-lesson-when");
+
+  // Back on the Classroom: one line with the time.
+  await page.goto(classroom);
+  const when = page.getByTestId("next-lesson-when");
   await expect(when).toContainText(/17:30|5:30\s?PM/, { timeout: 15_000 });
   await expect(when).toContainText("45 min");
   await expect(when).toContainText("every week");
-
-  // The calendar file: a weekly event with the student link.
-  const download = page.waitForEvent("download");
-  await card.getByRole("button", { name: "Add to my calendar" }).click();
-  const ics = readFileSync(await (await download).path(), "utf8");
-  expect(ics).toContain("BEGIN:VEVENT");
-  expect(ics).toContain("RRULE:FREQ=WEEKLY");
-  expect(ics).toContain(`SUMMARY:Lesson with ${TEST_CLASSROOM}`);
-  expect(ics).toMatch(/URL:http:\/\/localhost:3000\/join\/[a-z0-9]+/);
-  const joinPath = ics.match(/URL:http:\/\/localhost:3000(\/join\/[a-z0-9]+)/)![1];
+  const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
+  const joinPath = new URL(`http://${link}`).pathname;
 
   // The dashboard card.
   await page.goto("/dashboard");
@@ -59,7 +56,9 @@ test("P1: next lesson on the Classroom, the dashboard card and the student's joi
   await expect(next).toContainText(/17:30|5:30\s?PM/);
   const sd = s.waitForEvent("download");
   await next.getByRole("button", { name: "Add to my calendar" }).click();
-  expect(readFileSync(await (await sd).path(), "utf8")).toContain("BEGIN:VCALENDAR");
+  const ics = readFileSync(await (await sd).path(), "utf8");
+  expect(ics).toContain("BEGIN:VCALENDAR");
+  expect(ics).toContain("RRULE:FREQ=WEEKLY");
   await ctx.close();
 
   // Clean up: no lessons planned.

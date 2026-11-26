@@ -10,6 +10,8 @@ export const calendar: typeof en = {
   noLessonsToday: "Pas de cours aujourd’hui.",
   nextUp: (when: string, name: string) => `Ensuite : ${when} · ${name}`,
   nothingPlanned: "Aucun cours prévu pour l’instant.",
+  openInCalendar: "Ouvrir dans le calendrier",
+  planInCalendar: "Prévoir dans le calendrier",
   openCalendar: "Ouvrir le calendrier",
   planLesson: "Prévoir un cours",
   done: "Terminé",

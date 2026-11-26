@@ -15,15 +15,17 @@ import { createClient } from "@/lib/supabase/server";
 export const metadata: Metadata = { title: "Calendar", robots: { index: false, follow: false } };
 
 // The calendar page (docs/PLAN-calendar-library-slides.md, mock-ups 4–6).
-export default function CalendarPage() {
+export default function CalendarPage({ searchParams }: PageProps<"/dashboard/calendar">) {
   return (
     <Suspense fallback={<DashboardLoading />}>
-      <Calendar />
+      <Calendar searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function Calendar() {
+async function Calendar({ searchParams }: Pick<PageProps<"/dashboard/calendar">, "searchParams">) {
+  // ?classroom=<id>: opened from a Classroom page.
+  const focus = (await searchParams).classroom;
   const [supabase, { calendar: t }] = await Promise.all([createClient(), getT()]);
   const [{ data: auth }, { data: rooms }, occupied] = await Promise.all([
     supabase.auth.getUser(),
@@ -51,7 +53,13 @@ async function Calendar() {
           <h1 className="text-[30px] leading-[1.1] tracking-[-0.02em] md:text-4xl">{t.title}</h1>
           <p className="max-w-[620px] text-ink-muted">{t.intro}</p>
         </div>
-        <CalendarWeek classrooms={classrooms} slots={slots} changes={changes} waitingIds={[...(occupied ?? [])]} />
+        <CalendarWeek
+          classrooms={classrooms}
+          slots={slots}
+          changes={changes}
+          waitingIds={[...(occupied ?? [])]}
+          focus={typeof focus === "string" ? focus : undefined}
+        />
         <SubscribeBox />
       </main>
     </div>

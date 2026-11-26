@@ -18,12 +18,14 @@ export default function PlanDialog({
   classrooms,
   at,
   lessonId,
+  preset,
   editing,
   onClose,
 }: {
   classrooms: Classroom[];
   at?: Date; // a new lesson: the clicked time
-  lessonId?: string; // a new lesson for this Classroom (the Classroom page)
+  lessonId?: string; // a new lesson for this Classroom only (no choice)
+  preset?: string; // a new lesson: this Classroom chosen first (can be changed)
   editing?: Occurrence; // change this lesson
   onClose: () => void;
 }) {
@@ -35,7 +37,7 @@ export default function PlanDialog({
     d.setMinutes(0, 0, 0);
     return localParts(d);
   });
-  const [who, setWho] = useState(editing?.lessonId ?? lessonId ?? (classrooms.length === 1 ? classrooms[0].id : ""));
+  const [who, setWho] = useState(editing?.lessonId ?? lessonId ?? preset ?? (classrooms.length === 1 ? classrooms[0].id : ""));
   const [date, setDate] = useState(initial.date);
   const [time, setTime] = useState(initial.time);
   const [minutes, setMinutes] = useState<number>(editing?.minutes ?? 60);

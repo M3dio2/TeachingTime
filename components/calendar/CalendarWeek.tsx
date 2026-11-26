@@ -1,10 +1,10 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { buttonClass } from "@/components/ui/Button";
 import { useLocale, useT } from "@/lib/i18n/client";
-import { addDays, browserZone, isStartable, occurrences, sameDay, type Occurrence, type Slot, type SlotChange, weekStart } from "@/lib/calendar";
+import { addDays, browserZone, DAY_MS, isStartable, nextOf, occurrences, sameDay, type Occurrence, type Slot, type SlotChange, weekStart } from "@/lib/calendar";
 import { useLessonDialogs } from "./Dialogs";
 import { dayOf, timeOf, useNow, WaitingBadge } from "./LessonActions";
 import type { Classroom } from "./PlanDialog";
@@ -30,18 +30,32 @@ export default function CalendarWeek({
   slots,
   changes,
   waitingIds,
+  focus,
 }: {
   classrooms: Classroom[];
   slots: Slot[];
   changes: SlotChange[];
   waitingIds: string[];
+  focus?: string; // from a Classroom page: its lessons stand out, Plan starts with it
 }) {
   const t = useT().calendar;
   const locale = useLocale();
   const now = useNow();
-  const [offset, setOffset] = useState(0); // weeks from this one
   const waiting = new Set(waitingIds);
-  const { dialogs, plan, show } = useLessonDialogs({ classrooms, waiting });
+  const focused = focus && classrooms.some((c) => c.id === focus) ? focus : undefined;
+  const { dialogs, plan, show } = useLessonDialogs({ classrooms, waiting, preset: focused });
+  // From a Classroom: the week of its next lesson; nothing planned yet: the plan form, once.
+  const [offset, setOffset] = useState(() => {
+    if (!focused) return 0;
+    const next = nextOf(slots.filter((s) => s.lesson_id === focused), changes, new Date(), 1, 365)[0];
+    return next ? Math.round((weekStart(next.start).getTime() - weekStart(new Date()).getTime()) / (7 * DAY_MS)) : 0;
+  });
+  const askedPlan = useRef(false);
+  useEffect(() => {
+    if (!focused || askedPlan.current || !now) return;
+    askedPlan.current = true;
+    if (!slots.some((s) => s.lesson_id === focused)) plan();
+  }, [focused, now, slots, plan]);
   const index = new Map(classrooms.map((c, i) => [c.id, i]));
   const byId = new Map(classrooms.map((c) => [c.id, c]));
 
@@ -153,7 +167,9 @@ export default function CalendarWeek({
                         o.cancelled
                           ? "border-line bg-[repeating-linear-gradient(-45deg,#f5efe7,#f5efe7_6px,#eee4d7_6px,#eee4d7_12px)] text-ink-muted line-through"
                           : colour(o)
-                      } ${live ? "shadow-[0_0_0_2px_var(--color-ink),3px_3px_0_2px_var(--color-marker)]" : ""}`}
+                      } ${live ? "shadow-[0_0_0_2px_var(--color-ink),3px_3px_0_2px_var(--color-marker)]" : ""} ${
+                        focused && o.lessonId !== focused ? "opacity-45" : focused ? "ring-2 ring-ink" : ""
+                      }`}
                       style={{ top: top + 1, height }}
                     >
                       <span className={height < 40 ? "mr-1 font-semibold" : "block truncate font-semibold"}>{room.title}</span>
