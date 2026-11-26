@@ -112,6 +112,23 @@ export async function uploadToClassroom(page: Page, name: string, mimeType: stri
 
 // Classroom: delete every file whose name starts with "e2e-" (leftovers of earlier runs).
 // Our own confirm dialog (components/ui/Confirm.tsx): press its main button.
+// Calendar (0018): removes every planned lesson of the "Test" Classroom (on its page).
+export async function clearTestLessons(page: Page) {
+  const card = page.getByRole("region", { name: "Next lesson", exact: true });
+  const first = card.getByTestId("next-lesson-when");
+  for (let i = 0; i < 20 && (await first.count()); i++) {
+    await first.click();
+    const dialog = page.getByRole("dialog");
+    await dialog.getByRole("button", { name: "Cancel this lesson" }).click();
+    const following = dialog.getByRole("button", { name: "This and the following lessons" });
+    if (await following.count()) await following.click();
+    else await dialog.getByRole("button", { name: "Cancel the lesson" }).click();
+    await expect(dialog).toHaveCount(0, { timeout: 15_000 });
+    await page.waitForTimeout(500);
+  }
+  await expect(card.getByText("Not planned yet")).toBeVisible({ timeout: 15_000 });
+}
+
 // The PDF's page, for teacher ("Page [2] of 3", an input) and student ("Page 2 of 3") alike.
 export function pdfAt(page: Page) {
   return page.getByTestId("pdf-page");

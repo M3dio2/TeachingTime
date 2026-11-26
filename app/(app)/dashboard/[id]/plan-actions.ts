@@ -3,20 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
-// Review A4: the next lesson of a Classroom (null: none). RLS keeps it to her own Classrooms.
-export async function setNextLesson(lessonId: string, iso: string | null, weekly: boolean) {
-  const at = iso ? new Date(iso) : null;
-  if (at && Number.isNaN(at.getTime())) return;
-  const supabase = await createClient();
-  await supabase
-    .from("lessons")
-    .update({ next_lesson_at: at?.toISOString() ?? null, repeats_weekly: at ? weekly : false })
-    .eq("id", lessonId)
-    .eq("kind", "student");
-  revalidatePath(`/dashboard/${lessonId}`);
-  revalidatePath("/dashboard");
-}
-
 // Review A5: the lesson's text pad as a dated note. One note per lesson: a save within 3 hours
 // of the note's first save updates it (the pad is kept that long too), later ones start a new
 // note. Returns false if it couldn't be saved.

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import StudentJoin from "@/components/room/StudentJoin";
+import { nextOf, type Slot, type SlotChange } from "@/lib/calendar";
 import { createAdminClient } from "@/lib/supabase/server";
 
 // A private link: never listed by search engines.
@@ -36,12 +37,28 @@ async function nextLesson(slug: string) {
   const admin = createAdminClient();
   const { data } = await admin
     .from("lessons")
-    .select("next_lesson_at, repeats_weekly, teacher_id")
+    .select("id, teacher_id")
     .eq("invite_slug", slug)
     .eq("kind", "student")
     .maybeSingle();
-  if (!data?.next_lesson_at) return null;
+  if (!data) return null;
+  // The calendar (0018): the next lesson that isn't cancelled.
+  const { data: slots } = await admin
+    .from("lesson_slots")
+    .select("id, lesson_id, starts_at, minutes, weekly, ends_on, time_zone")
+    .eq("lesson_id", data.id);
+  if (!slots?.length) return null;
+  const { data: changes } = await admin
+    .from("slot_changes")
+    .select("slot_id, occurs_at, cancelled, moved_to, moved_minutes")
+    .in(
+      "slot_id",
+      slots.map((s) => s.id),
+    );
+  const next = nextOf(slots as Slot[], (changes ?? []) as SlotChange[], new Date(), 1)[0];
+  if (!next) return null;
   const { data: teacher } = await admin.auth.admin.getUserById(data.teacher_id);
   const name = teacher.user?.user_metadata?.display_name;
-  return { at: data.next_lesson_at as string, weekly: Boolean(data.repeats_weekly), teacher: typeof name === "string" ? name : "" };
+  // A moved lesson is a one-off in the student's calendar file.
+  return { at: next.start.toISOString(), weekly: next.weekly && !next.moved, teacher: typeof name === "string" ? name : "" };
 }

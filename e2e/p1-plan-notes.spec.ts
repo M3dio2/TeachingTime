@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { confirmYes, logIn, openTestClassroom, TEST_CLASSROOM } from "./helpers";
+import { clearTestLessons, confirmYes, logIn, openTestClassroom, TEST_CLASSROOM } from "./helpers";
 
 // Review A4 + A5 (migration 0017): plan the next lesson (calendar file, dashboard, join page),
 // and the text pad saved as a dated lesson note in the Classroom.
@@ -9,27 +9,31 @@ test("P1: next lesson on the Classroom, the dashboard card and the student's joi
   test.setTimeout(120_000);
   await logIn(page);
   await openTestClassroom(page);
-  const card = page.getByRole("region", { name: "Next lesson" });
+  const card = page.getByRole("region", { name: "Next lesson", exact: true });
   // Leftover from an earlier run: start from "not planned".
-  if (await card.getByRole("button", { name: "Change" }).isVisible()) {
-    await card.getByRole("button", { name: "Change" }).click();
-    await card.getByRole("button", { name: "No next lesson" }).click();
-  }
-  await card.getByRole("button", { name: "Plan the next lesson" }).click();
-  // Default: a week from now, every week.
-  await expect(card.getByLabel("Every week")).toBeChecked();
-  await card.getByLabel("Time").fill("17:30");
-  await card.getByRole("button", { name: "Save" }).click();
-  const when = card.getByTestId("next-lesson-when");
-  await expect(when).toContainText(/17:30|5:30\s?PM/, { timeout: 15_000 });
-  await expect(when).toContainText("every week");
+  await clearTestLessons(page);
+  await card.getByRole("button", { name: "Plan a lesson" }).click();
+  const dialog = page.getByRole("dialog", { name: /New lesson/ });
+  // Default: every week, 60 minutes.
+  await expect(dialog.getByLabel("Every week")).toBeChecked();
+  await expect(dialog.getByRole("radio", { name: "60 min" })).toBeChecked();
 
   // A past date is refused.
-  await card.getByRole("button", { name: "Change" }).click();
-  await card.getByLabel("Date").fill("2020-01-06");
-  await expect(card.getByRole("alert")).toHaveText("This date is in the past.");
-  await expect(card.getByRole("button", { name: "Save" })).toBeDisabled();
-  await card.getByRole("button", { name: "Cancel" }).click();
+  await dialog.getByLabel("Day").fill("2020-01-06");
+  await expect(dialog.getByRole("alert")).toHaveText("This time is in the past.");
+  await expect(dialog.getByRole("button", { name: "Save" })).toBeDisabled();
+
+  const inAWeek = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  const day = `${inAWeek.getFullYear()}-${String(inAWeek.getMonth() + 1).padStart(2, "0")}-${String(inAWeek.getDate()).padStart(2, "0")}`;
+  await dialog.getByLabel("Day").fill(day);
+  await dialog.getByLabel("Time").fill("17:30");
+  await dialog.getByText("45 min").click();
+  await dialog.getByRole("button", { name: "Save" }).click();
+  await expect(dialog).toHaveCount(0, { timeout: 15_000 });
+  const when = card.getByTestId("next-lesson-when");
+  await expect(when).toContainText(/17:30|5:30\s?PM/, { timeout: 15_000 });
+  await expect(when).toContainText("45 min");
+  await expect(when).toContainText("every week");
 
   // The calendar file: a weekly event with the student link.
   const download = page.waitForEvent("download");
@@ -58,11 +62,9 @@ test("P1: next lesson on the Classroom, the dashboard card and the student's joi
   expect(readFileSync(await (await sd).path(), "utf8")).toContain("BEGIN:VCALENDAR");
   await ctx.close();
 
-  // Clean up: no next lesson.
+  // Clean up: no lessons planned.
   await openTestClassroom(page);
-  await card.getByRole("button", { name: "Change" }).click();
-  await card.getByRole("button", { name: "No next lesson" }).click();
-  await expect(card.getByRole("button", { name: "Plan the next lesson" })).toBeVisible({ timeout: 15_000 });
+  await clearTestLessons(page);
 });
 
 test("P1: the text pad becomes a lesson note; it can be printed and deleted", async ({ page }) => {

@@ -8,6 +8,7 @@ import { BackToClassrooms, ClassroomLoading, LinkField, RemoveButton } from "@/c
 import ClassroomFiles, { type Resource } from "@/components/classroom/ClassroomFiles";
 import LessonNotes, { type Note } from "@/components/classroom/LessonNotes";
 import NextLesson from "@/components/classroom/NextLesson";
+import { loadCalendar } from "@/lib/calendarData";
 import { StorageCard } from "@/components/classroom/FileUpload";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
 import { buttonClass } from "@/components/ui/Button";
@@ -64,7 +65,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
     supabase.auth.getUser(),
     supabase
       .from("lessons")
-      .select("id, title, invite_slug, last_active_at, next_lesson_at, repeats_weekly")
+      .select("id, title, invite_slug, last_active_at")
       .eq("id", id)
       .eq("kind", "student")
       .maybeSingle(),
@@ -98,6 +99,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
       .limit(30),
   ]);
   if (!student || !auth.user) notFound();
+  const plan = await loadCalendar(supabase, id);
 
   const resources = (files ?? []) as (Omit<Resource, "url"> & { path: string | null; url: string | null })[];
   // "Open" links and picture previews for the teacher, valid for an hour. Links have no file:
@@ -143,8 +145,9 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           lessonId={student.id}
           name={student.title}
           slug={student.invite_slug}
-          nextAt={student.next_lesson_at}
-          weekly={student.repeats_weekly}
+          slots={plan.slots}
+          changes={plan.changes}
+          waiting={false}
         />
         <StorageCard usedBytes={Number(usedBytes ?? 0)} />
         <ClassroomQuizzes

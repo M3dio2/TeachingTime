@@ -1,4 +1,5 @@
 import { auth } from "./auth";
+import { calendar } from "./calendar";
 import { cloud } from "./cloud";
 import { common } from "./common";
 import { dashboard } from "./dashboard";
@@ -9,4 +10,4 @@ import { quiz } from "./quiz";
 import { room } from "./room";
 import { stage } from "./stage";
 
-export const de = { common, auth, dashboard, room, stage, quiz, cloud, plan, demo, net };
+export const de = { common, auth, dashboard, room, stage, quiz, cloud, plan, demo, net, calendar };

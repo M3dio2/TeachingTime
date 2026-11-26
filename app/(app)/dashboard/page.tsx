@@ -7,6 +7,10 @@ import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } 
 import { CardMenu, FeedbackButton, LanguageMenu, NameChip } from "@/components/dashboard/DashboardMenus";
 import GettingStarted from "@/components/dashboard/GettingStarted";
 import { NextLessonLine } from "@/components/classroom/NextLesson";
+import TodayPanel from "@/components/calendar/TodayPanel";
+import PageTabs from "@/components/dashboard/PageTabs";
+import type { Slot, SlotChange } from "@/lib/calendar";
+import { loadCalendar } from "@/lib/calendarData";
 import WaitingAlert from "@/components/dashboard/WaitingAlert";
 import { buttonClass } from "@/components/ui/Button";
 import SubmitButton, { LessonStartScreen } from "@/components/ui/SubmitButton";
@@ -50,23 +54,22 @@ type Lesson = {
   kind: "student" | "quick";
   last_active_at: string | null;
   created_at: string;
-  next_lesson_at: string | null;
-  repeats_weekly: boolean;
 };
 
 async function Dashboard() {
-  const [supabase, { dashboard: t, common, quiz: tq }] = await Promise.all([createClient(), getT()]);
+  const [supabase, { dashboard: t, common, quiz: tq, calendar: tc }] = await Promise.all([createClient(), getT()]);
 
   // Each call is a round trip to Supabase or LiveKit (0.3–0.7 s), so they run side by side.
-  const [{ data: auth }, { data }, { data: fileRows }, occupiedOrUnknown, { data: quizRows }] = await Promise.all([
+  const [{ data: auth }, { data }, { data: fileRows }, occupiedOrUnknown, { data: quizRows }, plan] = await Promise.all([
     supabase.auth.getUser(),
     supabase
       .from("lessons")
-      .select("id, title, invite_slug, kind, last_active_at, created_at, next_lesson_at, repeats_weekly")
+      .select("id, title, invite_slug, kind, last_active_at, created_at")
       .order("title"),
     supabase.from("resources").select("lesson_id, kind"),
     occupiedLessons(),
     supabase.from("quizzes").select("id, title, questions, updated_at, quiz_classrooms(count)").order("updated_at", { ascending: false }),
+    loadCalendar(supabase),
   ]);
   const teacherName: string = auth.user?.user_metadata.display_name ?? "";
   const occupied = occupiedOrUnknown ?? new Set<string>();
@@ -101,7 +104,7 @@ async function Dashboard() {
     <div className="flex min-h-dvh flex-1 flex-col">
       <AutoRefresh />
       <DoneLeaving />
-      <header className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-4 px-[clamp(16px,4vw,32px)] py-5">
+      <header className="mx-auto flex w-full max-w-[1240px] flex-wrap items-center justify-between gap-4 px-[clamp(16px,4vw,32px)] py-5">
         {/* First visit: the arrow doodle is the page's marker stroke, so no underline here. */}
         <Wordmark underline={firstVisit ? "none" : "still"} />
         <div className="flex items-center gap-2">
@@ -111,7 +114,24 @@ async function Dashboard() {
         </div>
       </header>
 
-      <main className="mx-auto flex w-full max-w-[1120px] flex-col gap-7 px-[clamp(16px,4vw,32px)] pt-3 pb-16">
+      {!firstVisit && <PageTabs t={tc} current="classrooms" />}
+      <main
+        className={`mx-auto grid w-full max-w-[1240px] items-start gap-7 px-[clamp(16px,4vw,32px)] pb-16 ${
+          firstVisit ? "pt-3" : "pt-6 lg:grid-cols-[minmax(0,1fr)_340px]"
+        }`}
+      >
+        {!firstVisit && students.length > 0 && (
+          // Mock-ups 1 + 2: today's lessons on the right; on phones above the Classrooms.
+          <div className="lg:col-start-2 lg:row-start-1">
+            <TodayPanel
+              classrooms={students.map((s) => ({ id: s.id, title: s.title, slug: s.invite_slug }))}
+              slots={plan.slots}
+              changes={plan.changes}
+              waitingIds={students.filter((s) => occupied.has(s.id)).map((s) => s.id)}
+            />
+          </div>
+        )}
+        <div className="flex min-w-0 flex-col gap-7 lg:col-start-1 lg:row-start-1">
         <WaitingAlert
           waiting={[...students, ...quickCalls]
             .filter((l) => occupied.has(l.id))
@@ -199,6 +219,8 @@ async function Dashboard() {
               student={student}
               waiting={occupied.has(student.id)}
               files={counts.get(student.id)}
+              slots={plan.slots.filter((s) => s.lesson_id === student.id)}
+              changes={plan.changes}
             />
           ))}
           <li>
@@ -224,6 +246,7 @@ async function Dashboard() {
         </ul>
 
         <Quizzes t={tq} quizzes={(quizRows ?? []) as QuizRow[]} />
+        </div>
       </main>
     </div>
   );
@@ -345,7 +368,21 @@ function ArrowDoodle() {
 
 // A classroom card. The whole card opens the classroom; the buttons sit above that link.
 // A waiting student: ink border, yellow offset shadow, "Waiting" circled, Start lesson primary.
-function StudentCard({ t, student, waiting, files }: { t: T; student: Lesson; waiting: boolean; files?: string }) {
+function StudentCard({
+  t,
+  student,
+  waiting,
+  files,
+  slots,
+  changes,
+}: {
+  t: T;
+  student: Lesson;
+  waiting: boolean;
+  files?: string;
+  slots: Slot[];
+  changes: SlotChange[];
+}) {
   return (
     <li
       className={`relative flex flex-col gap-3.5 rounded-panel border bg-surface p-4 transition hover:border-ink hover:shadow-[3px_3px_0_var(--color-marker)] motion-safe:hover:-translate-y-0.5 ${
@@ -373,7 +410,7 @@ function StudentCard({ t, student, waiting, files }: { t: T; student: Lesson; wa
               t.noLessonsYet
             )}
           </span>
-          <NextLessonLine nextAt={student.next_lesson_at} weekly={student.repeats_weekly} />
+          <NextLessonLine slots={slots} changes={changes} />
         </div>
         {waiting && (
           // Circled by the marker when the student arrives (it mounts then; refreshes keep it).
