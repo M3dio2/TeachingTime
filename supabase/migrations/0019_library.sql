@@ -101,5 +101,10 @@ create policy "Teachers move their own files"
   using (bucket_id = 'resources' and (storage.foldername(name))[1] = (select auth.uid())::text)
   with check (bucket_id = 'resources' and (storage.foldername(name))[1] = (select auth.uid())::text);
 
--- Books: 50 MB per file (the app keeps Classroom files at 10 MB).
+-- Books: 50 MB per file in the Library; Classroom files stay at 10 MB (0007).
+alter table public.resources drop constraint if exists resources_size_range;
+alter table public.resources
+  add constraint resources_size_range check (
+    size between 0 and (case when in_library then 52428800 else 10485760 end)
+  );
 update storage.buckets set file_size_limit = 52428800 where id = 'resources';

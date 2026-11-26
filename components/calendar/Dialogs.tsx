@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Portal from "@/components/ui/Portal";
 import type { Occurrence } from "@/lib/calendar";
 import { LessonCard } from "./LessonActions";
 import PlanDialog, { type Classroom } from "./PlanDialog";
@@ -38,7 +39,7 @@ export function useLessonDialogs({
       );
   }
   return {
-    dialogs: node,
+    dialogs: node && <Portal>{node}</Portal>,
     plan: (at?: Date) => setOpen({ kind: "plan", at }),
     show: (occ: Occurrence) => setOpen({ kind: "lesson", occ }),
   };

@@ -21,17 +21,27 @@ export async function POST(request: Request) {
   const admin = createAdminClient();
   const [withinShared, { data: lesson }] = await Promise.all([
     sharedLimit(LIMITS.resource, ip),
-    admin.from("lessons").select("id").eq("invite_slug", slug).eq("kind", "student").maybeSingle(),
+    admin.from("lessons").select("id, teacher_id").eq("invite_slug", slug).eq("kind", "student").maybeSingle(),
   ]);
   if (!withinShared) return tooMany();
-  const { data: file } = lesson
+  const { data: row } = lesson
     ? await admin
         .from("resources")
-        .select("name, kind, path, url")
+        .select("name, kind, path, url, lesson_id, teacher_id, in_library, all_classrooms")
         .eq("id", id)
-        .eq("lesson_id", lesson.id)
         .maybeSingle()
     : { data: null };
+  // The lesson's own file, or a Library file (0019) of the same teacher that is in all her
+  // Classrooms or was added to this one.
+  let file = row && lesson && row.lesson_id === lesson.id ? row : null;
+  if (row && lesson && !file && row.in_library && row.teacher_id === lesson.teacher_id) {
+    const inThis =
+      row.all_classrooms ||
+      Boolean(
+        (await admin.from("resource_classrooms").select("lesson_id").eq("resource_id", id).eq("lesson_id", lesson.id).maybeSingle()).data,
+      );
+    if (inThis) file = row;
+  }
   if (!file) {
     return Response.json({ error: "File not found" }, { status: 404 });
   }

@@ -170,5 +170,5 @@ export const dashboard = {
   storage: "Storage",
   storageUsed: (used: number, total: number) => `${used} MB of ${total} MB`,
   storageUsedLabel: (used: number, total: number) => `${used} of ${total} MB used`,
-  storageHint: "All your Classrooms together. Up to 10 MB per file.",
+  storageHint: "Classrooms and Library together. Up to 10 MB per file in a Classroom, 50 MB in the Library.",
 };

@@ -13,7 +13,7 @@ test("G1: open sign-up, legal pages, 404", async ({ page }) => {
   await expect(page.getByText("not record", { exact: true })).toBeVisible();
   await page.getByRole("link", { name: "Terms" }).click();
   await expect(page.getByRole("heading", { name: "Terms of use" })).toBeVisible();
-  await expect(page.getByText("50 MB of files per teacher")).toBeVisible();
+  await expect(page.getByText("200 MB of files per teacher")).toBeVisible();
 
   const res = await page.goto("/no-such-page");
   expect(res?.status()).toBe(404);

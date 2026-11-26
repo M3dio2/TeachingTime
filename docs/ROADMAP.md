@@ -16,6 +16,14 @@ Tick items off as they're done. One milestone per working session. Details of fi
 # Friends test (date to agree once C1 and L1 show the pace)
 Goal: friends can sign up as teachers and give lessons with their own material. The first plan (by 1 Nov) only had sign-up and audio; after looking at similar products, classrooms, a tabbed call and PDFs come first.
 
+## F2: Fixes from the user (26 Nov 2026), after calendar + Library
+- [ ] Classroom page: drop the "Plan the next lesson" box; just a button to its calendar entry.
+- [ ] Quizzes: a quiz with no finished question isn't created (no empty drafts).
+- [ ] Adding a quiz to a Classroom: the dropdown's design is off.
+- [ ] Lesson notes: don't save a new note every time the teacher leaves and rejoins.
+- [ ] Classroom: files grouped per lesson date (one section per lesson with this student), and
+      the Library visible there.
+
 ## S1: Speed (was M10)
 Vercel functions ran in North America while Supabase was in US West, so each page waited on several long round trips. Fix: both in the same region. Testing happens in South America, later users are global, so US East is the middle ground (round trips from Chile: São Paulo ~125 ms, US East ~215 ms, Frankfurt ~300 ms). Video is unaffected (LiveKit picks the nearest edge).
 - [x] Measure before: one Supabase lookup via the token route 0.4–0.65 s from the dev server (log: "application-code")

@@ -57,12 +57,15 @@ async function Lesson({ params }: Pick<PageProps<"/lesson/[id]">, "params">) {
 // The classroom's files for the room's files panel (student lessons only). Pictures get a
 // signed preview URL for the length of a lesson; opening files comes in L2a.
 async function loadFiles(supabase: Awaited<ReturnType<typeof createClient>>, lessonId: string) {
-  const { data } = await supabase
-    .from("resources")
-    .select("id, kind, name, path, url")
-    .eq("lesson_id", lessonId)
-    .order("created_at", { ascending: false });
-  const rows = (data ?? []) as { id: string; kind: RoomFile["kind"]; name: string; path: string | null; url: string | null }[];
+  // Its own files, then the Library files it has (0019): all-Classroom ones and the chosen.
+  const [{ data: own }, { data: here }, { data: shared }] = await Promise.all([
+    supabase.from("resources").select("id, kind, name, path, url").eq("lesson_id", lessonId).order("created_at", { ascending: false }),
+    supabase.from("resource_classrooms").select("resource_id").eq("lesson_id", lessonId),
+    supabase.from("resources").select("id, kind, name, path, url, all_classrooms").eq("in_library", true).order("name"),
+  ]);
+  const picked = new Set((here ?? []).map((r) => r.resource_id as string));
+  const data = [...(own ?? []), ...(shared ?? []).filter((f) => f.all_classrooms || picked.has(f.id))];
+  const rows = data as { id: string; kind: RoomFile["kind"]; name: string; path: string | null; url: string | null }[];
   const pictures = rows.filter((r) => r.kind === "image" && r.path);
   const { data: signed } = pictures.length
     ? await supabase.storage.from("resources").createSignedUrls(

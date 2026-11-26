@@ -7,6 +7,7 @@ import Button from "@/components/ui/Button";
 import {
   DOCX_TYPE,
   IMAGE_TYPES,
+  LIBRARY_MAX_BYTES,
   MAX_BYTES,
   MB,
   TEXT_TYPES,
@@ -61,7 +62,7 @@ export function useFileUpload({
   usedBytes,
 }: {
   teacherId: string;
-  lessonId: string;
+  lessonId: string | null; // null: the Library, with bigger files
   usedBytes: number;
 }) {
   const router = useRouter();
@@ -69,6 +70,7 @@ export function useFileUpload({
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const t = useT().dashboard;
+  const tl = useT().library;
 
   async function upload(files: File[]) {
     setError("");
@@ -91,8 +93,8 @@ export function useFileUpload({
         failed.push(t.upload.wrongType(file.name));
         continue;
       }
-      if (file.size > MAX_BYTES) {
-        failed.push(t.upload.tooBig(file.name));
+      if (file.size > (lessonId ? MAX_BYTES : LIBRARY_MAX_BYTES)) {
+        failed.push(lessonId ? t.upload.tooBig(file.name) : tl.tooBig(file.name, LIBRARY_MAX_BYTES / MB));
         continue;
       }
       if (used + file.size > TEACHER_BYTES) {
@@ -163,7 +165,7 @@ export function useFileUpload({
           </span>
           <div className="flex flex-col gap-0.5 text-left">
             <span className="font-semibold">{over ? t.dropToUpload : t.dropFilesHere}</span>
-            <span className="text-[13px] text-ink-muted">{t.dropHint}</span>
+            <span className="text-[13px] text-ink-muted">{lessonId ? t.dropHint : tl.dropHint(LIBRARY_MAX_BYTES / MB)}</span>
           </div>
         </div>
         <p className="text-sm text-ink-muted" aria-live="polite">

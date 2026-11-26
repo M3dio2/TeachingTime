@@ -12,6 +12,7 @@ export default function PageTabs({
   const tabs = [
     { id: "classrooms", href: "/dashboard", label: t.tabClassrooms },
     { id: "calendar", href: "/dashboard/calendar", label: t.tabCalendar },
+    { id: "library", href: "/dashboard/library", label: t.tabLibrary },
   ] as const;
   return (
     <nav aria-label={t.tabs} className="mx-auto w-full max-w-[1240px] px-[clamp(16px,4vw,32px)]">

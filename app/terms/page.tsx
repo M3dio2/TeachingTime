@@ -30,7 +30,7 @@ export default function Terms() {
       <List>
         <li>{MAX_CLASSROOMS} classrooms per teacher</li>
         <li>
-          {TEACHER_BYTES / MB} MB of files per teacher, up to 10 MB per file
+          {TEACHER_BYTES / MB} MB of files per teacher, up to 10 MB per file (50 MB in the Library)
         </li>
         <li>
           up to {MAX_LESSON_HOURS} hours per lesson (no monthly limit during the beta; we may add one again with notice)

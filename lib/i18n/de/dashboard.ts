@@ -171,5 +171,5 @@ export const dashboard: typeof en = {
   storage: "Speicher",
   storageUsed: (used: number, total: number) => `${used} MB von ${total} MB`,
   storageUsedLabel: (used: number, total: number) => `${used} von ${total} MB belegt`,
-  storageHint: "Alle deine Classrooms zusammen. Bis zu 10 MB pro Datei.",
+  storageHint: "Classrooms und Bibliothek zusammen. Bis 10 MB pro Datei im Classroom, 50 MB in der Bibliothek.",
 };

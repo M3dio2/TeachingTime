@@ -1,8 +1,10 @@
 "use client";
 
-import { Info, Pause, Play, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Info, Library as LibraryIcon, Pause, Play, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { addLink, removeResource } from "@/app/(app)/dashboard/actions";
+import { moveToLibrary } from "@/app/(app)/dashboard/library/actions";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
 import Button from "@/components/ui/Button";
 import { inputClass } from "@/components/ui/Field";
@@ -139,6 +141,7 @@ export default function ClassroomFiles({
                     )}
                     <Meta file={f} />
                   </div>
+                  <MoveToLibrary file={f} />
                   <DeleteFile file={f} />
                 </li>
               );
@@ -211,6 +214,30 @@ function AddLink({ lessonId }: { lessonId: string }) {
       </div>
       {error && <p className="text-sm text-danger">{error}</p>}
     </form>
+  );
+}
+
+// A Classroom's own file → the Library (0019); it stays in this Classroom.
+function MoveToLibrary({ file }: { file: Resource }) {
+  const t = useT().library;
+  const router = useRouter();
+  const [pending, start] = useTransition();
+  return (
+    <button
+      type="button"
+      aria-label={t.moveToLibraryTitle(file.name)}
+      title={t.moveToLibraryTitle(file.name)}
+      disabled={pending}
+      onClick={() =>
+        start(async () => {
+          await moveToLibrary(file.id);
+          router.refresh();
+        })
+      }
+      className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none disabled:animate-pulse"
+    >
+      <LibraryIcon size={16} aria-hidden />
+    </button>
   );
 }
 

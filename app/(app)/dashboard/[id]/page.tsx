@@ -8,6 +8,7 @@ import { BackToClassrooms, ClassroomLoading, LinkField, RemoveButton } from "@/c
 import ClassroomFiles, { type Resource } from "@/components/classroom/ClassroomFiles";
 import LessonNotes, { type Note } from "@/components/classroom/LessonNotes";
 import NextLesson from "@/components/classroom/NextLesson";
+import ClassroomLibrary from "@/components/library/ClassroomLibrary";
 import { loadCalendar } from "@/lib/calendarData";
 import { StorageCard } from "@/components/classroom/FileUpload";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
@@ -99,12 +100,19 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
       .limit(30),
   ]);
   if (!student || !auth.user) notFound();
-  const plan = await loadCalendar(supabase, id);
+  const [plan, { data: libRows }, { data: libHere }] = await Promise.all([
+    loadCalendar(supabase, id),
+    // The Library (0019): all her shared files, and which are in this Classroom.
+    supabase.from("resources").select("id, kind, name, path, size, all_classrooms").eq("in_library", true).order("name"),
+    supabase.from("resource_classrooms").select("resource_id").eq("lesson_id", id),
+  ]);
+  const here = new Set((libHere ?? []).map((r) => r.resource_id as string));
+  const shared = (libRows ?? []) as { id: string; kind: Resource["kind"]; name: string; path: string | null; size: number; all_classrooms: boolean }[];
 
   const resources = (files ?? []) as (Omit<Resource, "url"> & { path: string | null; url: string | null })[];
   // "Open" links and picture previews for the teacher, valid for an hour. Links have no file:
   // their url is the link itself.
-  const stored = resources.filter((r) => r.path);
+  const stored = [...resources, ...shared.filter((f) => f.all_classrooms || here.has(f.id))].filter((r) => r.path);
   const { data: signed } = stored.length
     ? await supabase.storage.from("resources").createSignedUrls(
         stored.map((r) => r.path!),
@@ -165,6 +173,19 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           teacherId={auth.user.id}
           lessonId={student.id}
           usedBytes={Number(usedBytes ?? 0)}
+        />
+        <ClassroomLibrary
+          lessonId={student.id}
+          name={student.title}
+          files={shared.map((f) => ({
+            id: f.id,
+            kind: f.kind,
+            name: f.name,
+            size: f.size,
+            url: (f.path && urls.get(f.path)) || undefined,
+            all: f.all_classrooms,
+            here: here.has(f.id),
+          }))}
         />
         <LessonNotes
           lessonId={student.id}
