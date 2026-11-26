@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testDocx, uploadToClassroom, pdfAt } from "./helpers";
+import { deleteTestFiles, joinAsStudent, openTestClassroom, startTestLesson, testDocx, uploadToClassroom } from "./helpers";
 
 // G2: Word files. Uploaded in the classroom (old .doc refused with advice), opened in the call
 // for both, the student follows the teacher's scrolling, and "Copy into the text pad" puts the
@@ -28,7 +28,7 @@ test("G2: a Word file opens in the call; the student follows; copy into the text
     for (const p of [page, student]) {
       await expect(p.getByRole("tab", { name })).toBeVisible({ timeout: 20_000 });
       await expect(p.getByTestId("doc-pages").getByText("Exercise line 1:")).toBeVisible({ timeout: 30_000 });
-      await expect(pdfAt(p)).toHaveAttribute("data-at", "1/3");
+      await expect(p.getByText("Page 1 of 3")).toBeVisible();
     }
 
     // The teacher scrolls to the middle; the student's view follows.
