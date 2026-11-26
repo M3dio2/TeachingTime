@@ -90,6 +90,22 @@ test("P1: the text pad becomes a lesson note; it can be printed and deleted", as
   const note = notes.getByTestId("lesson-note").filter({ hasText: words });
   await expect(note).toBeVisible();
 
+  // Leaving and rejoining the same day: still one note, with the new words in it (0020).
+  const count = await notes.getByTestId("lesson-note").count();
+  await page.getByRole("link", { name: "Start lesson" }).click();
+  await page.waitForURL(/\/lesson\/[0-9a-f-]+$/);
+  await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
+  await page.waitForTimeout(2500);
+  await page.getByLabel("Text pad").click();
+  await page.keyboard.press("End");
+  await page.keyboard.type(" and more");
+  await expect(page.getByTestId("note-saved")).toBeVisible({ timeout: 20_000 });
+  await page.getByRole("button", { name: "Leave the lesson" }).click();
+  await page.waitForURL("**/dashboard", { timeout: 30_000 });
+  await openTestClassroom(page);
+  await expect(note).toContainText("and more");
+  await expect(notes.getByTestId("lesson-note")).toHaveCount(count);
+
   // The print page shows the note on its own.
   const [print] = await Promise.all([page.waitForEvent("popup"), note.getByRole("link", { name: "Print or save as PDF" }).click()]);
   await expect(print.getByRole("heading", { name: `Lesson with ${TEST_CLASSROOM}` })).toBeVisible();

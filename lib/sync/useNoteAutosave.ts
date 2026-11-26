@@ -23,7 +23,9 @@ export function useNoteAutosave(doc: Y.Doc, lessonId: string | undefined) {
       const text = fragmentText(fragment);
       if (!text.trim() || text === last.current) return;
       last.current = text;
-      void saveLessonNote(lessonId, text).then((ok) => ok && setSavedAt(Date.now()));
+      const d = new Date();
+      const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+      void saveLessonNote(lessonId, text, day).then((ok) => ok && setSavedAt(Date.now()));
     };
     // The editor tidies the loaded pad in its first moments (an empty paragraph, the snapshot):
     // that's not a change to save, it becomes the starting point.
