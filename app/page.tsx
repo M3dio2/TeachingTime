@@ -4,6 +4,7 @@ import {
   Check,
   FileType2,
   Link2,
+  PlayCircle,
   type LucideIcon,
   PenLine,
   School,
@@ -171,15 +172,16 @@ export default function Home() {
               Face to face online, with your material on the table: write on your PDFs together, share a whiteboard
               and a text pad, play audio for both. Your student just opens a link.
             </p>
-            <div className="flex flex-wrap items-center gap-3">
-              <Link href="/signup" className={buttonClass("primary", "md", "h-12 px-6 text-base font-semibold")}>
+            <div className="flex flex-wrap items-center gap-2.5">
+              <Link href="/signup" className={buttonClass("primary", "md", "h-12 px-5 text-base font-semibold")}>
                 Create your free Classroom
                 <ArrowRight size={18} aria-hidden />
               </Link>
-              {/* Review B13: the header already has Log in; here, a look at how it works. */}
-              <a href="#how" className={buttonClass("ghost", "md", "h-12 px-4 text-base text-ink!")}>
-                How it works
-              </a>
+              {/* A1: try it without an account (the header already has Log in, B13). */}
+              <Link href="/demo" className={buttonClass("secondary", "md", "h-12 px-4 text-base font-semibold")}>
+                <PlayCircle size={18} aria-hidden />
+                Try a demo lesson
+              </Link>
             </div>
             <ul className="flex flex-wrap gap-x-5 gap-y-1.5 text-sm text-ink-muted">
               {["Free while it's new", "Nothing to install", "Students need no account"].map((t) => (
@@ -289,6 +291,9 @@ export default function Home() {
             >
               Create your free Classroom
               <ArrowRight size={18} aria-hidden />
+            </Link>
+            <Link href="/demo" className="-my-2 py-2 text-[15px] text-paper/80 underline-offset-4 hover:text-paper hover:underline">
+              Or try a demo lesson first, no account needed
             </Link>
           </div>
         </section>

@@ -142,7 +142,7 @@ export const room: typeof en = {
     screenHint: "Fichiers, tableau, texte et écrans partagés. Ton navigateur demande quel onglet : choisis celui-ci.",
     screenNotHere: "Impossible dans ce navigateur. Utilise Chrome, Edge ou Firefox sur un ordinateur.",
     privacy: (name: string) =>
-      `On demande d’abord à ${name}. La vidéo est enregistrée uniquement sur cet appareil, TeachingTime ne la reçoit jamais. Tu peux l’arrêter à tout moment, ${name} aussi.`,
+      `On demande d’abord à ${name}. La vidéo est enregistrée uniquement sur cet appareil, TeachingTime ne la reçoit jamais. Toi seul peux l’arrêter ; elle s’arrête aussi si ${name} quitte le cours.`,
     needsStudent: "Ton élève doit être dans le cours.",
     yourStudent: "ton élève",
     yourTeacher: "Ton prof",
@@ -151,6 +151,7 @@ export const room: typeof en = {
     askingTitle: "Demande en cours…",
     asking: (name: string) => `On attend que ${name} accepte l’enregistrement.`,
     studentSaidNo: (name: string) => `${name} ne veut pas que le cours soit enregistré. Rien n’a été enregistré.`,
+    studentLeftStopped: (name: string) => `${name} a quitté le cours, l’enregistrement s’est arrêté.`,
     studentStopped: (name: string) => `${name} a arrêté l’enregistrement.`,
     screenRefused: "Le navigateur n’a pas autorisé l’enregistrement de l’onglet. Réessaie, ou enregistre sans l’écran du cours.",
     failed: "L’enregistrement n’a pas pu démarrer dans ce navigateur.",
@@ -162,7 +163,7 @@ export const room: typeof en = {
     consent: (name: string) => `${name} aimerait enregistrer ce cours.`,
     whatIsRecorded: "Enregistré :",
     consentHint: (name: string) =>
-      `L’enregistrement est sauvegardé uniquement sur l’appareil de ${name}. Tu vois un signe rouge pendant qu’il tourne, et tu peux l’arrêter à tout moment.`,
+      `L’enregistrement est sauvegardé uniquement sur l’appareil de ${name}. Tu vois un signe rouge pendant qu’il tourne. Seul ton prof peut l’arrêter ; si tu quittes le cours, il s’arrête aussi.`,
     allow: "Autoriser",
     dontAllow: "Ne pas autoriser",
     rec: "REC",

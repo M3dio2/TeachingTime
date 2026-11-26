@@ -138,7 +138,7 @@ export const room: typeof en = {
     screenHint: "Archivos, pizarra, texto y pantallas compartidas. Tu navegador te pregunta qué pestaña: elige esta.",
     screenNotHere: "No es posible en este navegador. Usa Chrome, Edge o Firefox en un ordenador.",
     privacy: (name: string) =>
-      `Primero se le pregunta a ${name}. El vídeo se guarda solo en este dispositivo, TeachingTime nunca lo recibe. Puedes detenerlo cuando quieras, ${name} también.`,
+      `Primero se le pregunta a ${name}. El vídeo se guarda solo en este dispositivo, TeachingTime nunca lo recibe. Solo tú puedes detenerlo; también se detiene si ${name} sale de la clase.`,
     needsStudent: "Tu estudiante tiene que estar en la clase.",
     yourStudent: "tu estudiante",
     yourTeacher: "Tu profesor",
@@ -147,6 +147,7 @@ export const room: typeof en = {
     askingTitle: "Preguntando…",
     asking: (name: string) => `Esperando a que ${name} acepte la grabación.`,
     studentSaidNo: (name: string) => `${name} no quiere que se grabe la clase. No se grabó nada.`,
+    studentLeftStopped: (name: string) => `${name} salió de la clase, así que la grabación se detuvo.`,
     studentStopped: (name: string) => `${name} detuvo la grabación.`,
     screenRefused: "El navegador no permitió grabar la pestaña. Inténtalo de nuevo o graba sin la pantalla de la clase.",
     failed: "La grabación no pudo empezar en este navegador.",
@@ -158,7 +159,7 @@ export const room: typeof en = {
     consent: (name: string) => `${name} quiere grabar esta clase.`,
     whatIsRecorded: "Se graba:",
     consentHint: (name: string) =>
-      `La grabación se guarda solo en el dispositivo de ${name}. Mientras dure verás una señal roja y puedes detenerla cuando quieras.`,
+      `La grabación se guarda solo en el dispositivo de ${name}. Mientras dure verás una señal roja. Solo tu profesor puede detenerla; si sales de la clase, también se detiene.`,
     allow: "Permitir",
     dontAllow: "No permitir",
     rec: "REC",

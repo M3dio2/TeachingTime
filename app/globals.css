@@ -131,10 +131,15 @@ body {
   color: var(--color-ink);
 }
 /* "Student can edit" toggle: green while the student may edit. */
+/* "Anna can write and draw" on: the marker yellow (the app's "look here" colour). */
 .lesson-room .student-edit-toggle.is-on {
-  color: #fff;
-  background: var(--color-ok);
-  border-color: var(--color-ok);
+  color: var(--color-marker-ink);
+  background: var(--color-marker-soft);
+  border-color: var(--color-marker);
+}
+.lesson-room .student-edit-toggle.is-on:hover {
+  background: var(--color-marker);
+  border-color: var(--color-marker-ink);
 }
 /* Sharing your screen: the accent, not LiveKit's blue. */
 .lesson-room .lk-button[data-lk-source="screen_share"][data-lk-enabled="true"] {
@@ -247,4 +252,19 @@ body {
   height: 0;
   color: var(--color-ink-muted);
   pointer-events: none;
+}
+
+/* A1: the demo student blinks and talks. */
+@keyframes demo-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.1); }
+}
+@keyframes demo-talk {
+  0%, 100% { transform: scaleY(0.5); }
+  50% { transform: scaleY(1.1); }
+}
+.demo-blink { transform-box: fill-box; transform-origin: center; animation: demo-blink 4.5s infinite; }
+.demo-talk { transform-box: fill-box; transform-origin: center; animation: demo-talk 0.28s infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .demo-blink, .demo-talk { animation: none; }
 }

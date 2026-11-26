@@ -2,8 +2,8 @@ import { execFileSync } from "node:child_process";
 import { expect, type Page, test } from "@playwright/test";
 import { joinAsStudent, startTestLesson } from "./helpers";
 
-// R1: the teacher records in her browser, only after the student agreed. Stopping (by either
-// of them) downloads the file; the student can say no. Checked with ffprobe when it's there.
+// R1: the teacher records in her browser, only after the student agreed. Stopping (teacher only)
+// downloads the file; the student can say no. Checked with ffprobe when it's there.
 function streams(path: string): string[] {
   try {
     const out = execFileSync("ffprobe", ["-v", "error", "-show_entries", "stream=codec_type", "-of", "csv=p=0", path]);
@@ -56,21 +56,23 @@ test("R1: record with consent, the student says no, the student stops it", async
     await expect(page.getByText("E2E Student doesn't want the lesson recorded. Nothing was recorded.")).toBeVisible();
     await expect(page.getByTestId("rec-pill")).toBeHidden();
 
-    // 3. Voices and cameras (no tab capture); the student stops it from her side.
+    // 3. Voices and cameras (no tab capture). Only the teacher can stop it: the student's
+    //    pill has no Stop button.
     await page.getByRole("button", { name: "Record", exact: true }).click();
     await recordDialog(page).getByLabel("Lesson screen").uncheck();
     await recordDialog(page).getByRole("button", { name: "Ask E2E Student and record" }).click();
     await consent(student).getByRole("button", { name: "Allow", exact: true }).click();
     await expect(student.getByTestId("rec-pill")).toBeVisible({ timeout: 15_000 });
     await page.waitForTimeout(4000);
+    await expect(student.getByTestId("rec-pill").getByRole("button")).toHaveCount(0);
     const second = page.waitForEvent("download");
-    await student.getByTestId("rec-pill").getByRole("button", { name: "Stop" }).click();
+    await page.getByTestId("rec-pill").getByRole("button", { name: "Stop" }).click();
     const file2 = await second;
     const path2 = info.outputPath("cams." + file2.suggestedFilename().split(".").pop());
     await file2.saveAs(path2);
     const s2 = streams(path2);
     if (s2[0] !== "(no ffprobe)") expect(s2).toEqual(["audio", "video"]);
-    await expect(page.getByText(/^E2E Student stopped the recording\. Recording saved: TeachingTime/)).toBeVisible();
+    await expect(page.getByText(/Recording saved: TeachingTime/)).toBeVisible();
   } finally {
     await student.context().close();
   }

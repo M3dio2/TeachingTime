@@ -39,6 +39,7 @@ import { useQuizNames } from "@/lib/room/quizDoc";
 import { useYjsSync } from "@/lib/sync/useYjsSync";
 import { PHONE_QUERY, useMediaQuery } from "@/lib/useMediaQuery";
 import type { PreJoinTracks } from "./CameraCheck";
+import DemoGuide from "@/components/demo/DemoGuide";
 import DesktopRoom from "./DesktopRoom";
 import type { RoomFile } from "./FilesPanel";
 import JoinToast from "./JoinToast";
@@ -70,6 +71,8 @@ type Props = {
   onLeave: (reason?: DisconnectReason) => void;
   // Student: the tracks from the join card's camera check, published as they are.
   tracks?: PreJoinTracks | null;
+  // A1: the demo lesson (/demo): no call at all, a pretend student (components/demo).
+  demo?: boolean;
 };
 
 // Video quality follows the size it's shown at: each camera is sent in 720p plus two smaller
@@ -83,7 +86,7 @@ const ROOM_OPTIONS: RoomOptions = {
   publishDefaults: { simulcast: true, videoSimulcastLayers: [VideoPresets.h180, VideoPresets.h360] },
 };
 
-export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, tracks }: Props) {
+export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, tracks, demo = false }: Props) {
   const t = useT();
   const [problem, setProblem] = useState<string | null>(null);
   const isPhone = useMediaQuery(PHONE_QUERY);
@@ -92,10 +95,10 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
     <LiveKitRoom
       token={token}
       serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
-      connect
+      connect={!demo}
       options={ROOM_OPTIONS}
-      video={!tracks}
-      audio={!tracks}
+      video={!tracks && !demo}
+      audio={!tracks && !demo}
       onDisconnected={onLeave}
       onMediaDeviceFailure={(failure, kind) => setProblem(deviceProblemMessage(t, failure, kind))}
       // Camera/mic failures also arrive here (e.g. "Permission denied by system" on macOS).
@@ -113,12 +116,14 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
       // Tailwind's h-dvh, which collapsed the stage on phones.
       style={{ height: "100dvh" }}
     >
-      <StatusBanner
-        role={role}
-        inviteSlug={lesson?.inviteSlug}
-        problem={problem}
-        onDismissProblem={() => setProblem(null)}
-      />
+      {!demo && (
+        <StatusBanner
+          role={role}
+          inviteSlug={lesson?.inviteSlug}
+          problem={problem}
+          onDismissProblem={() => setProblem(null)}
+        />
+      )}
       <RecordingProvider role={role}>
         {/* Review B17: a main landmark and a heading for screen readers. */}
         <h1 className="sr-only">{lesson?.title ? t.room.lessonWith(lesson.title) : t.room.yourLesson}</h1>
@@ -128,13 +133,14 @@ export default function LessonRoom({ token, role, lesson, inviteSlug, onLeave, t
           inviteSlug={inviteSlug ?? lesson?.inviteSlug}
           isPhone={isPhone}
           onProblem={setProblem}
+          demo={demo}
         />
       </RecordingProvider>
-      <JoinToast />
-      <ConnectingScreen />
+      {!demo && <JoinToast />}
+      {!demo && <ConnectingScreen />}
       <RoomAudioRenderer />
       {tracks && <PublishTracks tracks={tracks} />}
-      {role === "teacher" && lesson && <LessonTimer lessonId={lesson.id} onProblem={setProblem} />}
+      {role === "teacher" && lesson && !demo && <LessonTimer lessonId={lesson.id} onProblem={setProblem} />}
     </LiveKitRoom>
   );
 }
@@ -150,12 +156,14 @@ function LessonContent({
   inviteSlug,
   isPhone,
   onProblem,
+  demo,
 }: {
   role: Role;
   lesson?: SavedLesson;
   inviteSlug?: string;
   isPhone: boolean;
   onProblem: (message: string) => void;
+  demo: boolean;
 }) {
   const t = useT();
   const teacher = role === "teacher";
@@ -229,7 +237,7 @@ function LessonContent({
   const names = { ...quizNames, ...fileNames };
 
   const other = useRemoteParticipants()[0];
-  const studentLesson = Boolean(lesson?.saveBoard);
+  const studentLesson = Boolean(lesson?.saveBoard) || demo;
   const otherName =
     other?.name || (teacher ? (studentLesson && lesson?.title) || t.room.yourStudent : t.room.yourTeacher);
 
@@ -245,7 +253,7 @@ function LessonContent({
     files: studentLesson ? files : undefined,
     addFile: (f) => setFiles((list) => [...list, f]),
     filesTitle: t.room.filesTitle(lesson?.title ?? ""),
-    lessonId: lesson?.id,
+    lessonId: demo ? undefined : lesson?.id,
     inviteSlug,
     names,
     sync,
@@ -265,7 +273,7 @@ function LessonContent({
       : undefined,
     // Teacher only: mutes a participant's microphone from their camera tile.
     onMute:
-      teacher && lesson
+      teacher && lesson && !demo
         ? (identity) =>
             muteMicrophones(lesson.id, identity).catch(() =>
               onProblem(t.room.muteFailed),
@@ -283,6 +291,7 @@ function LessonContent({
           <RoomControls model={model} onProblem={onProblem} />
         </>
       )}
+      {demo && <DemoGuide model={model} isPhone={isPhone} />}
     </main>
   );
 }

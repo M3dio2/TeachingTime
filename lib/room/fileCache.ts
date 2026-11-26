@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { DEMO_FILE_INFO, DEMO_SLUG } from "@/lib/demo/content";
 import { type FileTab, isFileTab, resourceIdOf, type TabId } from "./tabs";
 
 // Classroom files shown in tabs (L2a). /api/resource-url hands out a URL valid for 5 minutes,
@@ -15,6 +16,13 @@ const infos = new Map<string, Promise<{ name: string; kind: FileKind; url: strin
 function info(slug: string, resourceId: string) {
   const key = `${slug}/${resourceId}`;
   let p = infos.get(key);
+  // The demo lesson's files are static (lib/demo/content.ts).
+  if (!p && slug === DEMO_SLUG) {
+    const demo = DEMO_FILE_INFO[resourceId];
+    p = demo ? Promise.resolve(demo) : Promise.reject(new Error("not found"));
+    p.catch(() => {});
+    infos.set(key, p);
+  }
   if (!p) {
     p = fetch("/api/resource-url", {
       method: "POST",

@@ -61,12 +61,12 @@ function WhoWrites({ model }: { model: RoomModel }) {
   const can = model.view.studentCanEdit;
   if (model.role === "teacher") {
     return can ? (
-      <Chip tone="ok">{t.stage.canWriteHere(cap(model.otherName))}</Chip>
+      <Chip tone="marker">{t.stage.canWriteHere(cap(model.otherName))}</Chip>
     ) : (
       <Chip>{t.stage.onlyYouCanWrite}</Chip>
     );
   }
-  return can ? <Chip tone="ok">{t.stage.youCanWriteHere}</Chip> : <Chip>{t.stage.viewOnly}</Chip>;
+  return can ? <Chip tone="marker">{t.stage.youCanWriteHere}</Chip> : <Chip>{t.stage.viewOnly}</Chip>;
 }
 
 function ScreenPane({ model }: { model: RoomModel }) {

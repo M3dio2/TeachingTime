@@ -34,7 +34,7 @@ import type { Role } from "./roomModel";
 
 // R1: recording the lesson in the teacher's browser, only after the student agreed.
 // The teacher's attribute `rec` says "asking" or "on" (both sides show it); the student answers
-// with a data message (yes / no / stop). Stopping downloads the file at once.
+// with a data message (yes / no). Only the teacher stops it; stopping downloads the file at once.
 
 const SECONDARY = buttonClass("secondary", "md", "h-11 px-4");
 const REC_PRIMARY = buttonClass("primary", "md", "h-11 px-4 font-semibold !bg-danger hover:!bg-danger/90");
@@ -120,10 +120,9 @@ function TeacherRecording({ children }: { children: ReactNode }) {
       const reply: RecReply | null = cleanReply(payload);
       const p = phaseRef.current;
       if (!reply) return;
-      if (reply.answer === "stop" && p.phase === "on" && p.id === reply.id) {
-        await stop(t.studentStopped(from.name || from.identity));
-        return;
-      }
+      // Only the teacher stops a recording (the student's pill has no Stop button; an old or
+      // tampered client's "stop" is ignored).
+      if (reply.answer === "stop") return;
       if (p.phase !== "asking" || p.id !== reply.id) return;
       if (reply.answer === "no") {
         p.tab?.getTracks().forEach((tr) => tr.stop());
@@ -168,14 +167,20 @@ function TeacherRecording({ children }: { children: ReactNode }) {
     };
   }, [room, localParticipant, publish, setPhase, stop, t]);
 
-  // Leaving the lesson while recording: save what there is.
+  // Leaving the lesson while recording: save what there is. The student can't stop it herself,
+  // but leaving the lesson stops it too.
   useEffect(() => {
     const onLeave = () => void stop();
+    const onStudentLeft = (p: RemoteParticipant) => {
+      if (!isTeacher(p) && phaseRef.current.phase === "on") void stop(t.studentLeftStopped(p.name || p.identity));
+    };
     room.on(RoomEvent.Disconnected, onLeave);
+    room.on(RoomEvent.ParticipantDisconnected, onStudentLeft);
     return () => {
       room.off(RoomEvent.Disconnected, onLeave);
+      room.off(RoomEvent.ParticipantDisconnected, onStudentLeft);
     };
-  }, [room, stop]);
+  }, [room, stop, t]);
   useEffect(() => {
     if (phase.phase !== "on" && phase.phase !== "asking") return;
     const warn = (e: BeforeUnloadEvent) => e.preventDefault();
@@ -404,7 +409,7 @@ function StudentRecording({ children }: { children: ReactNode }) {
           </div>
         </Modal>
       )}
-      {rec?.state === "on" && <RecPill since={rec.since} label={t.stop} onStop={() => reply(rec.id, "stop")} />}
+      {rec?.state === "on" && <RecPill since={rec.since} />}
     </RecordingContext.Provider>
   );
 }
@@ -412,7 +417,8 @@ function StudentRecording({ children }: { children: ReactNode }) {
 // ---------------------------------------------------------------- shared bits
 
 // "● REC 12:03  Stop", above the control bar for both, so nobody forgets it's on.
-function RecPill({ since, label, onStop }: { since: number; label: string; onStop: () => void }) {
+// Only the teacher's pill has Stop.
+function RecPill({ since, label, onStop }: { since: number; label?: string; onStop?: () => void }) {
   const t = useT().room.rec;
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -430,7 +436,8 @@ function RecPill({ since, label, onStop }: { since: number; label: string; onSto
     >
       <span aria-hidden className="h-2.5 w-2.5 animate-pulse rounded-full bg-danger" />
       <span>{t.rec}</span>
-      <span className="tabular-nums">{time}</span>
+      <span className={`tabular-nums ${onStop ? "" : "pr-2"}`}>{time}</span>
+      {onStop && (
       <button
         type="button"
         onClick={onStop}
@@ -439,6 +446,7 @@ function RecPill({ since, label, onStop }: { since: number; label: string; onSto
         <Square size={12} aria-hidden className="fill-current" />
         {label}
       </button>
+      )}
     </div>
   );
 }

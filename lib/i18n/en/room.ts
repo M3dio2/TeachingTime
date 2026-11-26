@@ -146,7 +146,7 @@ export const room = {
     screenHint: "Files, whiteboard, text and shared screens. Your browser asks which tab: choose this one.",
     screenNotHere: "Not possible in this browser. Use Chrome, Edge or Firefox on a computer.",
     privacy: (name: string) =>
-      `${name} is asked first. The video is saved only on this device, TeachingTime never gets it. Stop it any time, so can ${name}.`,
+      `${name} is asked first. The video is saved only on this device, TeachingTime never gets it. Only you can stop it; it also stops if ${name} leaves the lesson.`,
     needsStudent: "Your student needs to be in the lesson.",
     yourStudent: "your student",
     yourTeacher: "Your teacher",
@@ -155,6 +155,7 @@ export const room = {
     askingTitle: "Asking…",
     asking: (name: string) => `Waiting for ${name} to agree to the recording.`,
     studentSaidNo: (name: string) => `${name} doesn't want the lesson recorded. Nothing was recorded.`,
+    studentLeftStopped: (name: string) => `${name} left the lesson, so the recording stopped.`,
     studentStopped: (name: string) => `${name} stopped the recording.`,
     screenRefused: "The browser didn't allow recording the tab. Try again, or record without the lesson screen.",
     failed: "The recording couldn't start in this browser.",
@@ -166,7 +167,7 @@ export const room = {
     consent: (name: string) => `${name} would like to record this lesson.`,
     whatIsRecorded: "Recorded:",
     consentHint: (name: string) =>
-      `The recording is saved on ${name}'s device only. You'll see a red sign while it runs, and you can stop it any time.`,
+      `The recording is saved on ${name}'s device only. You'll see a red sign while it runs. Only your teacher can stop it; if you leave the lesson, it stops too.`,
     allow: "Allow",
     dontAllow: "Don't allow",
     rec: "REC",
