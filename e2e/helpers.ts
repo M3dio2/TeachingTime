@@ -71,16 +71,17 @@ export async function joinAsStudent(
 }
 
 // A real PDF with `pages` tall pages, each saying "Page n" (pdf.js rebuilds the missing xref).
-export function testPdf(pages: number) {
+export function testPdf(pages: number, landscape = false) {
+  const [w, h] = landscape ? [1008, 567] : [612, 1008];
   const objs: string[] = [];
   const kids = Array.from({ length: pages }, (_, i) => `${4 + i * 2} 0 R`).join(" ");
   objs.push("<< /Type /Catalog /Pages 2 0 R >>");
   objs.push(`<< /Type /Pages /Kids [${kids}] /Count ${pages} >>`);
   objs.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>");
   for (let i = 0; i < pages; i++) {
-    const text = `BT /F1 64 Tf 72 900 Td (Page ${i + 1}) Tj ET`;
+    const text = `BT /F1 64 Tf 72 ${h - 108} Td (Page ${i + 1}) Tj ET`;
     objs.push(
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 1008] /Resources << /Font << /F1 3 0 R >> >> /Contents ${5 + i * 2} 0 R >>`,
+      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${w} ${h}] /Resources << /Font << /F1 3 0 R >> >> /Contents ${5 + i * 2} 0 R >>`,
     );
     objs.push(`<< /Length ${text.length} >>\nstream\n${text}\nendstream`);
   }
@@ -111,6 +112,11 @@ export async function uploadToClassroom(page: Page, name: string, mimeType: stri
 
 // Classroom: delete every file whose name starts with "e2e-" (leftovers of earlier runs).
 // Our own confirm dialog (components/ui/Confirm.tsx): press its main button.
+// The PDF's page, for teacher ("Page [2] of 3", an input) and student ("Page 2 of 3") alike.
+export function pdfAt(page: Page) {
+  return page.getByTestId("pdf-page");
+}
+
 export async function confirmYes(page: Page) {
   await page.getByTestId("confirm-yes").click();
 }

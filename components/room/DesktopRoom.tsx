@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Handle from "@/components/ui/Handle";
 import { useT } from "@/lib/i18n/client";
+import { useLandscapeShown } from "@/lib/room/presenting";
 import { useStored, useWindowWidth } from "@/lib/useStored";
 import { CameraColumn, CameraRow } from "./CameraTiles";
 import { FilesPanel, FilesStrip, type RoomFile } from "./FilesPanel";
@@ -31,6 +32,10 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
   const [filesW, setFilesW] = useStored("room-files-width", FILES.normal);
   const [foldedByHand, setFolded] = useStored<boolean | null>("room-files-folded", null);
   const [dragging, setDragging] = useState<RoomFile | null>(null); // a file dragged from the panel
+  const landscape = useLandscapeShown();
+  const [unfoldedFor, setUnfoldedFor] = useState<"presenting" | null>(null);
+  // The presentation closed: the next one folds the files again.
+  if (!landscape && unfoldedFor) setUnfoldedFor(null);
 
   if (model.view.justTalk) {
     return (
@@ -42,7 +47,10 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
 
   const showColumn = w >= 1024;
   const columnW = clamp(camerasW ?? (w >= 1280 ? 240 : 200), CAMERAS.min, CAMERAS.max);
-  const folded = foldedByHand ?? w < 1280;
+  // A landscape PDF (slides) on screen folds the files away for the stage, until she unfolds
+  // them by hand during that presentation (DesktopRoom only: phones have no files column).
+  const presenting = landscape && unfoldedFor !== "presenting";
+  const folded = presenting || (foldedByHand ?? w < 1280);
   const files = model.files;
   const edge = (side: "left" | "right") => row.current?.getBoundingClientRect()[side] ?? 0;
 
@@ -66,7 +74,10 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
       {files &&
         (folded ? (
           <div className="ml-2 flex">
-            <FilesStrip title={model.filesTitle} onUnfold={() => setFolded(false)} />
+            <FilesStrip
+              title={model.filesTitle}
+              onUnfold={() => (landscape ? setUnfoldedFor("presenting") : setFolded(false))}
+            />
           </div>
         ) : (
           <>
@@ -79,7 +90,7 @@ export default function DesktopRoom({ model }: { model: RoomModel }) {
               title={model.filesTitle}
               files={files}
               width={clamp(filesW, FILES.min, FILES.max)}
-              onFold={() => setFolded(true)}
+              onFold={() => (landscape ? setUnfoldedFor(null) : setFolded(true))}
               model={model}
               onDrag={setDragging}
             />

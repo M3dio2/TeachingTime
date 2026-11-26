@@ -1,7 +1,9 @@
 "use client";
 
 import type { PDFDocumentProxy } from "pdfjs-dist";
-import { useEffect, useRef, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import type * as Y from "yjs";
 import { useT } from "@/lib/i18n/client";
 import { createClient } from "@/lib/supabase/client";
 import { MAX_BYTES, uploadResource } from "@/lib/files/uploadResource";
@@ -9,6 +11,7 @@ import { allInk, clearInk, inkedPdf, type InkItem, type PickedTool, savedName, u
 import { type LoadedFile, useLoadedFile } from "@/lib/room/fileCache";
 import type { FileTab } from "@/lib/room/tabs";
 import { InkLayer, InkToolbar } from "./PdfInk";
+import { isLandscape, showingLandscape } from "@/lib/room/presenting";
 import { cap, type RoomModel } from "./roomModel";
 
 function Message({ children }: { children: string }) {
@@ -79,6 +82,8 @@ function openPdf(id: string, file: LoadedFile) {
 const GAP = 12; // px between pages
 const TOOLBAR = 42 + GAP; // the writing toolbar above the header row
 const PAD = 16; // px around the pages
+const COVERED = 8 + TOOLBAR; // the sticky toolbar (top-2) with a gap below
+const HEADER = 32 + GAP; // the page row (page number, Pages/Slides, the note): one line, h-8
 const MAX_W = 900;
 
 // A PDF tab: every page as a canvas at the pane's width, drawn when it comes near the view.
@@ -101,6 +106,27 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
   const ink = useInk(model.doc, id);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
+  // Slides view (the "Slides" switch): one page fitted into the stage.
+  const landscape = pdf ? isLandscape(pdf.ratios) : false;
+  // A landscape PDF is most likely a presentation: it opens as Slides (the teacher can switch).
+  const slides = useSlides(model.doc, id, landscape);
+  useEffect(() => {
+    showingLandscape(id, landscape);
+    return () => showingLandscape(id, false);
+  }, [id, landscape]);
+  // Teacher, the first time a presentation opens: it gets the stage to itself (one tab, the
+  // files folded); Text stays a tab, and she can put them side by side again.
+  useEffect(() => {
+    if (!teacher || !landscape || viewMap(model.doc).has(id)) return;
+    setSlides(model.doc, id, true);
+    const index = model.view.tabs.indexOf(id);
+    if (index >= 0) model.actions?.pick(index);
+    model.actions?.setLayout("single");
+    // Once per file and lesson: the view map remembers it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teacher, landscape, id]);
+  const slideArea = useRef<HTMLDivElement>(null);
+  const [slideBox, setSlideBox] = useState({ w: 0, h: 0 });
 
   async function saveAsNew() {
     if (!file?.bytes || !model.lessonId) return;
@@ -157,47 +183,172 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
   heights.reduce((top, h, i) => {
     tops[i] = top;
     return top + h + GAP;
-  }, PAD + TOOLBAR + 28); // the toolbar and the header row above the first page
+  }, PAD + TOOLBAR + HEADER); // the toolbar and the header row above the first page
 
-  const positionAt = (scrollTop: number) => {
+  // The sticky toolbar covers the top of the view: a page "is at the top" just below it.
+  const positionAt = (top: number) => {
+    const scrollTop = top + COVERED;
     let i = 0;
-    while (i < tops.length - 1 && scrollTop >= tops[i + 1]) i++;
+    // +2: scrollTop is rounded, so landing exactly on a page's top can read a pixel short.
+    while (i < tops.length - 1 && scrollTop + 2 >= tops[i + 1]) i++;
     const into = heights[i] ? (scrollTop - tops[i]) / heights[i] : 0;
     return i + Math.max(0, Math.min(0.999, into));
   };
   const scrollFor = (pos: number) => {
     const i = Math.min(Math.floor(pos), tops.length - 1);
-    return i < 0 ? 0 : tops[i] + (pos - i) * heights[i];
+    return i < 0 ? 0 : Math.max(0, tops[i] + (pos - i) * heights[i] - COVERED);
   };
 
   const ready = Boolean(pdf) && pageW > 0;
   const goTo = (pos: number) => {
-    const el = scroller.current;
-    if (!el) return;
-    el.scrollTop = scrollFor(pos);
     setPage(Math.floor(pos) + 1);
+    const el = scroller.current;
+    if (el && !slides) el.scrollTop = scrollFor(pos);
   };
+  // Teacher: to a page (typed, or the slide arrows); the student follows.
+  const jump = (index: number) => {
+    if (!pdf) return;
+    const i = Math.max(0, Math.min(pdf.doc.numPages - 1, index));
+    goTo(i);
+    model.sync.report?.(id, i);
+  };
+
+  useEffect(() => {
+    const el = slideArea.current;
+    if (!slides || !el) return;
+    const observer = new ResizeObserver(([entry]) =>
+      setSlideBox({ w: entry.contentRect.width, h: entry.contentRect.height }),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [slides, pdf]);
+
+  // Slides: ← → (and Page Up/Down) move both screens, unless she's typing somewhere.
+  useEffect(() => {
+    if (!slides || !teacher) return;
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null;
+      if (el?.closest("input, textarea, [contenteditable=true], .excalidraw")) return;
+      if (e.key === "ArrowRight" || e.key === "PageDown") jump(page);
+      else if (e.key === "ArrowLeft" || e.key === "PageUp") jump(page - 2);
+      else return;
+      e.preventDefault();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   // Student: follow the teacher.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the page follows the synced position
     if (ready && followed !== undefined) goTo(followed);
     // goTo depends on the layout, which `ready` and pageW fix.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [followed, ready, pageW]);
+  }, [followed, ready, pageW, slides]);
 
   // Teacher: come back to where she was when the tab mounts again, or the width changes.
   useEffect(() => {
     if (!teacher || !ready) return;
     const pos = model.sync.positionOf(id);
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- back to her saved position
     if (pos !== undefined) goTo(pos);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teacher, ready, pageW]);
+  }, [teacher, ready, pageW, slides]);
 
   if (failed || broken) return <Message>{p.failed}</Message>;
   if (!pdf) return <Message>{p.opening}</Message>;
 
   const pages = pdf.doc.numPages;
   const note = teacher ? p.seesPage(cap(model.otherName), page) : p.choosesPage(cap(model.otherName));
+  const toolbar = (
+    <InkToolbar
+      tool={tool}
+      onTool={setTool}
+      canEdit={model.canEdit}
+      onClear={teacher ? () => clearInk(model.doc, id) : undefined}
+      onSave={teacher && model.files ? saveAsNew : undefined}
+      saving={saving}
+    />
+  );
+  // The header row: the page (student) or Pages/Slides (teacher), and the note.
+  const header = (
+    <div className="flex h-8 w-full items-center justify-between gap-3 text-[13px] whitespace-nowrap text-ink-muted">
+      {teacher ? (
+        <span />
+      ) : (
+        <span data-testid="pdf-page" data-at={`${page}/${pages}`}>
+          {p.pageOf(page, pages)}
+        </span>
+      )}
+      <span className="truncate">{note}</span>
+    </div>
+  );
+  // Teacher: ‹ Page [7] of 12 › | Pages Slides, floating at the bottom in both views (always in
+  // reach). Type a page to jump; the student follows.
+  const current = Math.min(page, pages) - 1;
+  const pager = teacher && (
+    <div className="sticky bottom-3 z-10 mx-auto flex w-fit shrink-0 items-center gap-1 rounded-full border border-line bg-surface p-1 shadow-soft">
+      <button
+        type="button"
+        onClick={() => jump(current - 1)}
+        disabled={current === 0}
+        aria-label={slides ? p.previousSlide : p.previousPage}
+        title={slides ? p.previousSlide : p.previousPage}
+        className={NAV}
+      >
+        <ChevronLeft size={18} aria-hidden />
+      </button>
+      <PageJump page={page} pages={pages} onJump={(n) => jump(n - 1)} />
+      <button
+        type="button"
+        onClick={() => jump(current + 1)}
+        disabled={current >= pages - 1}
+        aria-label={slides ? p.nextSlide : p.nextPage}
+        title={slides ? p.nextSlide : p.nextPage}
+        className={NAV}
+      >
+        <ChevronRight size={18} aria-hidden />
+      </button>
+      <span className="mx-1 h-6 w-px bg-line" aria-hidden />
+      <SlidesSwitch slides={slides} onChange={(on) => setSlides(model.doc, id, on)} />
+    </div>
+  );
+
+  if (slides) {
+    const index = current;
+    const ratio = pdf.ratios[index] ?? 0.75;
+    const fitW = Math.max(0, Math.min(slideBox.w, slideBox.h / ratio));
+    return (
+      <div
+        ref={scroller}
+        data-testid="pdf-slides"
+        className="@container relative flex h-full flex-col bg-surface-2"
+        style={{ padding: PAD, gap: GAP }}
+      >
+        <div className="mx-auto flex w-full flex-col items-center" style={{ gap: GAP, maxWidth: MAX_W }}>
+          {toolbar}
+          {header}
+        </div>
+        <div ref={slideArea} className="flex min-h-0 flex-1 items-center justify-center">
+          {fitW > 0 && (
+            <PdfPage key={index} doc={pdf.doc} index={index} width={fitW} height={fitW * ratio} root={scroller}>
+              <InkLayer
+                doc={model.doc}
+                file={id}
+                page={index}
+                items={ink.get(index) ?? NO_INK}
+                tool={tool}
+                canEdit={model.canEdit}
+                width={fitW}
+                height={fitW * ratio}
+              />
+            </PdfPage>
+          )}
+        </div>
+        {pager}
+      </div>
+    );
+  }
 
   return (
     <div
@@ -205,24 +356,17 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
       data-testid="pdf-scroller"
       className="@container relative h-full overflow-y-auto bg-surface-2"
       onScroll={(e) => {
-        const pos = positionAt(e.currentTarget.scrollTop);
+        const el = e.currentTarget;
+        // At the very end the last page can't scroll to the top: count it as on screen.
+        const atEnd = el.scrollTop > 0 && el.scrollTop >= el.scrollHeight - el.clientHeight - 2;
+        const pos = atEnd ? tops.length - 1 : positionAt(el.scrollTop);
         setPage(Math.floor(pos) + 1);
         if (teacher) model.sync.report?.(id, pos);
       }}
     >
       <div className="mx-auto flex flex-col items-center" style={{ padding: PAD, gap: GAP, maxWidth: MAX_W + 2 * PAD }}>
-        <InkToolbar
-          tool={tool}
-          onTool={setTool}
-          canEdit={model.canEdit}
-          onClear={teacher ? () => clearInk(model.doc, id) : undefined}
-          onSave={teacher && model.files ? saveAsNew : undefined}
-          saving={saving}
-        />
-        <div className="flex h-4 w-full justify-between gap-2 text-[13px] text-ink-muted">
-          <span>{p.pageOf(page, pages)}</span>
-          <span>{note}</span>
-        </div>
+        {toolbar}
+        {header}
         {heights.map((h, i) => (
           <PdfPage key={i} doc={pdf.doc} index={i} width={pageW} height={h} root={scroller}>
             <InkLayer
@@ -238,16 +382,101 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
           </PdfPage>
         ))}
       </div>
+      {pager}
       {saved && (
         <p
           role="status"
           onAnimationEnd={() => setSaved(null)}
-          className="sticky bottom-3 mx-auto w-fit max-w-[90%] animate-[fade-away_6s_forwards] rounded-panel bg-ink px-3.5 py-2 text-sm text-white"
+          className="sticky bottom-16 mx-auto w-fit max-w-[90%] animate-[fade-away_6s_forwards] rounded-panel bg-ink px-3.5 py-2 text-sm text-white"
         >
           {saved}
         </p>
       )}
     </div>
+  );
+}
+
+const NAV =
+  "inline-flex h-9 w-9 items-center justify-center rounded-full hover:bg-surface-2 disabled:opacity-40 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none";
+
+// "Page [12] of 168": type a page and press Enter (or leave the field) to go there.
+function PageJump({ page, pages, onJump }: { page: number; pages: number; onJump: (page: number) => void }) {
+  const p = useT().stage.pdf;
+  const [draft, setDraft] = useState<string | null>(null);
+  const go = () => {
+    if (draft === null) return;
+    const n = Math.round(Number(draft));
+    setDraft(null);
+    if (Number.isFinite(n) && n >= 1) onJump(Math.min(n, pages));
+  };
+  return (
+    <label
+      className="flex items-center gap-1.5 px-1 text-sm text-ink-muted"
+      data-testid="pdf-page"
+      data-at={`${page}/${pages}`}
+    >
+      <span className="@max-[26rem]:sr-only">{p.pageWord}</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        min={1}
+        max={pages}
+        aria-label={p.goToPage(pages)}
+        value={draft ?? String(page)}
+        onFocus={(e) => e.currentTarget.select()}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={go}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            go();
+          }
+          if (e.key === "Escape") setDraft(null);
+        }}
+        className="h-8 w-14 rounded-md border border-line bg-surface px-1 text-center text-sm text-ink tabular-nums [appearance:textfield] focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/30 focus-visible:outline-none [&::-webkit-inner-spin-button]:appearance-none"
+      />
+      <span className="whitespace-nowrap">{p.ofPages(pages)}</span>
+    </label>
+  );
+}
+
+// Pages (scroll through all of them) or Slides (one fills the stage; the arrows move both).
+function SlidesSwitch({ slides, onChange }: { slides: boolean; onChange: (slides: boolean) => void }) {
+  const p = useT().stage.pdf;
+  const item = (on: boolean) =>
+    `h-8 px-2.5 text-[13px] font-medium focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none ${
+      on ? "bg-ink text-paper" : "bg-surface text-ink hover:bg-surface-2"
+    }`;
+  return (
+    <span role="group" aria-label={p.viewAs} className="mr-0.5 inline-flex overflow-hidden rounded-full border border-line">
+      <button type="button" aria-pressed={!slides} onClick={() => onChange(false)} className={item(!slides)}>
+        {p.pagesView}
+      </button>
+      <button
+        type="button"
+        aria-pressed={slides}
+        onClick={() => onChange(true)}
+        className={`${item(slides)} border-l border-line`}
+      >
+        {p.slidesView}
+      </button>
+    </span>
+  );
+}
+
+// Slides or pages, per PDF tab, in the lesson doc (the student follows; nothing extra to send).
+const viewMap = (doc: Y.Doc) => doc.getMap<string>("pdfView");
+function setSlides(doc: Y.Doc, id: string, on: boolean) {
+  viewMap(doc).set(id, on ? "slides" : "pages");
+}
+function useSlides(doc: Y.Doc, id: string, landscape: boolean) {
+  return useSyncExternalStore(
+    (change) => {
+      viewMap(doc).observe(change);
+      return () => viewMap(doc).unobserve(change);
+    },
+    () => (viewMap(doc).get(id) ?? (landscape ? "slides" : "pages")) === "slides",
+    () => false,
   );
 }
 

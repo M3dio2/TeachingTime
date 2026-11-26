@@ -7,6 +7,7 @@ import {
   testPdf,
   testWav,
   uploadToClassroom,
+  pdfAt,
 } from "./helpers";
 
 // H3: the Content-Security-Policy (next.config.ts) must not block anything the app itself does.
@@ -65,7 +66,7 @@ test("CSP: the main flows cause no violations", async ({ page, browser }) => {
     // A PDF replaces Text (pdf.js and its worker), then a picture.
     await page.getByRole("button", { name: "Close Text" }).click();
     await files.getByRole("button", { name: new RegExp(`e2e-${stamp}\\.pdf`) }).click();
-    for (const p of [page, student]) await expect(p.getByText("Page 1 of 2")).toBeVisible({ timeout: 30_000 });
+    for (const p of [page, student]) await expect(pdfAt(p)).toHaveAttribute("data-at", "1/2", { timeout: 30_000 });
     await page.getByRole("button", { name: "Close Draw" }).click();
     await files.getByRole("button", { name: `Open e2e-${stamp}.png` }).click();
     for (const p of [page, student]) {
