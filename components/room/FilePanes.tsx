@@ -11,6 +11,7 @@ import { allInk, clearInk, inkedPdf, type InkItem, type PickedTool, savedName, u
 import { type LoadedFile, useLoadedFile } from "@/lib/room/fileCache";
 import type { FileTab } from "@/lib/room/tabs";
 import { InkLayer, InkToolbar } from "./PdfInk";
+import { isLandscape, showingLandscape } from "@/lib/room/presenting";
 import { cap, type RoomModel } from "./roomModel";
 
 function Message({ children }: { children: string }) {
@@ -106,7 +107,24 @@ export function PdfPane({ id, model }: { id: FileTab; model: RoomModel }) {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState<string | null>(null);
   // Slides view (the "Slides" switch): one page fitted into the stage.
-  const slides = useSlides(model.doc, id);
+  const landscape = pdf ? isLandscape(pdf.ratios) : false;
+  // A landscape PDF is most likely a presentation: it opens as Slides (the teacher can switch).
+  const slides = useSlides(model.doc, id, landscape);
+  useEffect(() => {
+    showingLandscape(id, landscape);
+    return () => showingLandscape(id, false);
+  }, [id, landscape]);
+  // Teacher, the first time a presentation opens: it gets the stage to itself (one tab, the
+  // files folded); Text stays a tab, and she can put them side by side again.
+  useEffect(() => {
+    if (!teacher || !landscape || viewMap(model.doc).has(id)) return;
+    setSlides(model.doc, id, true);
+    const index = model.view.tabs.indexOf(id);
+    if (index >= 0) model.actions?.pick(index);
+    model.actions?.setLayout("single");
+    // Once per file and lesson: the view map remembers it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teacher, landscape, id]);
   const slideArea = useRef<HTMLDivElement>(null);
   const [slideBox, setSlideBox] = useState({ w: 0, h: 0 });
 
@@ -449,16 +467,15 @@ function SlidesSwitch({ slides, onChange }: { slides: boolean; onChange: (slides
 // Slides or pages, per PDF tab, in the lesson doc (the student follows; nothing extra to send).
 const viewMap = (doc: Y.Doc) => doc.getMap<string>("pdfView");
 function setSlides(doc: Y.Doc, id: string, on: boolean) {
-  if (on) viewMap(doc).set(id, "slides");
-  else viewMap(doc).delete(id);
+  viewMap(doc).set(id, on ? "slides" : "pages");
 }
-function useSlides(doc: Y.Doc, id: string) {
+function useSlides(doc: Y.Doc, id: string, landscape: boolean) {
   return useSyncExternalStore(
     (change) => {
       viewMap(doc).observe(change);
       return () => viewMap(doc).unobserve(change);
     },
-    () => viewMap(doc).get(id) === "slides",
+    () => (viewMap(doc).get(id) ?? (landscape ? "slides" : "pages")) === "slides",
     () => false,
   );
 }

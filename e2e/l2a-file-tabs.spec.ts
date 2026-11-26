@@ -116,4 +116,49 @@ test.describe("L2a file tabs", () => {
       await deleteTestFiles(page);
     }
   });
+
+  test("a landscape PDF opens as slides and folds the files away while it's shown", async ({ page, browser }) => {
+    const name = `e2e-${Date.now()}-slides.pdf`;
+    await page.setViewportSize({ width: 1440, height: 900 });
+    const joinPath = await startTestLesson(page, async (p) => {
+      await deleteTestFiles(p);
+      await uploadToClassroom(p, name, "application/pdf", testPdf(4, true));
+    });
+    try {
+      const student = await joinAsStudent(browser, joinPath);
+      const files = page.getByRole("complementary", { name: "Test's files", exact: true });
+      const folded = page.getByRole("complementary", { name: "Test's files, folded" });
+      await expect(files).toBeVisible();
+      await files.getByRole("button", { name: new RegExp(name) }).click();
+
+      // Slides for both, alone on the stage, the files folded for the teacher.
+      for (const p of [page, student]) await expect(p.getByTestId("pdf-slides")).toBeVisible({ timeout: 30_000 });
+      for (const p of [page, student]) await expect(p.getByTestId("stage")).toHaveAttribute("data-layout", "single");
+      await expect(folded).toBeVisible();
+      await expect(files).toHaveCount(0);
+
+      // She unfolds them by hand: they stay open during this presentation.
+      await folded.getByRole("button", { name: "Show Test's files" }).click();
+      await expect(files).toBeVisible();
+      await page.getByRole("button", { name: "Next slide" }).click();
+      await expect(pdfAt(student)).toHaveAttribute("data-at", "2/4", { timeout: 10_000 });
+      await expect(files).toBeVisible();
+
+      // Closing the PDF: as before (open at this width).
+      await page.getByRole("button", { name: `Close ${name}` }).click();
+      await expect(files).toBeVisible();
+      await expect(page.getByTestId("pdf-slides")).toHaveCount(0);
+      await student.context().close();
+    } finally {
+      const leave = page.getByRole("button", { name: "Leave the lesson" });
+      if (await leave.count()) {
+        await leave.click();
+        await page.waitForURL("**/dashboard");
+      } else {
+        await page.goto("/dashboard");
+      }
+      await openTestClassroom(page);
+      await deleteTestFiles(page);
+    }
+  });
 });
