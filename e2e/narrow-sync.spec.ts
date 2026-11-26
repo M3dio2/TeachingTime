@@ -22,8 +22,12 @@ test("narrow windows: teacher and student see the same tab", async ({ page, brow
   // Teacher narrow (camera column and files panel open on a laptop-sized window): one at a
   // time for both, the same tab.
   await page.setViewportSize({ width: 1100, height: 800 });
+  // The files fold by themselves at this width (unless opened by hand before): open them.
   const unfold = page.getByRole("button", { name: "Show Test's files" });
+  const open = page.getByRole("complementary", { name: "Test's files", exact: true });
+  await expect(unfold.or(open)).toBeVisible();
   if (await unfold.count()) await unfold.click();
+  await expect(open).toBeVisible();
   await expect(stage(page)).toHaveAttribute("data-layout", "single");
   await expect(stage(student)).toHaveAttribute("data-layout", "single", { timeout: 15_000 });
   await page.getByRole("tab", { name: "Text" }).click();
