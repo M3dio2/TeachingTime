@@ -13,7 +13,11 @@ export async function POST(request: Request) {
   const { error } = await createAdminClient()
     .from("error_reports")
     .insert({
-      message: text(body.message, 1000),
+      // Connection tests (Asia): where the network is, for comparing countries. Country only.
+      message:
+        body.page === "connection-test"
+          ? `${request.headers.get("x-vercel-ip-country") ?? "??"} ${text(body.message, 990) ?? ""}`
+          : text(body.message, 1000),
       digest: text(body.digest, 100),
       page: text(body.page, 200),
       user_agent: text(request.headers.get("user-agent"), 300),
