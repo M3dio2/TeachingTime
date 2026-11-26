@@ -101,7 +101,7 @@ test("C1: connect Dropbox, add a file from it, save recordings to Dropbox and Go
   // A lesson: the recording goes to Dropbox by itself.
   const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
   await page.getByRole("link", { name: "Start lesson" }).click();
-  await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
   const student = await joinAsStudent(browser, new URL(`http://${link}`).pathname);
   try {
     await record(page, student);

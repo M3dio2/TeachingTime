@@ -29,9 +29,10 @@ test("C1b: file and teacher storage limits", async ({ page }) => {
   // Leftovers from an earlier failed run would skew the storage line.
   const leftovers = page.getByRole("listitem").filter({ hasText: /^e2e-/ });
   while (await leftovers.count()) {
+    const before = await leftovers.count();
     await leftovers.first().getByRole("button", { name: "Delete" }).click();
     await confirmYes(page);
-    await page.waitForTimeout(1500);
+    await expect.poll(() => leftovers.count(), { timeout: 30_000 }).toBeLessThan(before);
   }
 
   const before = await usedMB(page);

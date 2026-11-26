@@ -104,7 +104,7 @@ function NoteItem({ note, lessonId, date }: { note: Note; lessonId: string; date
               variant="ghost"
               title={t.deleteNote(date)}
               aria-label={t.deleteNote(date)}
-              className="h-9 w-9 p-0 text-ink-muted! hover:text-danger!"
+              className="h-9 w-9 shrink-0 px-0! text-ink-muted! hover:text-danger!"
               pending={<Trash2 size={16} aria-hidden className="opacity-50" />}
               confirm={t.deleteNoteConfirm(date)}
               confirmLabel={tc.delete}

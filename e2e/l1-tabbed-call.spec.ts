@@ -117,7 +117,7 @@ test.describe("L1 tabbed call", () => {
     await expect(page.getByRole("complementary", { name: "Test's files" })).toBeVisible();
 
     await page.reload();
-    await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
     await expect.poll(async () => (await column.boundingBox())?.width).toBe(272);
 
     // 1024–1279: files folded to the icon strip.

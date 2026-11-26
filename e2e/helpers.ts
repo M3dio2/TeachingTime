@@ -51,7 +51,7 @@ export async function startTestLesson(page: Page, prepare?: (page: Page) => Prom
   const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
   await page.getByRole("link", { name: "Start lesson" }).click();
   await page.waitForURL(/\/lesson\/[0-9a-f-]+$/);
-  await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
   return new URL(`http://${link}`).pathname;
 }
 

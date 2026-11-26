@@ -92,7 +92,7 @@ test("QW: a waiting student shows in the tab title; text pad hint; write switch"
     .filter({ has: page.getByRole("link", { name: `Open ${TEST_CLASSROOM}'s Classroom` }) })
     .getByRole("link", { name: "Start lesson" })
     .click();
-  await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
   // Clearing asks in our dialog first; then the empty pad shows its hint.
   await page.getByRole("button", { name: /^Clear the text/ }).click();
   await page.getByTestId("confirm-yes").click();

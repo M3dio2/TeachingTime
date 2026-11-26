@@ -106,7 +106,7 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   await expect(here.getByRole("link", { name: new RegExp(TITLE) })).toContainText("7 questions");
   const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
   await page.getByRole("link", { name: "Start lesson" }).click();
-  await expect(page.getByRole("region", { name: "Lesson" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByRole("region", { name: "Lesson", exact: true })).toBeVisible({ timeout: 30_000 });
   const joinPath = new URL(`http://${link}`).pathname;
   const student = await joinAsStudent(browser, joinPath);
   const panel = page.getByRole("complementary", { name: /files$/ });
