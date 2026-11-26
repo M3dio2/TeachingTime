@@ -161,6 +161,7 @@ export const dashboard: typeof en = {
       `${name} est une présentation. Enregistre-la d’abord en PDF (PowerPoint : Fichier → Exporter → PDF ; Keynote : Fichier → Exporter vers → PDF ; Google Slides : Fichier → Télécharger → PDF), puis importe le PDF : chaque diapo devient une page à montrer et annoter ensemble.`,
     wrongType: (name: string) => `${name} : ce type de fichier ne peut pas être ajouté.`,
     tooBig: (name: string) => `${name} dépasse 10 Mo.`,
+    tooLargeForUpload: (name: string) => `${name} est trop gros pour être envoyé (le stockage accepte pour l’instant 50 Mo par fichier).`,
     noRoom: (name: string, mb: number) =>
       `${name} ne rentre pas : tes fichiers peuvent occuper ${mb} Mo au total. Supprimes-en d’abord quelques-uns.`,
     notAccepted: (name: string) => `${name} : ce type de fichier n’est pas encore accepté.`,
@@ -171,5 +172,5 @@ export const dashboard: typeof en = {
   storage: "Stockage",
   storageUsed: (used: number, total: number) => `${used} Mo sur ${total} Mo`,
   storageUsedLabel: (used: number, total: number) => `${used} Mo utilisés sur ${total}`,
-  storageHint: "Classrooms et Bibliothèque ensemble. Jusqu’à 10 Mo par fichier dans un Classroom, 50 Mo dans la Bibliothèque.",
+  storageHint: "Classrooms et Bibliothèque ensemble. Jusqu’à 10 Mo par fichier dans un Classroom, sans limite par fichier dans la Bibliothèque.",
 };

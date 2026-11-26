@@ -101,10 +101,12 @@ create policy "Teachers move their own files"
   using (bucket_id = 'resources' and (storage.foldername(name))[1] = (select auth.uid())::text)
   with check (bucket_id = 'resources' and (storage.foldername(name))[1] = (select auth.uid())::text);
 
--- Books: 50 MB per file in the Library; Classroom files stay at 10 MB (0007).
+-- Library files: no limit of their own, only the 200 MB per teacher (whole books). Classroom
+-- files stay at 10 MB (0007). The bucket takes the project's upload limit (Supabase Free: 50 MB
+-- per file; Pro: up to 500 GB, set in Storage → Settings).
 alter table public.resources drop constraint if exists resources_size_range;
 alter table public.resources
   add constraint resources_size_range check (
-    size between 0 and (case when in_library then 52428800 else 10485760 end)
+    size between 0 and (case when in_library then 209715200 else 10485760 end)
   );
-update storage.buckets set file_size_limit = 52428800 where id = 'resources';
+update storage.buckets set file_size_limit = null where id = 'resources';

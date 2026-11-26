@@ -2,10 +2,10 @@
 export const library = {
   title: "Library",
   intro: (mb: number) =>
-    `Files you use with several students: upload once, then choose the Classrooms. Stored and counted once. Books up to ${mb} MB.`,
+    `Files you use with several students: upload once, then choose the Classrooms. Stored and counted once. Any size, whole books too, as long as it fits your ${mb} MB.`,
   tooBig: (name: string, mb: number) => `${name} is bigger than ${mb} MB.`,
   addFiles: "Add files",
-  dropHint: (mb: number) => `Documents, pictures, audio or video, up to ${mb} MB each`,
+  dropHint: (mb: number) => `Documents, pictures, audio or video, any size within your ${mb} MB`,
   empty: "Nothing here yet. Add worksheets, books or audio you use with more than one student.",
   // Where a file is
   inAll: "In all Classrooms",

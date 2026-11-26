@@ -160,6 +160,7 @@ export const dashboard: typeof en = {
       `${name} es una presentación. Guárdala primero como PDF (PowerPoint: Archivo → Exportar → PDF; Keynote: Archivo → Exportar a → PDF; Google Slides: Archivo → Descargar → PDF) y sube el PDF: cada diapositiva será una página que podéis ver y escribir juntos.`,
     wrongType: (name: string) => `${name}: este tipo de archivo no se puede subir.`,
     tooBig: (name: string) => `${name} pesa más de 10 MB.`,
+    tooLargeForUpload: (name: string) => `${name} es demasiado grande para subirlo (por ahora el almacenamiento acepta hasta 50 MB por archivo).`,
     noRoom: (name: string, mb: number) =>
       `${name} no cabe: tus archivos pueden ocupar ${mb} MB en total. Borra algunos primero.`,
     notAccepted: (name: string) => `${name}: este tipo de archivo todavía no se acepta.`,
@@ -170,5 +171,5 @@ export const dashboard: typeof en = {
   storage: "Almacenamiento",
   storageUsed: (used: number, total: number) => `${used} MB de ${total} MB`,
   storageUsedLabel: (used: number, total: number) => `${used} de ${total} MB usados`,
-  storageHint: "Classrooms y Biblioteca juntos. Hasta 10 MB por archivo en un Classroom, 50 MB en la Biblioteca.",
+  storageHint: "Classrooms y Biblioteca juntos. Hasta 10 MB por archivo en un Classroom, sin límite por archivo en la Biblioteca.",
 };

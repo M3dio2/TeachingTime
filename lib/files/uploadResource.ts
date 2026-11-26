@@ -9,8 +9,10 @@ export type ResourceKind = "image" | "pdf" | "audio" | "doc" | "link" | "video" 
 // Same limits and types as the "resources" bucket (supabase/migrations/0004–0006, 0010, 0012).
 export const MB = 1024 * 1024;
 export const MAX_BYTES = 10 * MB; // per file in a Classroom
-export const LIBRARY_MAX_BYTES = 50 * MB; // per file in the Library (books; the bucket's limit, 0019)
 export const TEACHER_BYTES = 200 * MB; // per teacher, Classrooms and Library together (0019)
+// Library files: no limit of their own, only what's left of the 200 MB (0019). Supabase's
+// project-wide upload limit still applies (Free plan: 50 MB per file).
+export const LIBRARY_MAX_BYTES = TEACHER_BYTES;
 export const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 // Word files (G2). Old binary .doc files aren't accepted: browsers can't read them.
 export const DOCX_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
@@ -72,7 +74,9 @@ export async function uploadResource({
     return {
       error: /mime|type/i.test(stored.error.message)
         ? messages.notAccepted(file.name)
-        : /row-level security/i.test(stored.error.message)
+        : /maximum allowed size|too large|413/i.test(stored.error.message)
+          ? messages.tooLargeForUpload(file.name)
+          : /row-level security/i.test(stored.error.message)
           ? messages.noRoom(file.name, TEACHER_BYTES / MB)
           : messages.failed(file.name),
     };

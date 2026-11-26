@@ -5,7 +5,6 @@ import { Suspense } from "react";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import { AutoRefresh, ConfirmSubmit, DashboardLoading, DoneLeaving, LocalDate } from "@/components/dashboard/DashboardBits";
 import { CardMenu, FeedbackButton, LanguageMenu, NameChip } from "@/components/dashboard/DashboardMenus";
-import GettingStarted from "@/components/dashboard/GettingStarted";
 import { NextLessonLine } from "@/components/classroom/NextLesson";
 import TodayPanel from "@/components/calendar/TodayPanel";
 import PageTabs from "@/components/dashboard/PageTabs";
@@ -137,13 +136,6 @@ async function Dashboard() {
             .filter((l) => occupied.has(l.id))
             .map((l) => ({ id: l.id, name: l.kind === "quick" ? t.quickCallStudent : l.title }))}
         />
-        {!firstVisit && (
-          <GettingStarted
-            first={students[0] ? { id: students[0].id, name: students[0].title, slug: students[0].invite_slug } : null}
-            hasLesson={students.some((s) => s.last_active_at)}
-            hasFile={(fileRows ?? []).length > 0}
-          />
-        )}
         {firstVisit && <Welcome t={t} common={common} suggested={auth.user?.user_metadata.given_name ?? auth.user?.user_metadata.full_name ?? ""} />}
 
         {quickCalls.map((call) => (

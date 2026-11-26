@@ -161,6 +161,7 @@ export const dashboard = {
       `${name} is a presentation. Save it as a PDF first (PowerPoint: File → Export → PDF; Keynote: File → Export To → PDF; Google Slides: File → Download → PDF), then upload the PDF: each slide becomes a page you can show and write on together.`,
     wrongType: (name: string) => `${name}: this kind of file can't be uploaded.`,
     tooBig: (name: string) => `${name} is bigger than 10 MB.`,
+    tooLargeForUpload: (name: string) => `${name} is too big to upload (the storage takes up to 50 MB per file for now).`,
     noRoom: (name: string, mb: number) => `${name} doesn't fit: your files can take up ${mb} MB. Delete some first.`,
     notAccepted: (name: string) => `${name}: this kind of file isn't accepted yet.`,
     failed: (name: string) => `${name} could not be uploaded. Please try again.`,
@@ -170,5 +171,5 @@ export const dashboard = {
   storage: "Storage",
   storageUsed: (used: number, total: number) => `${used} MB of ${total} MB`,
   storageUsedLabel: (used: number, total: number) => `${used} of ${total} MB used`,
-  storageHint: "Classrooms and Library together. Up to 10 MB per file in a Classroom, 50 MB in the Library.",
+  storageHint: "Classrooms and Library together. Up to 10 MB per file in a Classroom, no per-file limit in the Library.",
 };

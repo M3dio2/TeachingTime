@@ -161,6 +161,7 @@ export const dashboard: typeof en = {
       `${name} ist eine Präsentation. Speichere sie zuerst als PDF (PowerPoint: Datei → Exportieren → PDF; Keynote: Ablage → Exportieren → PDF; Google Präsentationen: Datei → Herunterladen → PDF) und lade dann das PDF hoch: Jede Folie wird eine Seite, die ihr zusammen anschauen und beschriften könnt.`,
     wrongType: (name: string) => `${name}: Diese Art von Datei kann nicht hochgeladen werden.`,
     tooBig: (name: string) => `${name} ist größer als 10 MB.`,
+    tooLargeForUpload: (name: string) => `${name} ist zu groß zum Hochladen (der Speicher nimmt im Moment bis 50 MB pro Datei).`,
     noRoom: (name: string, mb: number) =>
       `${name} passt nicht mehr: Deine Dateien dürfen zusammen ${mb} MB groß sein. Lösche zuerst ein paar.`,
     notAccepted: (name: string) => `${name}: Diese Art von Datei wird noch nicht unterstützt.`,
@@ -171,5 +172,5 @@ export const dashboard: typeof en = {
   storage: "Speicher",
   storageUsed: (used: number, total: number) => `${used} MB von ${total} MB`,
   storageUsedLabel: (used: number, total: number) => `${used} von ${total} MB belegt`,
-  storageHint: "Classrooms und Bibliothek zusammen. Bis 10 MB pro Datei im Classroom, 50 MB in der Bibliothek.",
+  storageHint: "Classrooms und Bibliothek zusammen. Bis 10 MB pro Datei im Classroom, in der Bibliothek ohne Grenze pro Datei.",
 };

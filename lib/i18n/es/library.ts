@@ -2,10 +2,10 @@ import type { library as en } from "../en/library";
 
 export const library: typeof en = {
   title: "Biblioteca",
-  intro: (mb: number) => `Archivos que usas con varios estudiantes: súbelos una vez y elige los Classrooms. Se guardan y cuentan una sola vez. Libros de hasta ${mb} MB.`,
+  intro: (mb: number) => `Archivos que usas con varios estudiantes: súbelos una vez y elige los Classrooms. Se guardan y cuentan una sola vez. De cualquier tamaño, libros enteros también, mientras quepa en tus ${mb} MB.`,
   tooBig: (name: string, mb: number) => `${name} pesa más de ${mb} MB.`,
   addFiles: "Añadir archivos",
-  dropHint: (mb: number) => `Documentos, imágenes, audio o vídeo, hasta ${mb} MB cada uno`,
+  dropHint: (mb: number) => `Documentos, imágenes, audio o vídeo, de cualquier tamaño dentro de tus ${mb} MB`,
   empty: "Aún no hay nada. Añade fichas, libros o audios que uses con más de un estudiante.",
   inAll: "En todos los Classrooms",
   inSome: (n: number, of: number) => `En ${n} de ${of} Classrooms`,

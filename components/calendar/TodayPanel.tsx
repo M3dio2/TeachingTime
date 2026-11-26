@@ -55,7 +55,9 @@ export default function TodayPanel({
           const room = byId.get(o.lessonId)!;
           const end = o.start.getTime() + o.minutes * 60_000;
           const over = end <= now;
-          const isWaiting = waiting.has(o.lessonId) && !o.cancelled && !over;
+          // The planned length only colours the list: a lesson that runs over is never closed,
+          // and Start stays (she may begin late or rejoin).
+          const isWaiting = waiting.has(o.lessonId) && !o.cancelled;
           const live = isWaiting || isStartable(o, now);
           const soon = Math.round((o.start.getTime() - now) / 60_000);
           return (
@@ -81,11 +83,11 @@ export default function TodayPanel({
                     )}
                   </span>
                 </button>
-                {!o.cancelled && !over && (
+                {!o.cancelled && (
                   <Link
                     href={`/lesson/${room.id}`}
                     aria-label={`${t.startLesson}: ${room.title}`}
-                    className={buttonClass(live ? "primary" : "secondary", "sm", "h-9 shrink-0 px-3 font-semibold")}
+                    className={buttonClass(live ? "primary" : over ? "ghost" : "secondary", "sm", `h-9 shrink-0 px-3 font-semibold ${over && !live ? "text-ink!" : ""}`)}
                   >
                     <Video size={15} aria-hidden />
                     {t.start}
