@@ -9,11 +9,11 @@ import ClassroomFiles, { type Resource } from "@/components/classroom/ClassroomF
 import LessonNotes, { type Note } from "@/components/classroom/LessonNotes";
 import NextLesson from "@/components/classroom/NextLesson";
 import ClassroomLibrary from "@/components/library/ClassroomLibrary";
+import AddQuiz from "@/components/quiz/AddQuiz";
 import { loadCalendar } from "@/lib/calendarData";
 import { StorageCard } from "@/components/classroom/FileUpload";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
 import { buttonClass } from "@/components/ui/Button";
-import { inputClass } from "@/components/ui/Field";
 import SubmitButton from "@/components/ui/SubmitButton";
 import Wordmark from "@/components/ui/Wordmark";
 import { cleanQuestions, playable } from "@/lib/quiz";
@@ -335,50 +335,16 @@ function ClassroomQuizzes({
       ) : (
         <p className="text-sm text-ink-muted">{t.noQuizzesHere}</p>
       )}
-      {others.length > 0 && (
-        <form action={classroomQuizForm} className="flex gap-2">
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        {others.some((q) => q.ready) && <AddQuiz lessonId={lessonId} quizzes={others.filter((q) => q.ready)} />}
+        <form action={createQuiz} className="flex">
           <input type="hidden" name="lessonId" value={lessonId} />
-          <input type="hidden" name="on" value="1" />
-          <label htmlFor="add-quiz" className="sr-only">
-            {t.addQuizLabel}
-          </label>
-          <select
-            id="add-quiz"
-            name="quizId"
-            required
-            defaultValue=""
-            className={`${inputClass()} !h-10 min-w-0 flex-1 py-0`}
-          >
-            <option value="" disabled>
-              {t.chooseQuiz}
-            </option>
-            {others.map((q) => (
-              <option key={q.id} value={q.id}>
-                {q.title}
-              </option>
-            ))}
-          </select>
-          <SubmitButton
-            variant="secondary"
-            className="h-10 px-3.5 font-semibold"
-            pending={t.adding}
-          >
+          <SubmitButton variant="ghost" className="h-10 px-2 text-sm font-semibold !text-accent" pending={t.creating}>
             <Plus size={15} aria-hidden />
-            {t.add}
+            {t.newQuizHere}
           </SubmitButton>
         </form>
-      )}
-      <form action={createQuiz} className="flex">
-        <input type="hidden" name="lessonId" value={lessonId} />
-        <SubmitButton
-          variant="ghost"
-          className="-ml-2 h-9 px-2 text-sm font-semibold !text-accent"
-          pending={t.creating}
-        >
-          <Plus size={15} aria-hidden />
-          {t.newQuizHere}
-        </SubmitButton>
-      </form>
+      </div>
     </section>
   );
 }

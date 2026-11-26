@@ -117,6 +117,8 @@ export const quiz = {
   takeOut: (title: string) => `Take “${title}” out of this Classroom`,
   noQuizzesHere: "No quizzes in this Classroom yet. Add one to open it in the lesson.",
   addQuizLabel: "Add a quiz to this Classroom",
+  findQuiz: "Find a quiz",
+  noQuizMatch: "No quiz has that name.",
   chooseQuiz: "Choose a quiz…",
   add: "Add",
   adding: "Adding…",

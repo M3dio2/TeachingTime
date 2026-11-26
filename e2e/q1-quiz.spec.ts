@@ -101,8 +101,8 @@ test("Q1: make a quiz, drag it into the lesson, the student answers, the teacher
   const here = page.getByRole("region", { name: "Quizzes" });
   await here.getByRole("button", { name: `Take “${TITLE}” out of this Classroom` }).click();
   await expect(here.getByRole("link", { name: new RegExp(TITLE) })).toHaveCount(0);
-  await here.getByLabel("Add a quiz to this Classroom").selectOption({ label: TITLE });
-  await here.getByRole("button", { name: "Add", exact: true }).click();
+  await here.getByRole("button", { name: "Add a quiz to this Classroom" }).click();
+  await page.getByRole("dialog", { name: "Add a quiz to this Classroom" }).getByRole("button", { name: new RegExp(TITLE) }).click();
   await expect(here.getByRole("link", { name: new RegExp(TITLE) })).toContainText("7 questions");
   const link = await page.getByRole("textbox", { name: /'s link$/ }).inputValue();
   await page.getByRole("link", { name: "Start lesson" }).click();

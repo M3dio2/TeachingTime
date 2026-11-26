@@ -120,6 +120,8 @@ export const quiz: typeof en = {
   takeOut: (title: string) => `„${title}“ aus diesem Classroom nehmen`,
   noQuizzesHere: "Noch keine Quizze in diesem Classroom. Füg eins hinzu, um es in der Lektion zu öffnen.",
   addQuizLabel: "Ein Quiz zu diesem Classroom hinzufügen",
+  findQuiz: "Quiz suchen",
+  noQuizMatch: "Kein Quiz heißt so.",
   chooseQuiz: "Quiz wählen…",
   add: "Hinzufügen",
   adding: "Wird hinzugefügt…",
