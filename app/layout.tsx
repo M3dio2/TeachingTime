@@ -55,6 +55,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex flex-col">
         {children}
+        {/* Branch previews on Vercel run against the test database: say so on every page. */}
+        {process.env.VERCEL_ENV === "preview" && (
+          <p
+            role="note"
+            className="pointer-events-none fixed bottom-2 left-2 z-[100] rounded-full bg-ink px-3 py-1 text-xs font-semibold text-marker shadow-soft"
+          >
+            Test site · test data
+          </p>
+        )}
         {/* Page views, no cookies (G1). Switched on in Vercel: project → Analytics. Production
             only: in dev it loads a debug script from another site, which the CSP blocks. */}
         {process.env.NODE_ENV === "production" && <Analytics />}
