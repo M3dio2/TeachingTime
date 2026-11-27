@@ -4,6 +4,8 @@ import { SITE_URL } from "@/lib/site";
 // Search engines: the public pages only. The app itself (classrooms, lessons, join links) is
 // private; those pages also say noindex.
 export default function robots(): MetadataRoute.Robots {
+  // Branch previews (the test site): nothing to index.
+  if (process.env.VERCEL_ENV === "preview") return { rules: { userAgent: "*", disallow: "/" } };
   return {
     rules: {
       userAgent: "*",
