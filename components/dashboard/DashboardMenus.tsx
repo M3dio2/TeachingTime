@@ -8,7 +8,7 @@ import { useLocale, useT } from "@/lib/i18n/client";
 import { LOCALE_NAMES, LOCALES } from "@/lib/i18n/locales";
 import { useRouter } from "next/navigation";
 import Button from "@/components/ui/Button";
-import Field, { inputClass } from "@/components/ui/Field";
+import { inputClass } from "@/components/ui/Field";
 import { useConfirmSubmit } from "@/components/ui/Confirm";
 import SubmitButton, { useFormPending } from "@/components/ui/SubmitButton";
 
@@ -43,6 +43,9 @@ function Popover({ children, className = "" }: { children: ReactNode; className?
 
 // Header: the teacher's initial and name (only the initial on phones). Opens her account menu
 // (review B2): the name students see in lessons, Settings, Log out.
+const MENU_ITEM =
+  "flex h-11 w-full items-center gap-2.5 rounded-md px-2.5 text-left text-sm font-medium text-ink hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none";
+
 export function NameChip({ name }: { name: string }) {
   const { open, setOpen, wrap } = usePopover();
   const initial = name.trim().charAt(0).toUpperCase() || "?";
@@ -65,47 +68,45 @@ export function NameChip({ name }: { name: string }) {
         <ChevronDown size={14} aria-hidden className="hidden text-ink-muted md:inline" />
       </button>
       {open && (
-        <Popover className="w-72 p-3">
+        <Popover className="w-72 p-1.5">
+          {/* Her name for students, then the menu items (all one style). */}
           <form
             action={async (data) => {
               await setTeacherName(data);
               setOpen(false);
             }}
-            className="flex flex-col gap-3"
+            className="flex flex-col gap-1.5 p-2"
           >
-            <Field
-              label={t.dashboard.nameInLessons}
-              name="name"
-              defaultValue={name}
-              placeholder={t.dashboard.namePlaceholder}
-              maxLength={40}
-              autoFocus
-              required
-            />
-            <SubmitButton className="h-10" pending={t.common.saving}>
-              {t.common.save}
-            </SubmitButton>
-          </form>
-          <div className="-mx-1.5 mt-3 flex flex-col border-t border-line px-1.5 pt-1.5">
-            <Link
-              href="/dashboard/settings"
-              onClick={() => setOpen(false)}
-              className="flex h-11 items-center gap-2.5 rounded-md px-2.5 text-sm font-medium hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
-            >
-              <Settings size={16} aria-hidden className="text-ink-muted" />
-              {t.cloud.settings}
-            </Link>
-            <form action={signOut}>
-              <SubmitButton
-                variant="ghost"
-                className="h-11 w-full justify-start gap-2.5 px-2.5 text-ink!"
-                pending={t.dashboard.loggingOut}
-              >
-                <LogOut size={16} aria-hidden className="text-ink-muted" />
-                {t.dashboard.logOut}
+            <label htmlFor="teacher-name" className="text-[13px] font-medium text-ink-muted">
+              {t.dashboard.nameInLessons}
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="teacher-name"
+                name="name"
+                defaultValue={name}
+                placeholder={t.dashboard.namePlaceholder}
+                maxLength={40}
+                autoFocus
+                required
+                className={`${inputClass()} !h-10 min-w-0 flex-1`}
+              />
+              <SubmitButton size="sm" className="h-10 shrink-0 px-3.5 font-semibold" pending={t.common.saving}>
+                {t.common.save}
               </SubmitButton>
-            </form>
-          </div>
+            </div>
+          </form>
+          <div className="my-1 h-px bg-line" />
+          <Link href="/dashboard/settings" onClick={() => setOpen(false)} className={MENU_ITEM}>
+            <Settings size={16} aria-hidden className="text-ink-muted" />
+            {t.cloud.settings}
+          </Link>
+          <form action={signOut}>
+            <button type="submit" className={MENU_ITEM}>
+              <LogOut size={16} aria-hidden className="text-ink-muted" />
+              {t.dashboard.logOut}
+            </button>
+          </form>
         </Popover>
       )}
     </div>

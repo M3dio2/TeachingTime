@@ -103,6 +103,8 @@ async function Dashboard() {
   const quizzes = allQuizzes.filter((q) => !emptyQuizzes.includes(q));
 
   const quickCalls = lessons.filter((l) => l.kind === "quick");
+  // Today's column only once a lesson is planned; until then the Classrooms take the width.
+  const showToday = !!auth.user?.user_metadata.display_name && plan.slots.length > 0;
   const students = lessons.filter((l) => l.kind === "student");
   const firstVisit = !teacherName;
   const counts = countFiles((fileRows ?? []) as { lesson_id: string; kind: string }[], t);
@@ -124,10 +126,10 @@ async function Dashboard() {
       {!firstVisit && <PageTabs t={tc} current="classrooms" />}
       <main
         className={`mx-auto grid w-full max-w-[1240px] items-start gap-7 px-[clamp(16px,4vw,32px)] pb-16 ${
-          firstVisit ? "pt-3" : "pt-6 lg:grid-cols-[minmax(0,1fr)_340px]"
+          firstVisit ? "pt-3" : showToday ? "pt-6 lg:grid-cols-[minmax(0,1fr)_340px]" : "pt-6"
         }`}
       >
-        {!firstVisit && students.length > 0 && (
+        {showToday && (
           // Mock-ups 1 + 2: today's lessons on the right; on phones above the Classrooms.
           <div className="lg:col-start-2 lg:row-start-1">
             <TodayPanel

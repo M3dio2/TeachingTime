@@ -15,11 +15,14 @@ test("K1: plan a lesson today, see it in Today and the week, change and cancel i
   await openTestClassroom(page);
   await clearTestLessons(page);
 
-  // Today: plan a lesson a few minutes from now (before midnight), every week.
+  // Nothing planned: no Today column, the Classrooms take the width.
   await page.goto("/dashboard");
   const today = page.getByRole("complementary", { name: "Today", exact: true });
-  await expect(today).toBeVisible();
-  await today.getByRole("button", { name: "Plan a lesson" }).click();
+  await expect(page.getByRole("heading", { name: "Your Classrooms", exact: true })).toBeVisible();
+  await expect(today).toHaveCount(0);
+  // Plan a lesson a few minutes from now (before midnight), every week, in the calendar.
+  await page.goto("/dashboard/calendar");
+  await page.getByRole("button", { name: "Plan a lesson", exact: true }).click();
   const dialog = page.getByRole("dialog", { name: "New lesson" });
   await dialog.getByLabel("Classroom").selectOption({ label: TEST_CLASSROOM });
   const soon = new Date(Date.now() + 5 * 60_000);
@@ -29,6 +32,8 @@ test("K1: plan a lesson today, see it in Today and the week, change and cancel i
   await dialog.getByRole("button", { name: "Save" }).click();
   await expect(dialog).toHaveCount(0, { timeout: 15_000 });
 
+  await page.goto("/dashboard");
+  await expect(today).toBeVisible();
   const row = today.getByTestId("today-list").getByRole("listitem").filter({ hasText: TEST_CLASSROOM });
   await expect(row).toBeVisible({ timeout: 15_000 });
   await expect(row).toContainText("60 min");
