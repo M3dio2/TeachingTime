@@ -25,12 +25,19 @@ Goal: friends can sign up as teachers and give lessons with their own material. 
 - [x] Lesson notes: one note per Classroom and day (0020), however often the teacher rejoins.
 - [x] Classroom: files grouped by day (lesson days say so); the Library inside the Files section.
 
-## Waiting for the user (26 Nov 2026)
-- [ ] Run 0019 (Library) again on test, then 0020 (one note per day) on test.
+## F3: Fixes from the user (27 Nov 2026), branch `fixes-f3` (on top of `fixes-f2`)
+- [x] Dashboard: no Today column until a lesson is planned (Classrooms full width).
+- [x] Account menu: name field + Settings and Log out in one style.
+- [x] Files: Library folders (one level, 0021); Classroom files in one section per lesson
+      (the next lesson first with its planned day; older lessons folded).
+
+## Waiting for the user (27 Nov 2026)
+- [x] Run 0019 again and 0020 on test; test site setup.
+- [ ] Run 0021 (Library folders) on test.
 - [ ] Test site: Vercel Preview env vars → test Supabase/LiveKit, Deployment Protection off,
       test Supabase redirect URL for previews, Turnstile test key (details in chat 26 Nov).
 - [ ] Look at the calendar/Library/fixes screenshots; OK to merge.
-- [ ] Before merging: run 0018, 0019, 0020 on live.
+- [ ] Before merging: run 0018, 0019, 0020, 0021 on live.
 - [ ] Real devices: calendar subscription in Google/Apple, week view on iPad, big books on a
       phone, the drawn waiting circle in Today.
 - [ ] Later (cost): Supabase Pro if books over 50 MB are needed (Free caps one upload at 50 MB).
