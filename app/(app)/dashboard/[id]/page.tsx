@@ -10,6 +10,7 @@ import LessonNotes, { type Note } from "@/components/classroom/LessonNotes";
 import NextLesson from "@/components/classroom/NextLesson";
 import ClassroomLibrary from "@/components/library/ClassroomLibrary";
 import AddQuiz from "@/components/quiz/AddQuiz";
+import { nextOf } from "@/lib/calendar";
 import { loadCalendar } from "@/lib/calendarData";
 import { StorageCard } from "@/components/classroom/FileUpload";
 import { LocalDate } from "@/components/dashboard/DashboardBits";
@@ -103,11 +104,13 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
   const [plan, { data: libRows }, { data: libHere }] = await Promise.all([
     loadCalendar(supabase, id),
     // The Library (0019): all her shared files, and which are in this Classroom.
-    supabase.from("resources").select("id, kind, name, path, size, all_classrooms").eq("in_library", true).order("name"),
+    supabase.from("resources").select("*").eq("in_library", true).order("name"),
     supabase.from("resource_classrooms").select("resource_id").eq("lesson_id", id),
   ]);
   const here = new Set((libHere ?? []).map((r) => r.resource_id as string));
-  const shared = (libRows ?? []) as { id: string; kind: Resource["kind"]; name: string; path: string | null; size: number; all_classrooms: boolean }[];
+  const { data: folderRows } = await supabase.from("library_folders").select("id, name");
+  const folderName = new Map((folderRows ?? []).map((f) => [f.id as string, f.name as string]));
+  const shared = (libRows ?? []) as { id: string; kind: Resource["kind"]; name: string; path: string | null; size: number; all_classrooms: boolean; folder_id?: string | null }[];
 
   const resources = (files ?? []) as (Omit<Resource, "url"> & { path: string | null; url: string | null })[];
   // "Open" links and picture previews for the teacher, valid for an hour. Links have no file:
@@ -169,6 +172,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
           lessonId={student.id}
           usedBytes={Number(usedBytes ?? 0)}
           lessonDays={(sessions ?? []).map((x) => x.started_at)}
+          nextLessonAt={nextOf(plan.slots, plan.changes, new Date(), 1)[0]?.start.toISOString() ?? null}
           library={
           <ClassroomLibrary
             lessonId={student.id}
@@ -181,6 +185,7 @@ async function Classroom({ params }: Pick<PageProps<"/dashboard/[id]">, "params"
               url: (f.path && urls.get(f.path)) || undefined,
               all: f.all_classrooms,
               here: here.has(f.id),
+            folder: (f.folder_id && folderName.get(f.folder_id)) || undefined,
             }))}
           />
           }

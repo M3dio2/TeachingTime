@@ -122,7 +122,8 @@ export const dashboard: typeof en = {
   // Files
   files: "Fichiers",
   filesFromLesson: (day: string) => `Cours · ${day}`,
-  filesAdded: (day: string) => `Ajouté le ${day}`,
+  filesForNext: (day: string) => (day ? `Pour le prochain cours · ${day}` : `Pour le prochain cours`),
+  earlierLessons: (n: number) => (n === 1 ? "Voir 1 cours précédent" : `Voir ${n} cours précédents`),
   fileCount: (n: number) => `${n} ${n === 1 ? "fichier" : "fichiers"}`,
   show: "Afficher",
   all: "Tout",

@@ -53,6 +53,7 @@ export const extensionLabel = (name: string) => {
 export async function uploadResource({
   teacherId,
   lessonId,
+  folderId = null,
   file,
   contentType,
   ext,
@@ -60,6 +61,7 @@ export async function uploadResource({
 }: {
   teacherId: string;
   lessonId: string | null; // null: the Library (0019)
+  folderId?: string | null; // a Library folder (0021)
   file: Blob & { name: string };
   contentType: string;
   ext: string;
@@ -83,7 +85,7 @@ export async function uploadResource({
   }
   const row = await supabase
     .from("resources")
-    .insert({ lesson_id: lessonId, in_library: lessonId === null, kind: kindOf(contentType), name: file.name, path, size: file.size })
+    .insert({ lesson_id: lessonId, in_library: lessonId === null, ...(folderId ? { folder_id: folderId } : {}), kind: kindOf(contentType), name: file.name, path, size: file.size })
     .select("id")
     .single();
   if (row.error) {

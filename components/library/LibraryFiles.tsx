@@ -1,6 +1,6 @@
 "use client";
 
-import { School, Trash2, X } from "lucide-react";
+import { Folder, FolderInput, School, Trash2, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { addFilesToClassrooms, deleteLibraryFiles, setFileClassrooms } from "@/app/(app)/dashboard/library/actions";
@@ -15,6 +15,7 @@ import { extensionLabel, FILE_GROUPS, type FileGroup, groupOf, type ResourceKind
 import { useT } from "@/lib/i18n/client";
 import Portal from "@/components/ui/Portal";
 import ClassroomPicker, { type PickClassroom } from "./ClassroomPicker";
+import { FolderBar, type FolderView, type LibraryFolder, MoveToFolder } from "./Folders";
 
 export type LibraryFile = {
   id: string;
@@ -25,18 +26,21 @@ export type LibraryFile = {
   url?: string;
   all: boolean;
   lessonIds: string[];
+  folderId: string | null;
 };
 
 // The Library page's list (mock-up 8): upload, filters, one row per file with where it is
 // ("In all Classrooms", "In 3 of 12") and the Classrooms picker; tick several files to add
 // them to Classrooms together or delete them.
 export default function LibraryFiles({
-  files,
+  files: allFiles,
+  folders,
   classrooms,
   teacherId,
   usedBytes,
 }: {
   files: LibraryFile[];
+  folders: LibraryFolder[];
   classrooms: PickClassroom[];
   teacherId: string;
   usedBytes: number;
@@ -45,7 +49,19 @@ export default function LibraryFiles({
   const td = useT().dashboard;
   const router = useRouter();
   const ask = useConfirm();
-  const upload = useFileUpload({ teacherId, lessonId: null, usedBytes });
+  const [view, setView] = useState<FolderView>("all");
+  const openFolder = folders.some((f) => f.id === view) ? view : null;
+  const shownView: FolderView = openFolder ?? (view === "none" ? "none" : "all");
+  const files = allFiles.filter((f) => (shownView === "all" ? true : shownView === "none" ? !f.folderId : f.folderId === shownView));
+  const folderName = new Map(folders.map((f) => [f.id, f.name]));
+  const counts = {
+    all: allFiles.length,
+    none: allFiles.filter((f) => !f.folderId || !folderName.has(f.folderId)).length,
+    byFolder: new Map(folders.map((f) => [f.id, allFiles.filter((x) => x.folderId === f.id).length])),
+  };
+  const [moving, setMoving] = useState<LibraryFile[] | null>(null);
+  // Uploads go into the open folder.
+  const upload = useFileUpload({ teacherId, lessonId: null, usedBytes, folderId: openFolder });
   const [filter, setFilter] = useState<FileGroup | "all">("all");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [picking, setPicking] = useState<LibraryFile | "selection" | null>(null);
@@ -89,9 +105,19 @@ export default function LibraryFiles({
         </div>
       </div>
       {upload.area}
+      <FolderBar
+        folders={folders}
+        counts={counts}
+        view={shownView}
+        onView={(v) => {
+          setView(v);
+          setSelected(new Set());
+        }}
+        onChanged={() => router.refresh()}
+      />
 
       {files.length === 0 ? (
-        <p className="text-sm text-ink-muted">{t.empty}</p>
+        <p className="text-sm text-ink-muted">{allFiles.length ? t.emptyFolder : t.empty}</p>
       ) : (
         <>
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -133,6 +159,10 @@ export default function LibraryFiles({
                 <School size={15} aria-hidden />
                 {t.addToClassrooms}
               </button>
+              <button type="button" onClick={() => setMoving(chosen)} className={buttonClass("secondary", "sm", "h-9 gap-1.5 px-3")}>
+                <FolderInput size={15} aria-hidden />
+                {t.moveToFolder}
+              </button>
               <button
                 type="button"
                 disabled={pending}
@@ -173,6 +203,12 @@ export default function LibraryFiles({
                       <span className="truncate text-[15px] font-medium">{f.name}</span>
                     )}
                     <span className="truncate text-[13px] text-ink-muted">
+                      {shownView === "all" && f.folderId && folderName.has(f.folderId) && (
+                        <span className="mr-1 inline-flex items-center gap-1 font-medium text-ink">
+                          <Folder size={12} aria-hidden className="text-accent" />
+                          {folderName.get(f.folderId)} ·
+                        </span>
+                      )}
                       {[type, formatSize(f.size)].filter(Boolean).join(" · ")} · <LocalDate iso={f.created_at} />
                     </span>
                   </div>
@@ -186,6 +222,15 @@ export default function LibraryFiles({
                   >
                     <School size={14} aria-hidden />
                     {where(f)}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMoving([f])}
+                    aria-label={t.moveFileToFolder(f.name)}
+                    title={t.moveFileToFolder(f.name)}
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-ink-muted hover:bg-surface-2 hover:text-ink focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none"
+                  >
+                    <FolderInput size={16} aria-hidden />
                   </button>
                   <button
                     type="button"
@@ -203,6 +248,19 @@ export default function LibraryFiles({
         </>
       )}
 
+      {moving && (
+        <MoveToFolder
+          title={moving.length === 1 ? moving[0].name : t.nFiles(moving.length)}
+          folders={folders}
+          current={moving.length === 1 ? moving[0].folderId : undefined}
+          fileIds={moving.map((f) => f.id)}
+          onDone={() => {
+            setSelected(new Set());
+            router.refresh();
+          }}
+          onClose={() => setMoving(null)}
+        />
+      )}
       {picking && (
         <Portal>
           <ClassroomPicker

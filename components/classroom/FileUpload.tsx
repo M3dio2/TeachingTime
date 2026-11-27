@@ -60,10 +60,12 @@ export function useFileUpload({
   teacherId,
   lessonId,
   usedBytes,
+  folderId = null,
 }: {
   teacherId: string;
   lessonId: string | null; // null: the Library, with bigger files
   usedBytes: number;
+  folderId?: string | null; // Library: the open folder
 }) {
   const router = useRouter();
   const input = useRef<HTMLInputElement>(null);
@@ -103,7 +105,7 @@ export function useFileUpload({
       }
 
       setBusy(t.uploading(file.name));
-      const done = await uploadResource({ teacherId, lessonId, file, contentType, ext, messages: t.upload });
+      const done = await uploadResource({ teacherId, lessonId, folderId, file, contentType, ext, messages: t.upload });
       if ("error" in done) {
         failed.push(done.error);
         continue;

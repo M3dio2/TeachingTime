@@ -118,3 +118,46 @@ export async function moveToLibrary(fileId: string): Promise<Result> {
   refresh([file.lesson_id]);
   return null;
 }
+
+// Folders (0021): one level, for the Library only.
+const cleanName = (name: string) => name.replace(/\s+/g, " ").trim().slice(0, 60);
+
+export async function createFolder(name: string): Promise<{ id: string } | { error: string }> {
+  const n = cleanName(name);
+  if (!n) return { error: "invalid" };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("library_folders").insert({ name: n }).select("id").single();
+  if (error) return { error: error.code === "P0001" ? "tooMany" : "failed" };
+  refresh();
+  return { id: data.id as string };
+}
+
+export async function renameFolder(id: string, name: string): Promise<Result> {
+  const n = cleanName(name);
+  if (!UUID.test(id) || !n) return { error: "invalid" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("library_folders").update({ name: n }).eq("id", id);
+  if (error) return { error: "failed" };
+  refresh();
+  return null;
+}
+
+// The folder goes; its files stay in the Library, without a folder.
+export async function deleteFolder(id: string): Promise<Result> {
+  if (!UUID.test(id)) return { error: "invalid" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("library_folders").delete().eq("id", id);
+  if (error) return { error: "failed" };
+  refresh();
+  return null;
+}
+
+export async function moveToFolder(fileIds: string[], folderId: string | null): Promise<Result> {
+  const files = ids(fileIds);
+  if (!files.length || (folderId && !UUID.test(folderId))) return { error: "invalid" };
+  const supabase = await createClient();
+  const { error } = await supabase.from("resources").update({ folder_id: folderId }).in("id", files).eq("in_library", true);
+  if (error) return { error: "failed" };
+  refresh();
+  return null;
+}

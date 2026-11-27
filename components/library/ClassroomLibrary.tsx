@@ -12,7 +12,16 @@ import Portal from "@/components/ui/Portal";
 import type { ResourceKind } from "@/lib/files/uploadResource";
 import { useT } from "@/lib/i18n/client";
 
-export type SharedFile = { id: string; kind: ResourceKind; name: string; size: number; url?: string; all: boolean; here: boolean };
+export type SharedFile = {
+  id: string;
+  kind: ResourceKind;
+  name: string;
+  size: number;
+  url?: string;
+  all: boolean;
+  here: boolean;
+  folder?: string; // its Library folder (0021)
+};
 
 // The Classroom page's "From your Library" (mock-up 8's note): the Library files this student
 // has, a × to take one out (files in all Classrooms are changed in the Library), and "Add from
@@ -62,6 +71,7 @@ export default function ClassroomLibrary({ lessonId, name, files }: { lessonId: 
                     <span className="truncate text-[15px] font-medium">{f.name}</span>
                   )}
                   <span className="text-[13px] text-ink-muted">
+                    {f.folder ? `${f.folder} · ` : ""}
                     {formatSize(f.size)}
                     {f.all ? ` · ${t.inAllShort}` : ""}
                   </span>
@@ -124,7 +134,9 @@ function FilePicker({
   const [pending, start] = useTransition();
   const box = useRef<HTMLDivElement>(null);
   const q = query.trim().toLocaleLowerCase();
-  const shown = q ? files.filter((f) => f.name.toLocaleLowerCase().includes(q)) : files;
+  const shown = (q ? files.filter((f) => `${f.folder ?? ""} ${f.name}`.toLocaleLowerCase().includes(q)) : files)
+    .slice()
+    .sort((a, b) => (a.folder ?? "\uffff").localeCompare(b.folder ?? "\uffff") || a.name.localeCompare(b.name));
 
   useEffect(() => {
     box.current?.querySelector<HTMLElement>("input")?.focus();
@@ -182,7 +194,10 @@ function FilePicker({
                     className="h-5 w-5 shrink-0 accent-[var(--color-accent)]"
                   />
                   <Icon size={16} aria-hidden className="shrink-0 text-accent" />
-                  <span className="truncate text-[15px]">{f.name}</span>
+                  <span className="flex min-w-0 flex-col">
+                    <span className="truncate text-[15px]">{f.name}</span>
+                    {f.folder && <span className="truncate text-[12px] text-ink-muted">{f.folder}</span>}
+                  </span>
                 </label>
               </li>
             );

@@ -28,14 +28,16 @@ async function Library() {
     supabase.auth.getUser(),
     supabase
       .from("resources")
-      .select("id, kind, name, path, size, created_at, all_classrooms")
+      .select("*")
       .eq("in_library", true)
       .order("created_at", { ascending: false }),
     supabase.from("lessons").select("id, title").eq("kind", "student").order("title"),
     supabase.from("resource_classrooms").select("resource_id, lesson_id"),
     supabase.rpc("resources_used_bytes"),
   ]);
-  const files = (rows ?? []) as { id: string; kind: LibraryFile["kind"]; name: string; path: string | null; size: number; created_at: string; all_classrooms: boolean }[];
+  // Folders (0021); before that migration: none.
+  const { data: folderRows } = await supabase.from("library_folders").select("id, name").order("name");
+  const files = (rows ?? []) as { id: string; kind: LibraryFile["kind"]; name: string; path: string | null; size: number; created_at: string; all_classrooms: boolean; folder_id?: string | null }[];
   const stored = files.filter((f) => f.path);
   const { data: signed } = stored.length
     ? await supabase.storage.from("resources").createSignedUrls(
@@ -78,7 +80,9 @@ async function Library() {
               url: (f.path && urls.get(f.path)) || undefined,
               all: f.all_classrooms,
               lessonIds: byFile.get(f.id) ?? [],
+              folderId: f.folder_id ?? null,
             }))}
+            folders={(folderRows ?? []) as { id: string; name: string }[]}
           />
         </div>
         <aside className="lg:sticky lg:top-4">

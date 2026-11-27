@@ -42,13 +42,15 @@ export default function ClassroomFiles({
   lessonId,
   usedBytes,
   lessonDays = [],
+  nextLessonAt = null,
   library,
 }: {
   files: Resource[];
   teacherId: string;
   lessonId: string;
   usedBytes: number;
-  lessonDays?: string[]; // when lessons took place (ISO): files are grouped by those days
+  lessonDays?: string[]; // when lessons took place (ISO): one section per lesson
+  nextLessonAt?: string | null; // the next planned lesson (calendar)
   library?: React.ReactNode; // the Library files this Classroom has, shown first
 }) {
   const upload = useFileUpload({ teacherId, lessonId, usedBytes });
@@ -109,20 +111,36 @@ export default function ClassroomFiles({
               ))}
             </div>
           )}
-          {groupByDay(list, lessonDays, mounted, locale).map((g) => (
-            <div key={g.key} className="flex flex-col gap-1.5">
-              {g.label !== null && (
-                <h3 className="text-[13px] font-bold tracking-[0.04em] text-ink-muted uppercase" data-testid="files-day">
-                  {g.lesson ? t.filesFromLesson(g.label) : t.filesAdded(g.label)}
-                </h3>
-              )}
-              <ul aria-label={g.label === null ? t.files : `${t.files}: ${g.label}`} className="rounded-md border border-line">
-                {g.files.map((f, i) => (
-                  <FileRow key={f.id} file={f} first={i === 0} />
+          {(() => {
+            const sections = groupByLesson(list, lessonDays, nextLessonAt, mounted, locale);
+            const shown = sections.slice(0, OPEN_SECTIONS);
+            const older = sections.slice(OPEN_SECTIONS);
+            return (
+              <>
+                {shown.map((sec) => (
+                  <div key={sec.key} className="flex flex-col gap-1.5">
+                    <SectionHead s={sec} />
+                    <SectionList s={sec} />
+                  </div>
                 ))}
-              </ul>
-            </div>
-          ))}
+                {older.length > 0 && (
+                  <details className="group flex flex-col gap-3">
+                    <summary className="cursor-pointer list-none rounded-md px-1 py-1.5 text-sm font-semibold text-accent hover:underline">
+                      {t.earlierLessons(older.length)}
+                    </summary>
+                    <div className="mt-3 flex flex-col gap-4">
+                      {older.map((sec) => (
+                        <div key={sec.key} className="flex flex-col gap-1.5">
+                          <SectionHead s={sec} />
+                          <SectionList s={sec} />
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )}
+              </>
+            );
+          })()}
         </>
       )}
 
@@ -178,30 +196,64 @@ function FileRow({ file: f, first }: { file: Resource; first: boolean }) {
 }
 
 const noopSubscribe = () => () => {};
-const dayKey = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
 
-// Files by the day they were added, newest first; days with a lesson say so. Before the page
-// knows the browser's time zone (server render): one list.
-function groupByDay(files: Resource[], lessonDays: string[], ready: boolean, locale: string) {
-  if (!ready) return [{ key: "all", label: null as string | null, lesson: false, files }];
-  const lessons = new Set(lessonDays.map((iso) => dayKey(new Date(iso))));
-  const groups: { key: string; label: string | null; lesson: boolean; files: Resource[] }[] = [];
+type Section = { key: string; label: string | null; kind: "next" | "lesson" | "all"; files: Resource[] };
+
+// One section per lesson (user, Nov 2026): a file belongs to the lesson it was added for, i.e.
+// the first lesson on or after the day it was uploaded (prepared before, or used during it).
+// Files since the last lesson are "for the next lesson" (with its planned day, if any), on top;
+// then the lessons, newest first. Before the browser's time zone is known: one list.
+function groupByLesson(files: Resource[], lessonDays: string[], nextAt: string | null, ready: boolean, locale: string): Section[] {
+  if (!ready || (!lessonDays.length && !nextAt)) return [{ key: "all", label: null, kind: "all", files }];
+  const day = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const label = (d: Date) =>
+    d.toLocaleDateString(locale, {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
+    });
+  const lessons = [...new Map(lessonDays.map((iso) => [day(new Date(iso)), new Date(iso)])).entries()].sort(([a], [b]) => (a < b ? -1 : 1));
+  const next: Section = { key: "next", label: nextAt ? label(new Date(nextAt)) : "", kind: "next", files: [] };
+  const byLesson = new Map<string, Section>();
   for (const f of files) {
-    const d = new Date(f.created_at);
-    const key = dayKey(d);
-    let g = groups.find((x) => x.key === key);
-    if (!g) {
-      g = {
-        key,
-        label: d.toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: d.getFullYear() === new Date().getFullYear() ? undefined : "numeric" }),
-        lesson: lessons.has(key),
-        files: [],
-      };
-      groups.push(g);
+    const d = day(new Date(f.created_at));
+    const hit = lessons.find(([k]) => k >= d);
+    if (!hit) {
+      next.files.push(f);
+      continue;
     }
-    g.files.push(f);
+    const s = byLesson.get(hit[0]) ?? { key: hit[0], label: label(hit[1]), kind: "lesson" as const, files: [] };
+    s.files.push(f);
+    byLesson.set(hit[0], s);
   }
-  return groups;
+  const past = [...byLesson.values()].sort((a, b) => (a.key < b.key ? 1 : -1));
+  return [...(next.files.length ? [next] : []), ...past];
+}
+
+// Older lessons fold away so the list stays short.
+const OPEN_SECTIONS = 3;
+
+function SectionHead({ s }: { s: Section }) {
+  const t = useT().dashboard;
+  if (s.label === null) return null;
+  return (
+    <h3 className="flex items-baseline gap-2 text-[13px] font-bold tracking-[0.04em] text-ink-muted uppercase" data-testid="files-day">
+      {s.kind === "next" ? t.filesForNext(s.label) : t.filesFromLesson(s.label)}
+      <span className="font-medium tracking-normal normal-case">· {t.fileCount(s.files.length)}</span>
+    </h3>
+  );
+}
+
+function SectionList({ s }: { s: Section }) {
+  const t = useT().dashboard;
+  return (
+    <ul aria-label={s.label === null ? t.files : `${t.files}: ${s.label}`} className="rounded-md border border-line">
+      {s.files.map((f, i) => (
+        <FileRow key={f.id} file={f} first={i === 0} />
+      ))}
+    </ul>
+  );
 }
 
 // "PDF · 1.2 MB · Mon, Nov 23", "Picture · 300 KB · …", "YouTube video · …".
